@@ -1,0 +1,6 @@
+[workspace]
+members = ["crates/*"]
+default-members = ["crates/*"]
+resolver = "2"
+
+[workspace.dependencies]

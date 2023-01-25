@@ -1,0 +1,29 @@
+name: "ci"
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  checks:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+
+      - name: setup development environment
+        uses: ./.github/actions/devenv
+
+      - name: lint
+        run: devenv shell lint:all
+
+      - name: build
+        run: devenv shell build:all
