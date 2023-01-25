@@ -6,6 +6,7 @@
     pkgs.cargo-generate
     pkgs.cargo-insta
     pkgs.cargo-make
+    pkgs.cargo-workspaces
     pkgs.deno
     pkgs.dprint
     pkgs.fnm
@@ -50,5 +51,13 @@
   '';
   scripts."test:all".exec = ''
     cargo test
+  '';
+  scripts."setup:helix".exec = ''
+    rm -rf .helix
+    cp -r setup/editors/helix .helix
+  '';
+  scripts."setup:vscode".exec = ''
+    rm -rf .vscode
+    cp -r ./setup/editors/vscode .vscode
   '';
 }

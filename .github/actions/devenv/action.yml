@@ -26,6 +26,8 @@ runs:
     - name: install devenv.sh
       run: nix profile install github:cachix/devenv/v0.5
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: run devenv in ci
       run: devenv ci

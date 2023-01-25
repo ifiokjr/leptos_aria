@@ -4,3 +4,7 @@ default-members = ["crates/*"]
 resolver = "2"
 
 [workspace.dependencies]
+# internal
+leptos_aria = { path = "crates/leptos_aria" }
+leptos_aria_button = { path = "crates/leptos_aria_button" }
+leptos_aria_interactions = { path = "crates/leptos_aria_interactions" }

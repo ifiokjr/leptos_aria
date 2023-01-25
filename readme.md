@@ -4,7 +4,7 @@
 
 ## Motivation
 
-`leptos` is amazing and still in it's infancy and needs to better support accessibility.
+[`leptos`](https://github.com/leptos-rs/leptos) is an amazing rust web framework. It is still in its infancy and needs to better support accessibility.
 
 ## Contributing
 
@@ -21,3 +21,10 @@ direnv allow .
 ```
 
 At this point you should see the `nix` commands available in your terminal.
+
+To setup recommended configuration for your favourite editor run the following commands.
+
+```bash
+setup:vscode # Setup vscode
+setup:helix  # Setup helix configuration
+```

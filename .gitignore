@@ -1,7 +1,7 @@
 /target
-/.helix
-/result
 /.direnv
+/result
+
 # Devenv
 .devenv*
 devenv.local.nix
@@ -11,3 +11,8 @@ devenv.local.nix
 # insta snapshots
 *.pending-snap
 *.snap.new
+
+# setup
+/.helix
+/.vscode
+/dprint.json
