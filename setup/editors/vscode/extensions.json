@@ -3,6 +3,7 @@
     "dprint.dprint",
     "denoland.vscode-deno",
     "rust-lang.rust-analyzer",
-    "vadimcn.vscode-lldb"
+    "vadimcn.vscode-lldb",
+    "cab404.vscode-direnv"
   ]
 }

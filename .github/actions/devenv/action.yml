@@ -1,5 +1,10 @@
 name: devenv
 description: "Setup development environment with devenv"
+inputs:
+  github-token:
+    description: Provide a github token
+    required: true
+
 runs:
   using: composite
   steps:
@@ -12,6 +17,8 @@ runs:
 
     - name: install nix
       uses: cachix/install-nix-action@v18
+      with:
+        github_access_token: ${{ inputs.github-token }}
 
     - name: import nix store cache
       if: "steps.nix-cache.outputs.cache-hit == 'true'"
@@ -26,11 +33,13 @@ runs:
     - name: install devenv.sh
       run: nix profile install github:cachix/devenv/v0.5
       shell: bash
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: run devenv in ci
       run: devenv ci
+      shell: bash
+
+    - name: update paths
+      run: devenv shell setup:ci
       shell: bash
 
     - name: export nix store cache

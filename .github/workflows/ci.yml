@@ -21,9 +21,16 @@ jobs:
 
       - name: setup development environment
         uses: ./.github/actions/devenv
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: lint
-        run: devenv shell lint:all
+      - name: cache rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ runner.os }}
 
       - name: build
-        run: devenv shell build:all
+        run: build:all
+
+      - name: lint
+        run: lint:all

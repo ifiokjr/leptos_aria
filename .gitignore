@@ -15,4 +15,3 @@ devenv.local.nix
 # setup
 /.helix
 /.vscode
-/dprint.json

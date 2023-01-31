@@ -4,7 +4,10 @@
 
 ## Motivation
 
-[`leptos`](https://github.com/leptos-rs/leptos) is an amazing rust web framework. It is still in its infancy and needs to better support accessibility.
+[`leptos`](https://github.com/leptos-rs/leptos) is an amazing rust web framework. It is still in its
+infancy and needs to better accessibility support.
+
+This is an attempt to provide a port of the `react-aria` ecosystem to `leptos`.
 
 ## Contributing
 
@@ -15,7 +18,7 @@ To automatically load the environment you should
 [install direnv](https://devenv.sh/automatic-shell-activation/) and then load the `direnv`.
 
 ```bash
-# The security mechanism didn't allow to load the `.envrc`. 
+# The security mechanism didn't allow to load the `.envrc`.
 # Since we trust it, let's allow it execution.
 direnv allow .
 ```

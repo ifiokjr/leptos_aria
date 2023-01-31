@@ -4,7 +4,14 @@ default-members = ["crates/*"]
 resolver = "2"
 
 [workspace.dependencies]
+console_error_panic_hook = "0.1"
+leptos = "0.1"
+once_cell = "1"
+smallvec = "1"
+web-sys = "0.3"
+
 # internal
-leptos_aria = { path = "crates/leptos_aria" }
-leptos_aria_button = { path = "crates/leptos_aria_button" }
-leptos_aria_interactions = { path = "crates/leptos_aria_interactions" }
+leptos_aria = { path = "crates/leptos_aria", version = "0.0.0" }
+leptos_aria_button = { path = "crates/leptos_aria_button", version = "0.0.0" }
+leptos_aria_interactions = { path = "crates/leptos_aria_interactions", version = "0.0.0" }
+leptos_aria_utils = { path = "crates/leptos_aria_utils", version = "0.0.0" }

@@ -2,7 +2,11 @@
 name = "leptos_aria_interactions"
 version = "0.0.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+rust-version = "1.67.0"
 
 [dependencies]
+leptos = { workspace = true, features = ["stable"] }
+leptos_aria_utils = { workspace = true }
+once_cell = { worksace = true }
+smallvec = { workspace = true }
+web-sys = { workspace = true, features = ["Navigator", "CssStyleDeclaration"] }
