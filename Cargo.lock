@@ -520,10 +520,21 @@ dependencies = [
 [[package]]
 name = "leptos_aria"
 version = "0.0.0"
+dependencies = [
+ "leptos",
+ "leptos_aria_button",
+ "leptos_aria_interactions",
+ "leptos_aria_utils",
+]
 
 [[package]]
 name = "leptos_aria_button"
 version = "0.0.0"
+dependencies = [
+ "leptos",
+ "leptos_aria_interactions",
+ "leptos_aria_utils",
+]
 
 [[package]]
 name = "leptos_aria_interactions"
