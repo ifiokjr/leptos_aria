@@ -20,3 +20,6 @@ leptos = { workspace = true }
 leptos_aria_button = { workspace = true }
 leptos_aria_interactions = { workspace = true }
 leptos_aria_utils = { workspace = true }
+
+[dev-dependencies]
+wasm-bindgen-test = { workspace = true }

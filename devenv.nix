@@ -6,8 +6,8 @@
     pkgs.cargo-generate
     pkgs.cargo-insta
     pkgs.cargo-make
+    pkgs.cargo-nextest
     pkgs.cargo-workspaces
-    pkgs.cargo-edit
     pkgs.deno
     pkgs.dprint
     pkgs.fnm

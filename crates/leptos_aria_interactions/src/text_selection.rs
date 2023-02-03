@@ -1,9 +1,20 @@
 use std::ptr::eq;
 use std::time::Duration;
 
-use leptos::*;
+use leptos::create_rw_signal;
+use leptos::document;
+use leptos::set_timeout;
+use leptos::web_sys::Element;
+use leptos::web_sys::HtmlElement;
+use leptos::web_sys::SvgElement;
+use leptos::JsCast;
+use leptos::RwSignal;
+use leptos::Scope;
+use leptos::UntrackedGettableSignal;
+use leptos::UntrackedSettableSignal;
 use leptos_aria_utils::is_ios;
 use leptos_aria_utils::ContextProvider;
+use leptos_aria_utils::Map;
 
 #[derive(Copy, Clone)]
 pub(crate) struct SelectionContext(RwSignal<Selection>);
@@ -23,6 +34,7 @@ impl ContextProvider for SelectionContext {
     self.0.set_untracked(value);
   }
 }
+
 #[derive(Copy, Clone)]
 pub(crate) struct UserSelectContext(RwSignal<Option<String>>);
 
@@ -42,7 +54,7 @@ impl ContextProvider for UserSelectContext {
   }
 }
 
-type ElementList = Vec<(web_sys::Element, String)>;
+type ElementList = Vec<(Element, String)>;
 
 #[derive(Copy, Clone)]
 pub(crate) struct ElementListContext(RwSignal<ElementList>);
@@ -69,7 +81,7 @@ impl ContextProvider for ElementListContext {
   }
 }
 
-pub(crate) fn disable_text_selection(cx: Scope, element: Option<impl AsRef<web_sys::Element>>) {
+pub(crate) fn disable_text_selection(cx: Scope, element: Option<impl AsRef<Element>>) {
   if is_ios() {
     let selection = SelectionContext::provide(cx);
     let user_select = UserSelectContext::provide(cx);
@@ -78,7 +90,7 @@ pub(crate) fn disable_text_selection(cx: Scope, element: Option<impl AsRef<web_s
       let style = document()
         .document_element()
         .unwrap()
-        .unchecked_ref::<web_sys::HtmlElement>()
+        .unchecked_ref::<HtmlElement>()
         .style();
       user_select.set(style.get_property_value("-webkit-user-select").ok());
       style.set_property("-webkit-user-select", "none").ok();
@@ -92,15 +104,13 @@ pub(crate) fn disable_text_selection(cx: Scope, element: Option<impl AsRef<web_s
       return;
     };
 
-  if !target.is_instance_of::<web_sys::HtmlElement>()
-    && !target.is_instance_of::<web_sys::HtmlElement>()
-  {
+  if !target.is_instance_of::<HtmlElement>() && !target.is_instance_of::<HtmlElement>() {
     return;
   }
 
   let mut should_append = true;
   let element_list = ElementListContext::provide(cx);
-  let style = target.unchecked_ref::<web_sys::HtmlElement>().style();
+  let style = target.unchecked_ref::<HtmlElement>().style();
   let list = element_list.get();
   let cloned_target = target.clone();
   let user_select = style.get_property_value("user-select").unwrap_or("".into());
@@ -141,7 +151,7 @@ pub(crate) fn disable_text_selection(cx: Scope, element: Option<impl AsRef<web_s
 /// For non-iOS devices, we apply user-select: none to the pressed element
 /// instead to avoid possible performance issues that arise from applying and
 /// removing user-select: none to the entire page (see https://github.com/adobe/react-spectrum/issues/1609).
-pub(crate) fn restore_text_selection(cx: Scope, element: impl AsRef<web_sys::Element>) {
+pub(crate) fn restore_text_selection(cx: Scope, element: impl AsRef<Element>) {
   if is_ios() {
     let selection = SelectionContext::provide(cx);
     let user_select = UserSelectContext::provide(cx);
@@ -160,8 +170,7 @@ pub(crate) fn restore_text_selection(cx: Scope, element: impl AsRef<web_sys::Ele
         return;
       }
 
-      let document_element: web_sys::HtmlElement =
-        document().document_element().unwrap().unchecked_into();
+      let document_element: HtmlElement = document().document_element().unwrap().unchecked_into();
 
       if document_element
         .style()
@@ -190,9 +199,7 @@ pub(crate) fn restore_text_selection(cx: Scope, element: impl AsRef<web_sys::Ele
 
   let target = element.as_ref();
 
-  if !target.is_instance_of::<web_sys::HtmlElement>()
-    && !target.is_instance_of::<web_sys::SvgElement>()
-  {
+  if !target.is_instance_of::<HtmlElement>() && !target.is_instance_of::<SvgElement>() {
     return;
   }
 
@@ -203,7 +210,7 @@ pub(crate) fn restore_text_selection(cx: Scope, element: impl AsRef<web_sys::Ele
     return;
   };
 
-  let style = target.unchecked_ref::<web_sys::HtmlElement>().style();
+  let style = target.unchecked_ref::<HtmlElement>().style();
   if style.get_property_value("user-select").ok().as_deref() == Some("none") {
     style.set_property("user-select", found_selection).ok();
   }
@@ -224,13 +231,6 @@ pub(crate) fn restore_text_selection(cx: Scope, element: impl AsRef<web_sys::Ele
     .collect();
 
   element_list.set(new_list);
-
-  // let targetOldc
-
-  // let value = element.to_leptos_element(cx);
-  // let hashable_target = target
-  //   .unchecked_ref::<web_sys::HtmlElement>()
-  //   .to_leptos_element();
 }
 
 #[derive(Copy, Clone, PartialEq)]

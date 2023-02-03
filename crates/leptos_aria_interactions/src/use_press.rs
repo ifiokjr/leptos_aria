@@ -1,7 +1,28 @@
 use std::rc::Rc;
 
+use leptos::create_rw_signal;
 use leptos::typed_builder::TypedBuilder;
-use leptos::*;
+use leptos::web_sys::DragEvent;
+use leptos::web_sys::Element;
+use leptos::web_sys::HtmlAnchorElement;
+use leptos::web_sys::HtmlElement;
+use leptos::web_sys::HtmlInputElement;
+use leptos::web_sys::HtmlTextAreaElement;
+use leptos::web_sys::KeyboardEvent;
+use leptos::web_sys::MouseEvent;
+use leptos::web_sys::PointerEvent;
+use leptos::web_sys::SvgElement;
+use leptos::web_sys::TouchEvent;
+use leptos::web_sys::WheelEvent;
+use leptos::IntoSignal;
+use leptos::JsCast;
+use leptos::MaybeSignal;
+use leptos::NodeRef;
+use leptos::RwSignal;
+use leptos::Scope;
+use leptos::Signal;
+use leptos::UntrackedGettableSignal;
+use leptos::UntrackedSettableSignal;
 use leptos_aria_utils::GlobalListeners;
 
 pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
@@ -11,14 +32,13 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
 type OnPressCallback = Rc<Box<dyn Fn(&PressEvent)>>;
 type OnPressChangeCallback = Rc<Box<dyn Fn(bool)>>;
 
-#[derive(Clone)]
 pub struct PressResult {
   listeners: Rc<GlobalListeners>,
   ignore_emulated_mouse_event: RwSignal<bool>,
   ignore_click_after_press: RwSignal<bool>,
   did_fire_press_start: RwSignal<bool>,
   active_pointer_id: RwSignal<Option<u32>>,
-  target: RwSignal<Option<web_sys::Element>>,
+  target: RwSignal<Option<Element>>,
   is_over_target: RwSignal<bool>,
   pointer_type: RwSignal<PointerType>,
   user_select: RwSignal<Option<String>>,
@@ -175,23 +195,20 @@ fn call_event<T>(callback: &Option<Rc<Box<dyn Fn(T)>>>, event: T) {
   }
 }
 
-fn is_valid_keyboard_event(
-  event: &web_sys::KeyboardEvent,
-  current_target: &web_sys::Element,
-) -> bool {
+fn is_valid_keyboard_event(event: &KeyboardEvent, current_target: &Element) -> bool {
   let key = event.key();
   let code = event.code();
-  let element = current_target.unchecked_ref::<web_sys::HtmlElement>();
+  let element = current_target.unchecked_ref::<HtmlElement>();
 
   let role = element.get_attribute("role");
 
   // Accessibility for keyboards. Space and Enter only.
   (key == "Enter" || key == " " || code == "Space")
-    && !((element.is_instance_of::<web_sys::HtmlInputElement>()
+    && !((element.is_instance_of::<HtmlInputElement>()
       && !{
         is_valid_input_key(element.unchecked_ref(), &key)
       })
-      || element.is_instance_of::<web_sys::HtmlTextAreaElement>()
+      || element.is_instance_of::<HtmlTextAreaElement>()
       || element.is_content_editable())
   // A link with a valid href should be handled natively,
   // unless is also has `role="button"` and was triggered using `Space`.
@@ -199,12 +216,12 @@ fn is_valid_keyboard_event(
   && !(role.as_ref().map_or(false, |role| role == "link") && key != "Enter")
 }
 
-fn is_html_anchor_link(target: &web_sys::HtmlElement) -> bool {
-  target.is_instance_of::<web_sys::HtmlAnchorElement>()
+fn is_html_anchor_link(target: &HtmlElement) -> bool {
+  target.is_instance_of::<HtmlAnchorElement>()
     || (target.tag_name() == "A" && target.has_attribute("href"))
 }
 
-fn is_valid_input_key(target: &web_sys::HtmlInputElement, key: impl AsRef<str>) -> bool {
+fn is_valid_input_key(target: &HtmlInputElement, key: impl AsRef<str>) -> bool {
   // Only space should toggle checkboxes and radios, not enter.
   if target.type_() == "checkbox" || target.type_() == "radio" {
     key.as_ref() == " "
@@ -224,22 +241,22 @@ pub trait ToFocusableElement {
 
 #[derive(Clone)]
 pub enum FocusableElement {
-  Svg(web_sys::SvgElement),
-  Html(web_sys::HtmlElement),
+  Svg(SvgElement),
+  Html(HtmlElement),
 }
 
 impl<E> ToFocusableElement for E
 where
-  E: AsRef<web_sys::Element>,
+  E: AsRef<Element>,
 {
   fn to_focusable_element(&self) -> FocusableElement {
     FocusableElement::from(self.as_ref().clone())
   }
 }
 
-impl From<web_sys::Element> for FocusableElement {
-  fn from(value: web_sys::Element) -> Self {
-    if value.is_instance_of::<web_sys::SvgElement>() {
+impl From<Element> for FocusableElement {
+  fn from(value: Element) -> Self {
+    if value.is_instance_of::<SvgElement>() {
       FocusableElement::Svg(value.unchecked_into())
     } else {
       FocusableElement::Html(value.unchecked_into())
@@ -249,12 +266,12 @@ impl From<web_sys::Element> for FocusableElement {
 /// Any event that can be pressed.
 #[derive(Clone)]
 pub enum FocusableEvent {
-  Mouse(web_sys::MouseEvent, Option<FocusableElement>),
-  Keyboard(web_sys::KeyboardEvent, Option<FocusableElement>),
-  Touch(web_sys::TouchEvent, Option<FocusableElement>),
-  Drag(web_sys::DragEvent, Option<FocusableElement>),
-  Pointer(web_sys::PointerEvent, Option<FocusableElement>),
-  Wheel(web_sys::WheelEvent, Option<FocusableElement>),
+  Mouse(MouseEvent, Option<FocusableElement>),
+  Keyboard(KeyboardEvent, Option<FocusableElement>),
+  Touch(TouchEvent, Option<FocusableElement>),
+  Drag(DragEvent, Option<FocusableElement>),
+  Pointer(PointerEvent, Option<FocusableElement>),
+  Wheel(WheelEvent, Option<FocusableElement>),
 }
 
 impl FocusableEvent {
@@ -301,7 +318,7 @@ impl FocusableEvent {
     }
   }
 
-  pub fn current_target(&self) -> web_sys::Element {
+  pub fn current_target(&self) -> Element {
     use FocusableEvent::*;
 
     let target = match self {
@@ -474,7 +491,8 @@ pub struct UsePressProps {
   // pub children: Box<dyn FnOnce(Scope) -> Fragment>,
 
   /// The ref.
-  pub _ref: NodeRef<HtmlElement<AnyElement>>,
+  #[builder(setter(into))]
+  pub _ref: NodeRef<leptos::HtmlElement<leptos::AnyElement>>,
 }
 
 #[derive(TypedBuilder, Clone, Debug)]
@@ -489,7 +507,7 @@ pub struct PressEvent {
   ///
   /// Get the element from the target as shown here:
   /// https://users.rust-lang.org/t/get-element-from-web-sys-eventtarget/44925
-  pub target: web_sys::Element,
+  pub target: Element,
 
   /// Whether the shift keyboard modifier was held during the press event.
   pub shift_key: bool,
@@ -559,8 +577,8 @@ impl From<String> for PointerType {
   }
 }
 
-impl From<web_sys::PointerEvent> for PointerType {
-  fn from(value: web_sys::PointerEvent) -> Self {
+impl From<PointerEvent> for PointerType {
+  fn from(value: PointerEvent) -> Self {
     Self::from(value.pointer_type())
   }
 }
