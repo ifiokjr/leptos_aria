@@ -1,15 +1,15 @@
 use std::cell::RefCell;
-use std::collections::HashSet;
+
 use std::ptr::eq;
 use std::rc::Rc;
 
 use leptos::create_rw_signal;
 use leptos::document;
-use leptos::js_sys::Function;
+
 use leptos::js_sys::JsString;
 use leptos::request_animation_frame;
 use leptos::wasm_bindgen::prelude::Closure;
-use leptos::wasm_bindgen::JsValue;
+
 use leptos::web_sys::Element;
 use leptos::web_sys::Event;
 use leptos::web_sys::TransitionEvent;
@@ -99,7 +99,7 @@ fn setup_global_events(cx: Scope) {
     Rc::new(RefCell::new(Closure::new(|_| {})));
   let update_closure = closure.clone();
   let other_closure = closure.clone();
-  let on_end_closure = closure.clone();
+  let _on_end_closure = closure.clone();
 
   let on_transition_end = move |event: TransitionEvent| {
     let element: Element = event.target().unwrap().unchecked_into();

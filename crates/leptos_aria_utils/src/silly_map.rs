@@ -142,7 +142,7 @@ where
   T: AsRef<JsValue> + From<JsValue>,
 {
   fn as_ref(&self) -> &JsValue {
-    &self.0.as_ref()
+    self.0.as_ref()
   }
 }
 
@@ -194,8 +194,8 @@ where
   /// in the Set object, in insertion order.
   ///
   /// [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/forEach)
-  pub fn for_each(&self, callback: &mut dyn FnMut(T, u32)) {
-    self.0.for_each(&mut |value: JsValue, index: JsValue, _| {
+  pub fn for_each(&self, _callback: &mut dyn FnMut(T, u32)) {
+    self.0.for_each(&mut |_value: JsValue, _index: JsValue, _| {
       // callback(value.into(), key.into());
     });
   }
