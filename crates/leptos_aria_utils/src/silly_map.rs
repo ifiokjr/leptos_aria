@@ -1,16 +1,16 @@
 use std::marker::PhantomData;
+use std::ops::Deref;
 
-use leptos::js_sys;
+use leptos::js_sys::Number;
+use leptos::js_sys::{self};
 use leptos::wasm_bindgen::JsValue;
+use leptos::JsCast;
 
 /// `web_sys::Element` is not hashable meaning it's not possible to us it as a
 /// key in a `HashMap`. This is a silly map implementation with no regard for
 /// performance that allow us to use elements as keys.
 #[derive(Clone, PartialEq, Eq)]
-pub struct Map<K, V>(js_sys::Map, PhantomData<(K, V)>)
-where
-  K: AsRef<JsValue> + From<JsValue>,
-  V: AsRef<JsValue> + From<JsValue>;
+pub struct Map<K, V>(js_sys::Map, PhantomData<(K, V)>);
 
 impl<K, V> Default for Map<K, V>
 where
@@ -24,8 +24,8 @@ where
 
 impl<K, V> AsRef<JsValue> for Map<K, V>
 where
-  K: AsRef<JsValue> + From<JsValue>,
-  V: AsRef<JsValue> + From<JsValue>,
+  K: AsRef<JsValue>,
+  V: AsRef<JsValue>,
 {
   fn as_ref(&self) -> &JsValue {
     self.0.as_ref()
@@ -34,8 +34,8 @@ where
 
 impl<K, V> From<JsValue> for Map<K, V>
 where
-  K: AsRef<JsValue> + From<JsValue>,
-  V: AsRef<JsValue> + From<JsValue>,
+  K: From<JsValue>,
+  V: From<JsValue>,
 {
   fn from(value: JsValue) -> Self {
     Self(value.into(), PhantomData)
@@ -124,14 +124,9 @@ where
 }
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct Set<T>(js_sys::Set, PhantomData<T>)
-where
-  T: AsRef<JsValue> + From<JsValue>;
+pub struct Set<T>(js_sys::Set, PhantomData<T>);
 
-impl<T> Default for Set<T>
-where
-  T: AsRef<JsValue> + From<JsValue>,
-{
+impl<T> Default for Set<T> {
   fn default() -> Self {
     Self(Default::default(), PhantomData)
   }
@@ -139,7 +134,7 @@ where
 
 impl<T> AsRef<JsValue> for Set<T>
 where
-  T: AsRef<JsValue> + From<JsValue>,
+  T: AsRef<JsValue>,
 {
   fn as_ref(&self) -> &JsValue {
     self.0.as_ref()
@@ -194,9 +189,10 @@ where
   /// in the Set object, in insertion order.
   ///
   /// [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/forEach)
-  pub fn for_each(&self, _callback: &mut dyn FnMut(T, u32)) {
-    self.0.for_each(&mut |_value: JsValue, _index: JsValue, _| {
-      // callback(value.into(), key.into());
+  pub fn for_each(&self, callback: &mut dyn FnMut(T, u32)) {
+    self.0.for_each(&mut |value: JsValue, index: JsValue, _| {
+      let number: Number = index.into();
+      callback(value.into(), number.value_of() as u32);
     });
   }
 
@@ -218,5 +214,81 @@ where
 
   pub fn is_empty(&self) -> bool {
     self.0.size() == 0
+  }
+}
+
+/// Wrap a value so it can be used as a JsValue.
+pub struct Tuple3<T0, T1, T2>(js_sys::Array, PhantomData<(T0, T1, T2)>);
+
+impl<T0, T1, T2> Default for Tuple3<T0, T1, T2>
+where
+  T0: Default + AsRef<JsValue>,
+  T1: Default + AsRef<JsValue>,
+  T2: Default + AsRef<JsValue>,
+{
+  fn default() -> Self {
+    let array = js_sys::Array::default();
+    let a = T0::default();
+    let b = T1::default();
+    let c = T2::default();
+    array.push(a.as_ref());
+    array.push(b.as_ref());
+    array.push(c.as_ref());
+
+    Self(array, PhantomData)
+  }
+}
+
+impl<T0, T1, T2> Tuple3<T0, T1, T2>
+where
+  T0: From<JsValue> + AsRef<JsValue>,
+  T1: From<JsValue> + AsRef<JsValue>,
+  T2: From<JsValue> + AsRef<JsValue>,
+{
+  pub fn new(index0: T0, index1: T1, index2: T2) -> Self {
+    let array = js_sys::Array::default();
+    array.push(index0.as_ref());
+    array.push(index1.as_ref());
+    array.push(index2.as_ref());
+
+    Self(array, PhantomData)
+  }
+
+  pub fn get(&self) -> (T0, T1, T2) {
+    (self.get_0(), self.get_1(), self.get_2())
+  }
+
+  pub fn get_0(&self) -> T0 {
+    self.0.get(0).into()
+  }
+
+  pub fn get_1(&self) -> T1 {
+    self.0.get(1).into()
+  }
+
+  pub fn get_2(&self) -> T2 {
+    self.0.get(2).into()
+  }
+}
+
+impl<T0, T1, T2> AsRef<JsValue> for Tuple3<T0, T1, T2>
+where
+  T0: AsRef<JsValue>,
+  T1: AsRef<JsValue>,
+  T2: AsRef<JsValue>,
+{
+  fn as_ref(&self) -> &JsValue {
+    self.0.as_ref()
+  }
+}
+
+impl<T0, T1, T2> From<JsValue> for Tuple3<T0, T1, T2>
+where
+  T0: From<JsValue>,
+  T1: From<JsValue>,
+  T2: From<JsValue>,
+{
+  fn from(value: JsValue) -> Self {
+    Self(value.into(), PhantomData)
   }
 }

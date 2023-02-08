@@ -1,15 +1,12 @@
 use std::cell::RefCell;
-
 use std::ptr::eq;
 use std::rc::Rc;
 
 use leptos::create_rw_signal;
 use leptos::document;
-
 use leptos::js_sys::JsString;
 use leptos::request_animation_frame;
 use leptos::wasm_bindgen::prelude::Closure;
-
 use leptos::web_sys::Element;
 use leptos::web_sys::Event;
 use leptos::web_sys::TransitionEvent;
@@ -22,8 +19,6 @@ use leptos::UntrackedSettableSignal;
 use crate::silly_map::Map;
 use crate::silly_map::Set;
 use crate::ContextProvider;
-
-type T = Map<Element, Set<String>>;
 
 /// We store a global list of elements that are currently transitioning,
 /// mapped to a set of CSS properties that are transitioning for that element.
@@ -84,22 +79,11 @@ impl ContextProvider for TransitionCallbacksContext {
   }
 }
 
-struct TransitionCallbacks {
-  cx: Scope,
-  closures: Option<Rc<Closures>>,
-}
-
-struct Closures {
-  // on_start: Closure<dyn Fn(TransitionEvent)>,
-  on_end: Closure<dyn Fn(TransitionEvent)>,
-}
-
 fn setup_global_events(cx: Scope) {
-  let closure: Rc<RefCell<Closure<dyn Fn(TransitionEvent)>>> =
-    Rc::new(RefCell::new(Closure::new(|_| {})));
+  type CallbackClosureType = Rc<RefCell<Closure<dyn Fn(TransitionEvent)>>>;
+  let closure: CallbackClosureType = Rc::new(RefCell::new(Closure::new(|_| {})));
   let update_closure = closure.clone();
   let other_closure = closure.clone();
-  let _on_end_closure = closure.clone();
 
   let on_transition_end = move |event: TransitionEvent| {
     let element: Element = event.target().unwrap().unchecked_into();

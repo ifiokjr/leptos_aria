@@ -33,7 +33,7 @@ type OnPressCallback = Rc<Box<dyn Fn(&PressEvent)>>;
 type OnPressChangeCallback = Rc<Box<dyn Fn(bool)>>;
 
 pub struct PressResult {
-  listeners: Rc<GlobalListeners>,
+  listeners: GlobalListeners,
   ignore_emulated_mouse_event: RwSignal<bool>,
   ignore_click_after_press: RwSignal<bool>,
   did_fire_press_start: RwSignal<bool>,
@@ -165,7 +165,7 @@ impl PressResult {
     call_event(&self.wrapped_on_press_up, &event);
   }
 
-  fn cancel(&self, focusable_event: FocusableEvent) {
+  fn cancel(&mut self, focusable_event: FocusableEvent) {
     if !self.is_pressed.get_untracked() {
       return;
     }
@@ -179,7 +179,7 @@ impl PressResult {
     self.active_pointer_id.set_untracked(None);
     self.pointer_type.set_untracked(PointerType::Unsupported);
 
-    // self.listeners.remove_all_listeners();
+    self.listeners.remove_all_listeners();
 
     if !self.allow_text_selection_on_press.get() {}
     // if !self.

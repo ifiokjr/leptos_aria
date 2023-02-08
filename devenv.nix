@@ -12,6 +12,7 @@
     pkgs.dprint
     pkgs.fnm
     pkgs.git
+    pkgs.mdbook
     pkgs.ripgrep
     pkgs.rust-analyzer
     pkgs.rustup

@@ -6,7 +6,7 @@ pub use use_press::*;
 
 pub fn inject_providers(cx: Scope) {
   UserSelectContext::provide(cx);
-  ElementListContext::provide(cx);
+  ElementMapContext::provide(cx);
   SelectionContext::provide(cx);
 }
 

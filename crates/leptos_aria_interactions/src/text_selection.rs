@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use leptos::create_rw_signal;
 use leptos::document;
+use leptos::js_sys::JsString;
 use leptos::set_timeout;
 use leptos::web_sys::Element;
 use leptos::web_sys::HtmlElement;
@@ -13,8 +14,9 @@ use leptos::Scope;
 use leptos::UntrackedGettableSignal;
 use leptos::UntrackedSettableSignal;
 use leptos_aria_utils::is_ios;
+use leptos_aria_utils::run_after_transition;
 use leptos_aria_utils::ContextProvider;
-
+use leptos_aria_utils::Map;
 
 #[derive(Copy, Clone)]
 pub(crate) struct SelectionContext(RwSignal<Selection>);
@@ -54,13 +56,13 @@ impl ContextProvider for UserSelectContext {
   }
 }
 
-type ElementList = Vec<(Element, String)>;
+type ElementMap = Map<Element, JsString>;
 
 #[derive(Copy, Clone)]
-pub(crate) struct ElementListContext(RwSignal<ElementList>);
+pub(crate) struct ElementMapContext(RwSignal<ElementMap>);
 
-impl ContextProvider for ElementListContext {
-  type Value = ElementList;
+impl ContextProvider for ElementMapContext {
+  type Value = ElementMap;
 
   fn from_leptos_scope(cx: Scope) -> Self {
     Self(create_rw_signal(cx, Default::default()))
@@ -109,30 +111,14 @@ pub(crate) fn disable_text_selection(cx: Scope, element: Option<impl AsRef<Eleme
   }
 
   let mut should_append = true;
-  let element_list = ElementListContext::provide(cx);
+  let element_list = ElementMapContext::provide(cx);
   let style = target.unchecked_ref::<HtmlElement>().style();
-  let list = element_list.get();
+  let map = element_list.get();
   let cloned_target = target.clone();
   let user_select = style.get_property_value("user-select").unwrap_or("".into());
+  map.set(&target, &user_select.into());
 
-  let mut list = list
-    .iter()
-    .map(|item| {
-      if item.0 == cloned_target {
-        should_append = false;
-
-        (item.0.clone(), user_select.clone())
-      } else {
-        item.clone()
-      }
-    })
-    .collect::<Vec<_>>();
-
-  if should_append {
-    list.push((cloned_target, user_select));
-  }
-
-  element_list.set(list);
+  element_list.set(map);
 }
 
 /// Safari on iOS starts selecting text on long press. The only way to avoid
@@ -165,7 +151,7 @@ pub(crate) fn restore_text_selection(cx: Scope, element: impl AsRef<Element>) {
 
     selection.set(Selection::Restoring);
 
-    let cb = move || {
+    let timeout_callback = move || {
       if selection.get() != Selection::Default {
         return;
       }
@@ -192,7 +178,10 @@ pub(crate) fn restore_text_selection(cx: Scope, element: impl AsRef<Element>) {
       user_select.set(None);
     };
 
-    set_timeout(cb, Duration::from_millis(300));
+    set_timeout(
+      move || run_after_transition(cx, timeout_callback),
+      Duration::from_millis(300),
+    );
 
     return;
   }
@@ -203,16 +192,19 @@ pub(crate) fn restore_text_selection(cx: Scope, element: impl AsRef<Element>) {
     return;
   }
 
-  let element_list = ElementListContext::provide(cx);
-  let list = element_list.get();
+  let element_map = ElementMapContext::provide(cx);
+  let map = element_map.get();
 
-  let Some((_, found_selection)) = list.iter().find(|value| value.0 == target.clone()) else {
+  let Some(found_selection) = map.get(target) else {
     return;
   };
 
   let style = target.unchecked_ref::<HtmlElement>().style();
   if style.get_property_value("user-select").ok().as_deref() == Some("none") {
-    style.set_property("user-select", found_selection).ok();
+    let found_selection: String = found_selection.into();
+    style
+      .set_property("user-select", found_selection.as_str())
+      .ok();
   }
 
   if target
@@ -224,13 +216,8 @@ pub(crate) fn restore_text_selection(cx: Scope, element: impl AsRef<Element>) {
     target.remove_attribute("style").ok();
   }
 
-  let new_list = list
-    .iter()
-    .filter(|&item| item.0 != target.clone())
-    .map(|item| (item.0.clone(), item.1.clone()))
-    .collect();
-
-  element_list.set(new_list);
+  map.delete(target);
+  element_map.set(map);
 }
 
 #[derive(Copy, Clone, PartialEq)]
