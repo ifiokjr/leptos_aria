@@ -1,10 +1,10 @@
 use std::marker::PhantomData;
-use std::ops::Deref;
+
 
 use leptos::js_sys::Number;
 use leptos::js_sys::{self};
 use leptos::wasm_bindgen::JsValue;
-use leptos::JsCast;
+
 
 /// `web_sys::Element` is not hashable meaning it's not possible to us it as a
 /// key in a `HashMap`. This is a silly map implementation with no regard for

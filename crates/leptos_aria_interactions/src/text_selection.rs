@@ -110,13 +110,13 @@ pub(crate) fn disable_text_selection(cx: Scope, element: Option<impl AsRef<Eleme
     return;
   }
 
-  let mut should_append = true;
+  let _should_append = true;
   let element_list = ElementMapContext::provide(cx);
   let style = target.unchecked_ref::<HtmlElement>().style();
   let map = element_list.get();
-  let cloned_target = target.clone();
+  let _cloned_target = target.clone();
   let user_select = style.get_property_value("user-select").unwrap_or("".into());
-  map.set(&target, &user_select.into());
+  map.set(target, &user_select.into());
 
   element_list.set(map);
 }
