@@ -8,7 +8,7 @@ use crate::Tuple3;
 
 type GlobalListenersMap = Map<Function, Tuple3<EventTarget, JsString, Boolean>>;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct GlobalListeners(GlobalListenersMap);
 
 impl GlobalListeners {
@@ -56,5 +56,11 @@ impl GlobalListeners {
     // }
 
     self.0.clear();
+  }
+}
+
+impl Drop for GlobalListeners {
+  fn drop(&mut self) {
+    self.remove_all_listeners();
   }
 }

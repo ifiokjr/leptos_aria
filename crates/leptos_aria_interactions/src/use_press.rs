@@ -1,7 +1,11 @@
 use std::rc::Rc;
 
 use leptos::create_rw_signal;
+use leptos::create_signal;
+use leptos::document;
+use leptos::js_sys::Function;
 use leptos::typed_builder::TypedBuilder;
+use leptos::wasm_bindgen::prelude::Closure;
 use leptos::web_sys::DragEvent;
 use leptos::web_sys::Element;
 use leptos::web_sys::HtmlAnchorElement;
@@ -14,6 +18,7 @@ use leptos::web_sys::PointerEvent;
 use leptos::web_sys::SvgElement;
 use leptos::web_sys::TouchEvent;
 use leptos::web_sys::WheelEvent;
+use leptos::AnyElement;
 use leptos::IntoSignal;
 use leptos::JsCast;
 use leptos::MaybeSignal;
@@ -24,9 +29,169 @@ use leptos::Signal;
 use leptos::UntrackedGettableSignal;
 use leptos::UntrackedSettableSignal;
 use leptos_aria_utils::GlobalListeners;
+use web_sys::DomRect;
+use web_sys::HtmlButtonElement;
+use web_sys::Node;
 
-pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
-  PressResult::new(cx, props)
+pub fn use_press(cx: Scope, props: UsePressProps) {
+  let (listeners, _) = create_signal(cx, GlobalListeners::default());
+  let _ignore_emulated_mouse_event = create_rw_signal(cx, false);
+  let ignore_click_after_press = create_rw_signal(cx, false);
+  let did_fire_press_start = create_rw_signal(cx, false);
+  let active_pointer_id = create_rw_signal::<Option<u32>>(cx, None);
+  let target = create_rw_signal::<Option<Element>>(cx, None);
+  let is_over_target = create_rw_signal(cx, false);
+  let pointer_type = create_rw_signal(cx, PointerType::Unsupported);
+  let _user_select = create_rw_signal::<Option<String>>(cx, None);
+
+  let original_is_disabled = props.is_disabled.unwrap_or(false.into());
+  let is_disabled = (move || original_is_disabled.get()).derive_signal(cx);
+  let original_prevent_focus_on_press = props.prevent_focus_on_press.unwrap_or(false.into());
+  let _prevent_focus_on_press = (move || original_prevent_focus_on_press.get()).derive_signal(cx);
+  let original_should_cancel_on_pointer_exit =
+    props.should_cancel_on_pointer_exit.unwrap_or(false.into());
+  let _should_cancel_on_pointer_exit =
+    (move || original_should_cancel_on_pointer_exit.get()).derive_signal(cx);
+  let original_allow_text_selection_on_press =
+    props.allow_text_selection_on_press.unwrap_or(false.into());
+  let allow_text_selection_on_press =
+    (move || original_allow_text_selection_on_press.get()).derive_signal(cx);
+
+  let wrapped_on_press: Option<OnPressCallback> = props.on_press.map(Rc::new);
+  let wrapped_on_press_start: Option<OnPressCallback> = props.on_press_start.map(Rc::new);
+  let wrapped_on_press_end: Option<OnPressCallback> = props.on_press_end.map(Rc::new);
+  let wrapped_on_press_change: Option<OnPressChangeCallback> = props.on_press_change.map(Rc::new);
+  let wrapped_on_press_up: Option<OnPressCallback> = props.on_press_up.map(Rc::new);
+
+  let wrapped_is_pressed = create_rw_signal(cx, false);
+  let original_is_pressed = props.is_pressed.unwrap_or(false.into());
+  let _is_pressed =
+    (move || original_is_pressed.get() || wrapped_is_pressed.get()).derive_signal(cx);
+
+  // Trigger the beginning of a custom press event.
+  let trigger_press_start = {
+    let wrapped_on_press_start = wrapped_on_press_start.clone();
+    let wrapped_on_press_change = wrapped_on_press_change.clone();
+
+    move |focusable_event: FocusableEvent, pointer: PointerType| {
+      if is_disabled.get() || did_fire_press_start.get_untracked() {
+        return;
+      }
+
+      let event = PressEvent::create(&pointer, PressEventType::PressStart, &focusable_event);
+      call_event(&wrapped_on_press_start, &event);
+      call_event(&wrapped_on_press_change, true);
+
+      did_fire_press_start.set_untracked(true);
+      wrapped_is_pressed.set(true);
+    }
+  };
+
+  let trigger_press_end = {
+    let wrapped_on_press_end = wrapped_on_press_end.clone();
+    let wrapped_on_press_change = wrapped_on_press_change.clone();
+
+    move |focusable_event: FocusableEvent, pointer: PointerType, was_pressed: bool| {
+      if !did_fire_press_start.get_untracked() {
+        return;
+      }
+
+      ignore_click_after_press.set_untracked(true);
+      did_fire_press_start.set_untracked(false);
+
+      let event = PressEvent::create(&pointer, PressEventType::PressEnd, &focusable_event);
+      call_event(&wrapped_on_press_end.clone(), &event);
+      call_event(&wrapped_on_press_change.clone(), false);
+
+      wrapped_is_pressed.set(false);
+
+      if !was_pressed || is_disabled.get() {
+        return;
+      }
+
+      let event = PressEvent::create(&pointer, PressEventType::Press, &focusable_event);
+      call_event(&wrapped_on_press, &event);
+    }
+  };
+
+  let _trigger_press_up = |focusable_event: FocusableEvent, pointer: PointerType| {
+    if is_disabled.get() {
+      return;
+    }
+
+    let event = PressEvent::create(&pointer, PressEventType::PressUp, &focusable_event);
+    call_event(&wrapped_on_press_up, &event);
+  };
+
+  let _cancel = {
+    move |focusable_event: FocusableEvent| {
+      if !wrapped_is_pressed.get_untracked() {
+        return;
+      }
+
+      if is_over_target.get_untracked() {
+        trigger_press_end(focusable_event, pointer_type.get_untracked(), false);
+      }
+
+      wrapped_is_pressed.set_untracked(false);
+      is_over_target.set_untracked(false);
+      active_pointer_id.set_untracked(None);
+      pointer_type.set_untracked(PointerType::Unsupported);
+
+      listeners.get_untracked().remove_all_listeners();
+
+      if !allow_text_selection_on_press.get() {}
+    }
+  };
+
+  let on_key_up = |_event: KeyboardEvent| {
+    // if is_valid_keyboard_event(&event, current_target)
+  };
+
+  let _on_key_down = {
+    move |event: KeyboardEvent| {
+      let event_current_target: Element = event.current_target().unwrap().unchecked_into();
+      let event_target: Option<Node> = event.target().map(|target| target.unchecked_into());
+
+      if is_valid_keyboard_event(&event, &event_current_target)
+        && event_current_target.contains(event_target.as_ref())
+      {
+        if should_prevent_default(&event_current_target) {
+          event.prevent_default();
+        }
+
+        event.stop_propagation();
+
+        // If the event is repeating, it may have started on a different element
+        // after which focus moved to the current element. Ignore these events and
+        // only handle the first key down event.
+        if !wrapped_is_pressed.get_untracked() && !event.repeat() {
+          target.set_untracked(Some(event_current_target.clone()));
+          wrapped_is_pressed.set_untracked(true);
+          let focusable_event =
+            FocusableEvent::Keyboard(event, Some(FocusableElement::from(event_current_target)));
+          trigger_press_start(focusable_event, PointerType::Keyboard);
+          let callback = move |event: KeyboardEvent| {
+            on_key_up(event);
+          };
+          let closure = Closure::wrap(Box::new(callback) as Box<dyn Fn(KeyboardEvent)>);
+          let function = closure.as_ref().unchecked_ref::<Function>().clone();
+
+          // Focus may move before the key up event, so register the event on the document
+          // instead of the same element where the key down event occurred.
+          listeners
+            .get_untracked()
+            .add_listener(document(), "keyup", function, false);
+        }
+      } else if event.key() == "Enter" && is_html_anchor_link(&event_current_target) {
+        // If the target is a link, we won't have handled this above because we want the
+        // default browser behavior to open the link when pressing Enter. But we
+        // still need to prevent default so that elements above do not also handle
+        // it (e.g. table row).
+        event.stop_propagation();
+      }
+    }
+  };
 }
 
 type OnPressCallback = Rc<Box<dyn Fn(&PressEvent)>>;
@@ -115,6 +280,52 @@ impl PressResult {
     }
   }
 
+  pub fn on_key_down(&self, event: KeyboardEvent) {
+    let current_target: Element = event.current_target().unwrap().unchecked_into();
+    let target: Option<Node> = event.target().map(|target| target.unchecked_into());
+
+    if is_valid_keyboard_event(&event, &current_target) && current_target.contains(target.as_ref())
+    {
+      if should_prevent_default(&current_target) {
+        event.prevent_default();
+      }
+
+      event.stop_propagation();
+
+      // If the event is repeating, it may have started on a different element
+      // after which focus moved to the current element. Ignore these events and
+      // only handle the first key down event.
+      if !self.wrapped_is_pressed.get_untracked() && !event.repeat() {
+        self.target.set_untracked(Some(current_target.clone()));
+        self.wrapped_is_pressed.set_untracked(true);
+        let focusable_event =
+          FocusableEvent::Keyboard(event, Some(FocusableElement::from(current_target)));
+        self.trigger_press_start(focusable_event, PointerType::Keyboard);
+        let callback = |_event: KeyboardEvent| {
+          // self.on_key_up(event);
+        };
+        let closure = Closure::wrap(Box::new(callback) as Box<dyn Fn(KeyboardEvent)>);
+        let function = closure.as_ref().unchecked_ref::<Function>().clone();
+
+        // Focus may move before the key up event, so register the event on the document
+        // instead of the same element where the key down event occurred.
+        self
+          .listeners
+          .add_listener(document(), "keyup", function, false);
+      }
+    } else if event.key() == "Enter" && is_html_anchor_link(&current_target) {
+      // If the target is a link, we won't have handled this above because we want the
+      // default browser behavior to open the link when pressing Enter. But we
+      // still need to prevent default so that elements above do not also handle
+      // it (e.g. table row).
+      event.stop_propagation();
+    }
+  }
+
+  pub fn on_key_up(&self, _event: KeyboardEvent) {
+    // if is_valid_keyboard_event(&event, current_target)
+  }
+
   /// Trigger the beginning of a custom press event.
   fn trigger_press_start(&self, focusable_event: FocusableEvent, pointer: PointerType) {
     if self.is_disabled.get() || self.did_fire_press_start.get_untracked() {
@@ -166,7 +377,7 @@ impl PressResult {
   }
 
   fn cancel(&mut self, focusable_event: FocusableEvent) {
-    if !self.is_pressed.get_untracked() {
+    if !self.wrapped_is_pressed.get_untracked() {
       return;
     }
 
@@ -195,7 +406,57 @@ fn call_event<T>(callback: &Option<Rc<Box<dyn Fn(T)>>>, event: T) {
   }
 }
 
-fn is_valid_keyboard_event(event: &KeyboardEvent, current_target: &Element) -> bool {
+fn are_rectangles_overlapping(dom_rect: &DomRect, rects: &Vec<Rect>) -> bool {
+  let mut is_overlapping = false;
+
+  for rect in rects {
+    // check if they cannot overlap on x axis
+    if dom_rect.left() > rect.right || dom_rect.right() < rect.left {
+      continue;
+    }
+
+    // check if they cannot overlap on y axis
+    if dom_rect.top() > rect.bottom || dom_rect.bottom() < rect.top {
+      continue;
+    }
+
+    is_overlapping = true;
+    break;
+  }
+
+  is_overlapping
+}
+
+fn is_over_target(point: impl GetRects, target: &Element) -> bool {
+  let rect = target.get_bounding_client_rect();
+  let point_rects = point.get_rects();
+  are_rectangles_overlapping(&rect, &point_rects)
+}
+
+fn should_prevent_default(target: impl AsRef<Element>) -> bool {
+  // We cannot prevent default if the target is a draggable element.
+  let element = target.as_ref();
+  !element.is_instance_of::<HtmlElement>() || !element.unchecked_ref::<HtmlElement>().draggable()
+}
+
+fn should_prevent_default_keyboard(target: impl AsRef<Element>, key: String) -> bool {
+  let element = target.as_ref();
+
+  if element.is_instance_of::<HtmlInputElement>() {
+    !is_valid_input_key(element.unchecked_ref(), key)
+  } else if element.is_instance_of::<HtmlButtonElement>() {
+    element.unchecked_ref::<HtmlButtonElement>().type_() == "submit"
+  } else {
+    true
+  }
+}
+
+fn is_valid_keyboard_event(
+  event: impl AsRef<KeyboardEvent>,
+  current_target: impl AsRef<Element>,
+) -> bool {
+  let event = event.as_ref();
+  let current_target = current_target.as_ref();
   let key = event.key();
   let code = event.code();
   let element = current_target.unchecked_ref::<HtmlElement>();
@@ -216,9 +477,10 @@ fn is_valid_keyboard_event(event: &KeyboardEvent, current_target: &Element) -> b
   && !(role.as_ref().map_or(false, |role| role == "link") && key != "Enter")
 }
 
-fn is_html_anchor_link(target: &HtmlElement) -> bool {
-  target.is_instance_of::<HtmlAnchorElement>()
-    || (target.tag_name() == "A" && target.has_attribute("href"))
+fn is_html_anchor_link(target: impl AsRef<Element>) -> bool {
+  let element = target.as_ref();
+  element.is_instance_of::<HtmlAnchorElement>()
+    || (element.tag_name() == "A" && element.has_attribute("href"))
 }
 
 fn is_valid_input_key(target: &HtmlInputElement, key: impl AsRef<str>) -> bool {
@@ -263,6 +525,98 @@ impl From<Element> for FocusableElement {
     }
   }
 }
+
+impl From<&Element> for FocusableElement {
+  fn from(value: &Element) -> Self {
+    if value.is_instance_of::<SvgElement>() {
+      FocusableElement::Svg(value.clone().unchecked_into())
+    } else {
+      FocusableElement::Html(value.clone().unchecked_into())
+    }
+  }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Rect {
+  pub top: f64,
+  pub right: f64,
+  pub bottom: f64,
+  pub left: f64,
+}
+
+pub trait GetRects {
+  fn get_rects(&self) -> Vec<Rect>;
+}
+
+impl GetRects for MouseEvent {
+  fn get_rects(&self) -> Vec<Rect> {
+    vec![Rect {
+      top: self.client_y().into(),
+      right: self.client_x().into(),
+      bottom: self.client_y().into(),
+      left: self.client_x().into(),
+    }]
+  }
+}
+
+impl GetRects for PointerEvent {
+  fn get_rects(&self) -> Vec<Rect> {
+    let offset_x = self.width();
+    let offset_y = self.height();
+
+    let top = (self.client_y() - offset_y).into();
+    let right = (self.client_x() + offset_x).into();
+    let bottom = (self.client_y() + offset_y).into();
+    let left = (self.client_x() - offset_x).into();
+
+    vec![Rect {
+      top,
+      right,
+      bottom,
+      left,
+    }]
+  }
+}
+
+impl GetRects for DragEvent {
+  fn get_rects(&self) -> Vec<Rect> {
+    vec![Rect {
+      top: self.client_y().into(),
+      right: self.client_x().into(),
+      bottom: self.client_y().into(),
+      left: self.client_x().into(),
+    }]
+  }
+}
+
+impl GetRects for TouchEvent {
+  fn get_rects(&self) -> Vec<Rect> {
+    let mut rects = vec![];
+    self.touches(); // TODO disable this on safari
+    let touches = self.touches();
+
+    for index in 0..touches.length() {
+      let touch = touches.item(index).unwrap();
+      let offset_x = touch.radius_x();
+      let offset_y = touch.radius_y();
+      let top = (touch.client_y() - offset_y).into();
+      let right = (touch.client_x() + offset_x).into();
+      let bottom = (touch.client_y() + offset_y).into();
+      let left = (touch.client_x() - offset_x).into();
+
+      rects.push(Rect {
+        top,
+        right,
+        bottom,
+        left,
+      });
+    }
+
+    // self.radius
+    rects
+  }
+}
+
 /// Any event that can be pressed.
 #[derive(Clone)]
 pub enum FocusableEvent {
@@ -492,7 +846,7 @@ pub struct UsePressProps {
 
   /// The ref.
   #[builder(setter(into))]
-  pub _ref: NodeRef<leptos::HtmlElement<leptos::AnyElement>>,
+  pub _ref: NodeRef<AnyElement>,
 }
 
 #[derive(TypedBuilder, Clone, Debug)]

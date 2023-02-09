@@ -1,10 +1,8 @@
 use std::marker::PhantomData;
 
-
 use leptos::js_sys::Number;
 use leptos::js_sys::{self};
 use leptos::wasm_bindgen::JsValue;
-
 
 /// `web_sys::Element` is not hashable meaning it's not possible to us it as a
 /// key in a `HashMap`. This is a silly map implementation with no regard for
@@ -218,6 +216,7 @@ where
 }
 
 /// Wrap a value so it can be used as a JsValue.
+#[derive(Clone, PartialEq, Eq)]
 pub struct Tuple3<T0, T1, T2>(js_sys::Array, PhantomData<(T0, T1, T2)>);
 
 impl<T0, T1, T2> Default for Tuple3<T0, T1, T2>
