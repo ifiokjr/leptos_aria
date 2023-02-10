@@ -23,7 +23,6 @@ use leptos::IntoSignal;
 use leptos::JsCast;
 use leptos::MaybeSignal;
 use leptos::NodeRef;
-use leptos::RwSignal;
 use leptos::Scope;
 use leptos::Signal;
 use leptos::UntrackedGettableSignal;
@@ -91,40 +90,47 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
     let wrapped_on_press_end = wrapped_on_press_end.clone();
     let wrapped_on_press_change = wrapped_on_press_change.clone();
 
-    move |focusable_event: FocusableEvent, pointer: PointerType, was_pressed: bool| {
-      if !did_fire_press_start.get_untracked() {
+    let callback =
+      move |focusable_event: FocusableEvent, pointer: PointerType, was_pressed: bool| {
+        if !did_fire_press_start.get_untracked() {
+          return;
+        }
+
+        ignore_click_after_press.set_untracked(true);
+        did_fire_press_start.set_untracked(false);
+
+        let event = PressEvent::create(&pointer, PressEventType::PressEnd, &focusable_event);
+        call_event(&wrapped_on_press_end.clone(), &event);
+        call_event(&wrapped_on_press_change.clone(), false);
+
+        wrapped_is_pressed.set(false);
+
+        if !was_pressed || is_disabled.get() {
+          return;
+        }
+
+        let event = PressEvent::create(&pointer, PressEventType::Press, &focusable_event);
+        call_event(&wrapped_on_press, &event);
+      };
+
+    Rc::new(Box::new(callback))
+  };
+
+  let trigger_press_up = {
+    let callback = move |focusable_event: FocusableEvent, pointer: PointerType| {
+      if is_disabled.get() {
         return;
       }
 
-      ignore_click_after_press.set_untracked(true);
-      did_fire_press_start.set_untracked(false);
+      let event = PressEvent::create(&pointer, PressEventType::PressUp, &focusable_event);
+      call_event(&wrapped_on_press_up, &event);
+    };
 
-      let event = PressEvent::create(&pointer, PressEventType::PressEnd, &focusable_event);
-      call_event(&wrapped_on_press_end.clone(), &event);
-      call_event(&wrapped_on_press_change.clone(), false);
-
-      wrapped_is_pressed.set(false);
-
-      if !was_pressed || is_disabled.get() {
-        return;
-      }
-
-      let event = PressEvent::create(&pointer, PressEventType::Press, &focusable_event);
-      call_event(&wrapped_on_press, &event);
-    }
+    Rc::new(Box::new(callback))
   };
 
-  let _trigger_press_up = |focusable_event: FocusableEvent, pointer: PointerType| {
-    if is_disabled.get() {
-      return;
-    }
-
-    let event = PressEvent::create(&pointer, PressEventType::PressUp, &focusable_event);
-    call_event(&wrapped_on_press_up, &event);
-  };
-
-  let _cancel = {
-    move |focusable_event: FocusableEvent| {
+  let cancel = {
+    let callback = move |focusable_event: FocusableEvent| {
       if !wrapped_is_pressed.get_untracked() {
         return;
       }
@@ -141,15 +147,42 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
       listeners.get_untracked().remove_all_listeners();
 
       if !allow_text_selection_on_press.get() {}
-    }
+    };
+
+    Rc::new(Box::new(callback))
   };
 
-  let on_key_up = |_event: KeyboardEvent| {
-    // if is_valid_keyboard_event(&event, current_target)
+  let on_key_up: PressCallback<KeyboardEvent> = {
+    let trigger_press_up = trigger_press_up.clone();
+    let handler = move |event: KeyboardEvent| {
+      let event_current_target: Element = event.current_target().unwrap().unchecked_into();
+      let event_target: Option<Node> = event.target().map(|target| target.unchecked_into());
+
+      if !is_valid_keyboard_event(&event, &event_current_target)
+        || event.repeat()
+        || !event_current_target.contains(event_target.as_ref())
+      {
+        return;
+      }
+
+      trigger_press_up(
+        FocusableEvent::Keyboard(
+          event,
+          target
+            .get_untracked()
+            .map(|target| target.to_focusable_element()),
+        ),
+        PointerType::Keyboard,
+      );
+    };
+
+    Rc::new(Box::new(handler))
   };
 
-  let _on_key_down = {
-    move |event: KeyboardEvent| {
+  let on_key_down = {
+    let on_key_up = on_key_up.clone();
+
+    let handler = move |event: KeyboardEvent| {
       let event_current_target: Element = event.current_target().unwrap().unchecked_into();
       let event_target: Option<Node> = event.target().map(|target| target.unchecked_into());
 
@@ -190,213 +223,37 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
         // it (e.g. table row).
         event.stop_propagation();
       }
-    }
+    };
+
+    Rc::new(Box::new(handler))
   };
 }
 
 type OnPressCallback = Rc<Box<dyn Fn(&PressEvent)>>;
 type OnPressChangeCallback = Rc<Box<dyn Fn(bool)>>;
+type PressCallback<E> = Rc<Box<dyn Fn(E)>>;
 
 pub struct PressResult {
-  listeners: GlobalListeners,
-  ignore_emulated_mouse_event: RwSignal<bool>,
-  ignore_click_after_press: RwSignal<bool>,
-  did_fire_press_start: RwSignal<bool>,
-  active_pointer_id: RwSignal<Option<u32>>,
-  target: RwSignal<Option<Element>>,
-  is_over_target: RwSignal<bool>,
-  pointer_type: RwSignal<PointerType>,
-  user_select: RwSignal<Option<String>>,
-  wrapped_is_pressed: RwSignal<bool>,
   pub is_pressed: Signal<bool>,
   pub is_disabled: Signal<bool>,
   pub prevent_focus_on_press: Signal<bool>,
   pub should_cancel_on_pointer_exit: Signal<bool>,
   pub allow_text_selection_on_press: Signal<bool>,
-  wrapped_on_press: Option<OnPressCallback>,
-  wrapped_on_press_start: Option<OnPressCallback>,
-  wrapped_on_press_end: Option<OnPressCallback>,
-  wrapped_on_press_change: Option<OnPressChangeCallback>,
-  wrapped_on_press_up: Option<OnPressCallback>,
-}
-
-impl PressResult {
-  fn new(cx: Scope, props: UsePressProps) -> Self {
-    let listeners = Default::default();
-    let ignore_emulated_mouse_event = create_rw_signal(cx, false);
-    let ignore_click_after_press = create_rw_signal(cx, false);
-    let did_fire_press_start = create_rw_signal(cx, false);
-    let active_pointer_id = create_rw_signal(cx, None);
-    let target = create_rw_signal(cx, None);
-    let is_over_target = create_rw_signal(cx, false);
-    let pointer_type = create_rw_signal(cx, PointerType::Unsupported);
-    let user_select = create_rw_signal(cx, None);
-
-    let original_is_disabled = props.is_disabled.unwrap_or(false.into());
-    let is_disabled = (move || original_is_disabled.get()).derive_signal(cx);
-    let original_prevent_focus_on_press = props.prevent_focus_on_press.unwrap_or(false.into());
-    let prevent_focus_on_press = (move || original_prevent_focus_on_press.get()).derive_signal(cx);
-    let original_should_cancel_on_pointer_exit =
-      props.should_cancel_on_pointer_exit.unwrap_or(false.into());
-    let should_cancel_on_pointer_exit =
-      (move || original_should_cancel_on_pointer_exit.get()).derive_signal(cx);
-    let original_allow_text_selection_on_press =
-      props.allow_text_selection_on_press.unwrap_or(false.into());
-    let allow_text_selection_on_press =
-      (move || original_allow_text_selection_on_press.get()).derive_signal(cx);
-
-    let wrapped_on_press = props.on_press.map(Rc::new);
-    let wrapped_on_press_start = props.on_press_start.map(Rc::new);
-    let wrapped_on_press_end = props.on_press_end.map(Rc::new);
-    let wrapped_on_press_change = props.on_press_change.map(Rc::new);
-    let wrapped_on_press_up = props.on_press_up.map(Rc::new);
-
-    let wrapped_is_pressed = create_rw_signal(cx, false);
-    let original_is_pressed = props.is_pressed.unwrap_or(false.into());
-    let is_pressed =
-      (move || original_is_pressed.get() || wrapped_is_pressed.get()).derive_signal(cx);
-
-    Self {
-      listeners,
-      ignore_emulated_mouse_event,
-      ignore_click_after_press,
-      did_fire_press_start,
-      active_pointer_id,
-      target,
-      is_over_target,
-      pointer_type,
-      user_select,
-      is_pressed,
-      is_disabled,
-      prevent_focus_on_press,
-      should_cancel_on_pointer_exit,
-      allow_text_selection_on_press,
-      wrapped_is_pressed,
-      wrapped_on_press,
-      wrapped_on_press_start,
-      wrapped_on_press_end,
-      wrapped_on_press_change,
-      wrapped_on_press_up,
-    }
-  }
-
-  pub fn on_key_down(&self, event: KeyboardEvent) {
-    let current_target: Element = event.current_target().unwrap().unchecked_into();
-    let target: Option<Node> = event.target().map(|target| target.unchecked_into());
-
-    if is_valid_keyboard_event(&event, &current_target) && current_target.contains(target.as_ref())
-    {
-      if should_prevent_default(&current_target) {
-        event.prevent_default();
-      }
-
-      event.stop_propagation();
-
-      // If the event is repeating, it may have started on a different element
-      // after which focus moved to the current element. Ignore these events and
-      // only handle the first key down event.
-      if !self.wrapped_is_pressed.get_untracked() && !event.repeat() {
-        self.target.set_untracked(Some(current_target.clone()));
-        self.wrapped_is_pressed.set_untracked(true);
-        let focusable_event =
-          FocusableEvent::Keyboard(event, Some(FocusableElement::from(current_target)));
-        self.trigger_press_start(focusable_event, PointerType::Keyboard);
-        let callback = |_event: KeyboardEvent| {
-          // self.on_key_up(event);
-        };
-        let closure = Closure::wrap(Box::new(callback) as Box<dyn Fn(KeyboardEvent)>);
-        let function = closure.as_ref().unchecked_ref::<Function>().clone();
-
-        // Focus may move before the key up event, so register the event on the document
-        // instead of the same element where the key down event occurred.
-        self
-          .listeners
-          .add_listener(document(), "keyup", function, false);
-      }
-    } else if event.key() == "Enter" && is_html_anchor_link(&current_target) {
-      // If the target is a link, we won't have handled this above because we want the
-      // default browser behavior to open the link when pressing Enter. But we
-      // still need to prevent default so that elements above do not also handle
-      // it (e.g. table row).
-      event.stop_propagation();
-    }
-  }
-
-  pub fn on_key_up(&self, _event: KeyboardEvent) {
-    // if is_valid_keyboard_event(&event, current_target)
-  }
-
-  /// Trigger the beginning of a custom press event.
-  fn trigger_press_start(&self, focusable_event: FocusableEvent, pointer: PointerType) {
-    if self.is_disabled.get() || self.did_fire_press_start.get_untracked() {
-      return;
-    }
-
-    let event = PressEvent::create(&pointer, PressEventType::PressStart, &focusable_event);
-    call_event(&self.wrapped_on_press_start, &event);
-    call_event(&self.wrapped_on_press_change, true);
-
-    self.did_fire_press_start.set_untracked(true);
-    self.wrapped_is_pressed.set(true);
-  }
-
-  fn trigger_press_end(
-    &self,
-    focusable_event: FocusableEvent,
-    pointer: PointerType,
-    was_pressed: bool,
-  ) {
-    if !self.did_fire_press_start.get_untracked() {
-      return;
-    }
-
-    self.ignore_click_after_press.set_untracked(true);
-    self.did_fire_press_start.set_untracked(false);
-
-    let event = PressEvent::create(&pointer, PressEventType::PressEnd, &focusable_event);
-    call_event(&self.wrapped_on_press_end, &event);
-    call_event(&self.wrapped_on_press_change, false);
-
-    self.wrapped_is_pressed.set(false);
-
-    if !was_pressed || self.is_disabled.get() {
-      return;
-    }
-
-    let event = PressEvent::create(&pointer, PressEventType::Press, &focusable_event);
-    call_event(&self.wrapped_on_press, &event);
-  }
-
-  fn trigger_press_up(&self, focusable_event: FocusableEvent, pointer: PointerType) {
-    if self.is_disabled.get() {
-      return;
-    }
-
-    let event = PressEvent::create(&pointer, PressEventType::PressUp, &focusable_event);
-    call_event(&self.wrapped_on_press_up, &event);
-  }
-
-  fn cancel(&mut self, focusable_event: FocusableEvent) {
-    if !self.wrapped_is_pressed.get_untracked() {
-      return;
-    }
-
-    if self.is_over_target.get_untracked() {
-      self.trigger_press_end(focusable_event, self.pointer_type.get_untracked(), false);
-    }
-
-    self.wrapped_is_pressed.set_untracked(false);
-    self.is_over_target.set_untracked(false);
-    self.active_pointer_id.set_untracked(None);
-    self.pointer_type.set_untracked(PointerType::Unsupported);
-
-    self.listeners.remove_all_listeners();
-
-    if !self.allow_text_selection_on_press.get() {}
-    // if !self.
-  }
-
-  // pub fn on_press_start(&self, event: PressEvent) {}
+  pub on_key_up: PressCallback<KeyboardEvent>,
+  pub on_key_down: PressCallback<KeyboardEvent>,
+  pub on_click: PressCallback<MouseEvent>,
+  pub on_drag_start: PressCallback<DragEvent>,
+  pub on_pointer_down: PressCallback<PointerEvent>,
+  pub on_pointer_move: PressCallback<PointerEvent>,
+  pub on_pointer_up: PressCallback<PointerEvent>,
+  pub on_mouse_down: PressCallback<MouseEvent>,
+  pub on_mouse_enter: PressCallback<MouseEvent>,
+  pub on_mouse_leave: PressCallback<MouseEvent>,
+  pub on_mouse_up: PressCallback<MouseEvent>,
+  pub on_touch_start: PressCallback<TouchEvent>,
+  pub on_touch_move: PressCallback<TouchEvent>,
+  pub on_touch_cancel: PressCallback<TouchEvent>,
+  pub on_touch_end: PressCallback<TouchEvent>,
 }
 
 fn call_event<T>(callback: &Option<Rc<Box<dyn Fn(T)>>>, event: T) {
