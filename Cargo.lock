@@ -507,7 +507,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 [[package]]
 name = "leptos"
 version = "0.1.3"
-source = "git+https://github.com/leptos-rs/leptos?rev=4759dfc#4759dfcb60bf38980ea3bc0e03782ac61623295a"
+source = "git+https://github.com/leptos-rs/leptos?rev=b9f05f9#b9f05f94ce31cf95e3a7f7837864d79a709d24ac"
 dependencies = [
  "cfg-if",
  "leptos_config",
@@ -553,13 +553,14 @@ name = "leptos_aria_utils"
 version = "0.0.0"
 dependencies = [
  "leptos",
+ "wasm-bindgen",
  "web-sys",
 ]
 
 [[package]]
 name = "leptos_config"
 version = "0.1.3"
-source = "git+https://github.com/leptos-rs/leptos?rev=4759dfc#4759dfcb60bf38980ea3bc0e03782ac61623295a"
+source = "git+https://github.com/leptos-rs/leptos?rev=b9f05f9#b9f05f94ce31cf95e3a7f7837864d79a709d24ac"
 dependencies = [
  "config",
  "fs",
@@ -572,7 +573,7 @@ dependencies = [
 [[package]]
 name = "leptos_dom"
 version = "0.1.3"
-source = "git+https://github.com/leptos-rs/leptos?rev=4759dfc#4759dfcb60bf38980ea3bc0e03782ac61623295a"
+source = "git+https://github.com/leptos-rs/leptos?rev=b9f05f9#b9f05f94ce31cf95e3a7f7837864d79a709d24ac"
 dependencies = [
  "cfg-if",
  "drain_filter_polyfill",
@@ -598,7 +599,7 @@ dependencies = [
 [[package]]
 name = "leptos_macro"
 version = "0.1.3"
-source = "git+https://github.com/leptos-rs/leptos?rev=4759dfc#4759dfcb60bf38980ea3bc0e03782ac61623295a"
+source = "git+https://github.com/leptos-rs/leptos?rev=b9f05f9#b9f05f94ce31cf95e3a7f7837864d79a709d24ac"
 dependencies = [
  "cfg-if",
  "convert_case",
@@ -618,7 +619,7 @@ dependencies = [
 [[package]]
 name = "leptos_reactive"
 version = "0.1.3"
-source = "git+https://github.com/leptos-rs/leptos?rev=4759dfc#4759dfcb60bf38980ea3bc0e03782ac61623295a"
+source = "git+https://github.com/leptos-rs/leptos?rev=b9f05f9#b9f05f94ce31cf95e3a7f7837864d79a709d24ac"
 dependencies = [
  "base64 0.21.0",
  "cfg-if",
@@ -638,7 +639,7 @@ dependencies = [
 [[package]]
 name = "leptos_server"
 version = "0.1.3"
-source = "git+https://github.com/leptos-rs/leptos?rev=4759dfc#4759dfcb60bf38980ea3bc0e03782ac61623295a"
+source = "git+https://github.com/leptos-rs/leptos?rev=b9f05f9#b9f05f94ce31cf95e3a7f7837864d79a709d24ac"
 dependencies = [
  "ciborium",
  "form_urlencoded",

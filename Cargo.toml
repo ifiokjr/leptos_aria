@@ -5,11 +5,13 @@ resolver = "2"
 
 [workspace.dependencies]
 console_error_panic_hook = "0.1"
-leptos = { git = "https://github.com/leptos-rs/leptos", rev = "4759dfc" }
+leptos = { git = "https://github.com/leptos-rs/leptos", rev = "b9f05f9" }
 once_cell = "1"
 smallvec = "1"
+wasm-bindgen = "0.2"
 wasm-bindgen-test = "0.3"
 web-sys = "0.3"
+typed-builder = "0.12"
 
 # internal
 leptos_aria = { path = "crates/leptos_aria", version = "0.0.0" }

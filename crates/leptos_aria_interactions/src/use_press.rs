@@ -5,7 +5,9 @@ use leptos::create_signal;
 use leptos::document;
 use leptos::js_sys::Function;
 use leptos::typed_builder::TypedBuilder;
+use leptos::wasm_bindgen::prelude::wasm_bindgen;
 use leptos::wasm_bindgen::prelude::Closure;
+use leptos::wasm_bindgen::JsValue;
 use leptos::web_sys::DragEvent;
 use leptos::web_sys::Element;
 use leptos::web_sys::HtmlAnchorElement;
@@ -15,7 +17,6 @@ use leptos::web_sys::HtmlTextAreaElement;
 use leptos::web_sys::KeyboardEvent;
 use leptos::web_sys::MouseEvent;
 use leptos::web_sys::PointerEvent;
-use leptos::web_sys::SvgElement;
 use leptos::web_sys::TouchEvent;
 use leptos::web_sys::WheelEvent;
 use leptos::AnyElement;
@@ -27,29 +28,34 @@ use leptos::Scope;
 use leptos::Signal;
 use leptos::UntrackedGettableSignal;
 use leptos::UntrackedSettableSignal;
+use leptos::*;
+use leptos_aria_utils::focus_without_scrolling;
+use leptos_aria_utils::is_virtual_click;
+use leptos_aria_utils::FocusableElement;
 use leptos_aria_utils::GlobalListeners;
+use leptos_aria_utils::ToFocusableElement;
 use web_sys::DomRect;
 use web_sys::HtmlButtonElement;
 use web_sys::Node;
 
 pub fn use_press(cx: Scope, props: UsePressProps) {
   let (listeners, _) = create_signal(cx, GlobalListeners::default());
-  let _ignore_emulated_mouse_event = create_rw_signal(cx, false);
+  let ignore_emulated_mouse_events = create_rw_signal(cx, false);
   let ignore_click_after_press = create_rw_signal(cx, false);
   let did_fire_press_start = create_rw_signal(cx, false);
   let active_pointer_id = create_rw_signal::<Option<u32>>(cx, None);
   let target = create_rw_signal::<Option<Element>>(cx, None);
   let is_over_target = create_rw_signal(cx, false);
   let pointer_type = create_rw_signal(cx, PointerType::Unsupported);
-  let _user_select = create_rw_signal::<Option<String>>(cx, None);
+  let user_select = create_rw_signal::<Option<String>>(cx, None);
 
   let original_is_disabled = props.is_disabled.unwrap_or(false.into());
   let is_disabled = (move || original_is_disabled.get()).derive_signal(cx);
   let original_prevent_focus_on_press = props.prevent_focus_on_press.unwrap_or(false.into());
-  let _prevent_focus_on_press = (move || original_prevent_focus_on_press.get()).derive_signal(cx);
+  let prevent_focus_on_press = (move || original_prevent_focus_on_press.get()).derive_signal(cx);
   let original_should_cancel_on_pointer_exit =
     props.should_cancel_on_pointer_exit.unwrap_or(false.into());
-  let _should_cancel_on_pointer_exit =
+  let should_cancel_on_pointer_exit =
     (move || original_should_cancel_on_pointer_exit.get()).derive_signal(cx);
   let original_allow_text_selection_on_press =
     props.allow_text_selection_on_press.unwrap_or(false.into());
@@ -62,17 +68,17 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
   let wrapped_on_press_change: Option<OnPressChangeCallback> = props.on_press_change.map(Rc::new);
   let wrapped_on_press_up: Option<OnPressCallback> = props.on_press_up.map(Rc::new);
 
-  let wrapped_is_pressed = create_rw_signal(cx, false);
+  let is_pressed = create_rw_signal(cx, false);
   let original_is_pressed = props.is_pressed.unwrap_or(false.into());
-  let _is_pressed =
-    (move || original_is_pressed.get() || wrapped_is_pressed.get()).derive_signal(cx);
+  let derived_is_pressed =
+    (move || original_is_pressed.get() || is_pressed.get()).derive_signal(cx);
 
   // Trigger the beginning of a custom press event.
   let trigger_press_start = {
     let wrapped_on_press_start = wrapped_on_press_start.clone();
     let wrapped_on_press_change = wrapped_on_press_change.clone();
 
-    move |focusable_event: FocusableEvent, pointer: PointerType| {
+    move |focusable_event: &FocusableEvent, pointer: PointerType| {
       if is_disabled.get() || did_fire_press_start.get_untracked() {
         return;
       }
@@ -82,7 +88,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
       call_event(&wrapped_on_press_change, true);
 
       did_fire_press_start.set_untracked(true);
-      wrapped_is_pressed.set(true);
+      is_pressed.set(true);
     }
   };
 
@@ -91,7 +97,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
     let wrapped_on_press_change = wrapped_on_press_change.clone();
 
     let callback =
-      move |focusable_event: FocusableEvent, pointer: PointerType, was_pressed: bool| {
+      move |focusable_event: &FocusableEvent, pointer: PointerType, was_pressed: bool| {
         if !did_fire_press_start.get_untracked() {
           return;
         }
@@ -99,17 +105,17 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
         ignore_click_after_press.set_untracked(true);
         did_fire_press_start.set_untracked(false);
 
-        let event = PressEvent::create(&pointer, PressEventType::PressEnd, &focusable_event);
+        let event = PressEvent::create(&pointer, PressEventType::PressEnd, focusable_event);
         call_event(&wrapped_on_press_end.clone(), &event);
         call_event(&wrapped_on_press_change.clone(), false);
 
-        wrapped_is_pressed.set(false);
+        is_pressed.set(false);
 
         if !was_pressed || is_disabled.get() {
           return;
         }
 
-        let event = PressEvent::create(&pointer, PressEventType::Press, &focusable_event);
+        let event = PressEvent::create(&pointer, PressEventType::Press, focusable_event);
         call_event(&wrapped_on_press, &event);
       };
 
@@ -117,7 +123,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
   };
 
   let trigger_press_up = {
-    let callback = move |focusable_event: FocusableEvent, pointer: PointerType| {
+    let callback = move |focusable_event: &FocusableEvent, pointer: PointerType| {
       if is_disabled.get() {
         return;
       }
@@ -130,8 +136,10 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
   };
 
   let cancel = {
-    let callback = move |focusable_event: FocusableEvent| {
-      if !wrapped_is_pressed.get_untracked() {
+    let trigger_press_end = trigger_press_end.clone();
+
+    let callback = move |focusable_event: &FocusableEvent| {
+      if !is_pressed.get_untracked() {
         return;
       }
 
@@ -139,7 +147,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
         trigger_press_end(focusable_event, pointer_type.get_untracked(), false);
       }
 
-      wrapped_is_pressed.set_untracked(false);
+      is_pressed.set_untracked(false);
       is_over_target.set_untracked(false);
       active_pointer_id.set_untracked(None);
       pointer_type.set_untracked(PointerType::Unsupported);
@@ -165,22 +173,72 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
         return;
       }
 
-      trigger_press_up(
-        FocusableEvent::Keyboard(
-          event,
-          target
-            .get_untracked()
-            .map(|target| target.to_focusable_element()),
-        ),
-        PointerType::Keyboard,
+      let focusable_event = FocusableEvent::Keyboard(
+        event,
+        target
+          .get_untracked()
+          .map(|target| target.to_focusable_element()),
       );
+
+      trigger_press_up(&focusable_event, PointerType::Keyboard);
     };
 
     Rc::new(Box::new(handler))
   };
 
-  let on_key_down = {
-    let on_key_up = on_key_up.clone();
+  let global_on_key_up: PressCallback<KeyboardEvent> = {
+    let trigger_press_end = trigger_press_end.clone();
+
+    let handler = move |event: KeyboardEvent| {
+      let event_current_target: Element = event.current_target().unwrap().unchecked_into();
+      let event_target: Option<Node> = event.target().map(|target| target.unchecked_into());
+
+      if !is_pressed.get_untracked() || !is_valid_keyboard_event(&event, &event_current_target) {
+        return;
+      }
+
+      if should_prevent_default(&event_current_target) {
+        event.prevent_default();
+      }
+
+      event.stop_propagation();
+      is_pressed.set_untracked(false);
+      let focusable_event = FocusableEvent::Keyboard(
+        event,
+        target
+          .get_untracked()
+          .map(|target| target.to_focusable_element()),
+      );
+
+      let contains_target = target
+        .get_untracked()
+        .as_ref()
+        .map(|element| element.contains(event_target.as_ref()))
+        .unwrap_or(false);
+
+      trigger_press_end(&focusable_event, PointerType::Keyboard, contains_target);
+      listeners.get_untracked().remove_all_listeners();
+
+      let Some(ref element) = target.get_untracked() else {
+        return;
+      };
+
+      if !element.is_instance_of::<HtmlElement>()
+        || !element.contains(event_target.as_ref())
+        || !has_link_role(element)
+      {
+        return;
+      }
+
+      element.unchecked_ref::<HtmlElement>().click();
+    };
+
+    Rc::new(Box::new(handler))
+  };
+
+  let on_key_down: PressCallback<KeyboardEvent> = {
+    let on_key_up = global_on_key_up.clone();
+    let trigger_press_start = trigger_press_start.clone();
 
     let handler = move |event: KeyboardEvent| {
       let event_current_target: Element = event.current_target().unwrap().unchecked_into();
@@ -198,14 +256,17 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
         // If the event is repeating, it may have started on a different element
         // after which focus moved to the current element. Ignore these events and
         // only handle the first key down event.
-        if !wrapped_is_pressed.get_untracked() && !event.repeat() {
+        if !is_pressed.get_untracked() && !event.repeat() {
           target.set_untracked(Some(event_current_target.clone()));
-          wrapped_is_pressed.set_untracked(true);
+          is_pressed.set_untracked(true);
           let focusable_event =
-            FocusableEvent::Keyboard(event, Some(FocusableElement::from(event_current_target)));
-          trigger_press_start(focusable_event, PointerType::Keyboard);
-          let callback = move |event: KeyboardEvent| {
-            on_key_up(event);
+            FocusableEvent::Keyboard(event, Some(event_current_target.to_focusable_element()));
+          trigger_press_start(&focusable_event, PointerType::Keyboard);
+          let callback = {
+            let on_key_up = on_key_up.clone();
+            move |event: KeyboardEvent| {
+              on_key_up(event);
+            }
           };
           let closure = Closure::wrap(Box::new(callback) as Box<dyn Fn(KeyboardEvent)>);
           let function = closure.as_ref().unchecked_ref::<Function>().clone();
@@ -227,12 +288,61 @@ pub fn use_press(cx: Scope, props: UsePressProps) {
 
     Rc::new(Box::new(handler))
   };
+
+  let on_click: PressCallback<MouseEvent> = {
+    let trigger_press_start = trigger_press_start.clone();
+    let trigger_press_up = trigger_press_up.clone();
+    let trigger_press_end = trigger_press_end.clone();
+
+    let callback = move |event: MouseEvent| {
+      let event_current_target: Element = event.current_target().unwrap().unchecked_into();
+      let event_target: Option<Node> = event.target().map(|target| target.unchecked_into());
+
+      if !event_current_target.contains(event_target.as_ref()) {
+        return;
+      }
+
+      // Ensure it was the main mouse button that was clicked.
+      if event.button() != 0 {
+        return;
+      }
+
+      event.stop_propagation();
+
+      if is_disabled.get_untracked() {
+        event.prevent_default();
+      }
+
+      // If triggered from a screen reader or by using element.click(),
+      // trigger as if it were a keyboard click.
+      if !ignore_click_after_press.get_untracked()
+        && !ignore_emulated_mouse_events.get_untracked()
+        && (pointer_type.get_untracked() == PointerType::Virtual || is_virtual_click(&event))
+      {
+        if !is_disabled.get_untracked() || !prevent_focus_on_press.get_untracked() {
+          focus_without_scrolling(&event_current_target);
+        }
+
+        let focusable_event =
+          FocusableEvent::Mouse(event, Some(event_current_target.to_focusable_element()));
+        trigger_press_start(&focusable_event, PointerType::Virtual);
+        trigger_press_up(&focusable_event, PointerType::Virtual);
+        trigger_press_end(&focusable_event, PointerType::Virtual, true);
+      }
+
+      ignore_emulated_mouse_events.set_untracked(false);
+      ignore_click_after_press.set_untracked(false);
+    };
+
+    Rc::new(Box::new(callback))
+  };
 }
 
 type OnPressCallback = Rc<Box<dyn Fn(&PressEvent)>>;
 type OnPressChangeCallback = Rc<Box<dyn Fn(bool)>>;
 type PressCallback<E> = Rc<Box<dyn Fn(E)>>;
 
+#[derive(Clone)]
 pub struct PressResult {
   pub is_pressed: Signal<bool>,
   pub is_disabled: Signal<bool>,
@@ -340,6 +450,15 @@ fn is_html_anchor_link(target: impl AsRef<Element>) -> bool {
     || (element.tag_name() == "A" && element.has_attribute("href"))
 }
 
+fn has_link_role(target: impl AsRef<Element>) -> bool {
+  let element = target.as_ref();
+  is_html_anchor_link(element)
+    || element
+      .get_attribute("role")
+      .as_ref()
+      .map_or(false, |role| role == "link")
+}
+
 fn is_valid_input_key(target: &HtmlInputElement, key: impl AsRef<str>) -> bool {
   // Only space should toggle checkboxes and radios, not enter.
   if target.type_() == "checkbox" || target.type_() == "radio" {
@@ -352,46 +471,6 @@ fn is_valid_input_key(target: &HtmlInputElement, key: impl AsRef<str>) -> bool {
 const NON_TEXT_INPUT_TYPES: &[&str; 9] = &[
   "checkbox", "radio", "range", "color", "file", "image", "button", "submit", "reset",
 ];
-
-pub trait ToFocusableElement {
-  /// Converts the type to a FocusableElement enum.
-  fn to_focusable_element(&self) -> FocusableElement;
-}
-
-#[derive(Clone)]
-pub enum FocusableElement {
-  Svg(SvgElement),
-  Html(HtmlElement),
-}
-
-impl<E> ToFocusableElement for E
-where
-  E: AsRef<Element>,
-{
-  fn to_focusable_element(&self) -> FocusableElement {
-    FocusableElement::from(self.as_ref().clone())
-  }
-}
-
-impl From<Element> for FocusableElement {
-  fn from(value: Element) -> Self {
-    if value.is_instance_of::<SvgElement>() {
-      FocusableElement::Svg(value.unchecked_into())
-    } else {
-      FocusableElement::Html(value.unchecked_into())
-    }
-  }
-}
-
-impl From<&Element> for FocusableElement {
-  fn from(value: &Element) -> Self {
-    if value.is_instance_of::<SvgElement>() {
-      FocusableElement::Svg(value.clone().unchecked_into())
-    } else {
-      FocusableElement::Html(value.clone().unchecked_into())
-    }
-  }
-}
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Rect {
@@ -759,7 +838,7 @@ pub enum PressEventType {
   Press,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum PointerType {
   Unsupported,
   Mouse,
