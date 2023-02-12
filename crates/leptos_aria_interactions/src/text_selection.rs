@@ -83,7 +83,7 @@ impl ContextProvider for ElementMapContext {
   }
 }
 
-pub(crate) fn disable_text_selection(cx: Scope, element: Option<impl AsRef<Element>>) {
+pub(crate) fn disable_text_selection(cx: Scope, element: &Option<impl AsRef<Element>>) {
   if is_ios() {
     let selection = SelectionContext::provide(cx);
     let user_select = UserSelectContext::provide(cx);

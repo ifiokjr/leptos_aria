@@ -553,6 +553,7 @@ name = "leptos_aria_utils"
 version = "0.0.0"
 dependencies = [
  "leptos",
+ "slotmap",
  "wasm-bindgen",
  "web-sys",
 ]
