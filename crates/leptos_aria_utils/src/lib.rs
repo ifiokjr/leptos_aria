@@ -21,6 +21,7 @@ mod virtual_event;
 pub fn use_provider(cx: Scope) {
   ElementTransitionsContext::provide(cx);
   TransitionCallbacksContext::provide(cx);
+  SupportsPreventScrollContext::provide(cx);
 
   setup_transition_listener(cx);
 }

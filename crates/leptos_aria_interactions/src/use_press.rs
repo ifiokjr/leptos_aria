@@ -42,6 +42,7 @@ use crate::text_selection::disable_text_selection;
 use crate::text_selection::restore_text_selection;
 
 pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
+  // internal state
   let listeners = Arc::new(RwLock::new(GlobalListeners::default()));
   let ignore_emulated_mouse_events = create_rw_signal(cx, false);
   let ignore_click_after_press = create_rw_signal(cx, false);
@@ -50,7 +51,6 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
   let target = create_rw_signal::<Option<Element>>(cx, None);
   let is_over_target = create_rw_signal(cx, false);
   let pointer_type = create_rw_signal(cx, PointerType::Unsupported);
-  let user_select = create_rw_signal::<Option<String>>(cx, None);
 
   let original_is_disabled = props.is_disabled.unwrap_or(false.into());
   let is_disabled = (move || original_is_disabled.get()).derive_signal(cx);
@@ -65,11 +65,12 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
   let allow_text_selection_on_press =
     (move || original_allow_text_selection_on_press.get()).derive_signal(cx);
 
-  let wrapped_on_press: Option<OnPressCallback> = props.on_press.map(Rc::new);
-  let wrapped_on_press_start: Option<OnPressCallback> = props.on_press_start.map(Rc::new);
-  let wrapped_on_press_end: Option<OnPressCallback> = props.on_press_end.map(Rc::new);
-  let wrapped_on_press_change: Option<OnPressChangeCallback> = props.on_press_change.map(Rc::new);
-  let wrapped_on_press_up: Option<OnPressCallback> = props.on_press_up.map(Rc::new);
+  let wrapped_on_press: Option<WrappedPressCallback> = props.on_press.map(Rc::new);
+  let wrapped_on_press_start: Option<WrappedPressCallback> = props.on_press_start.map(Rc::new);
+  let wrapped_on_press_end: Option<WrappedPressCallback> = props.on_press_end.map(Rc::new);
+  let wrapped_on_press_change: Option<WrappedPressChangeCallback> =
+    props.on_press_change.map(Rc::new);
+  let wrapped_on_press_up: Option<WrappedPressCallback> = props.on_press_up.map(Rc::new);
 
   let is_pressed = create_rw_signal(cx, false);
   let original_is_pressed = props.is_pressed.unwrap_or(false.into());
@@ -257,7 +258,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
       if is_valid_keyboard_event(&event, &event_current_target)
         && event_current_target.contains(event_target.as_ref())
       {
-        if should_prevent_default(&event_current_target) {
+        if should_prevent_default_keyboard(&event_current_target, event.key()) {
           event.prevent_default();
         }
 
@@ -267,18 +268,23 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
         // after which focus moved to the current element. Ignore these events and
         // only handle the first key down event.
         if !is_pressed.get_untracked() && !event.repeat() {
-          target.set_untracked(Some(event_current_target.clone()));
+          target.set_untracked(Some(event_current_target));
           is_pressed.set_untracked(true);
           let focusable_event = FocusableEvent::Keyboard(event, None);
           trigger_press_start(&focusable_event, PointerType::Keyboard);
-          let callback = {
+
+          let function = {
             let global_on_key_up = global_on_key_up.clone();
-            move |event: KeyboardEvent| {
+
+            let callback = move |event: KeyboardEvent| {
               global_on_key_up(event);
-            }
+            };
+
+            Closure::wrap(Box::new(callback) as Box<dyn Fn(KeyboardEvent)>)
+              .as_ref()
+              .unchecked_ref::<Function>()
+              .clone()
           };
-          let closure = Closure::wrap(Box::new(callback) as Box<dyn Fn(KeyboardEvent)>);
-          let function = closure.as_ref().unchecked_ref::<Function>().clone();
 
           // Focus may move before the key up event, so register the event on the document
           // instead of the same element where the key down event occurred.
@@ -330,7 +336,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
         && (pointer_type.get_untracked() == PointerType::Virtual || is_virtual_click(&event))
       {
         if !is_disabled.get_untracked() || !prevent_focus_on_press.get_untracked() {
-          focus_without_scrolling(&event_current_target);
+          focus_without_scrolling(cx, &event_current_target);
         }
 
         let focusable_event = FocusableEvent::Mouse(event, None);
@@ -560,7 +566,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
       target.set_untracked(Some(event_current_target.clone()));
 
       if !is_disabled.get_untracked() || !prevent_focus_on_press.get_untracked() {
-        focus_without_scrolling(&event_current_target);
+        focus_without_scrolling(cx, &event_current_target);
       }
 
       if allow_text_selection_on_press.get_untracked() {
@@ -630,8 +636,9 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
   }
 }
 
-type OnPressCallback = Rc<Box<dyn Fn(&PressEvent)>>;
-type OnPressChangeCallback = Rc<Box<dyn Fn(bool)>>;
+type BoxedPressCallback = Box<dyn Fn(&PressEvent)>;
+type WrappedPressCallback = Rc<BoxedPressCallback>;
+type WrappedPressChangeCallback = Rc<Box<dyn Fn(bool)>>;
 type PressCallback<E> = Rc<Box<dyn Fn(E)>>;
 
 #[derive(Clone, TypedBuilder)]
@@ -967,16 +974,16 @@ impl FocusableEvent {
 pub struct PressProps {
   /// Handler that is called when the press is released over the target.
   #[builder(default, setter(into, strip_option))]
-  pub on_press: Option<Box<dyn Fn(&PressEvent)>>,
+  pub on_press: Option<BoxedPressCallback>,
 
   /// Handler that is called when a press interaction starts.
   #[builder(default, setter(into, strip_option))]
-  pub on_press_start: Option<Box<dyn Fn(&PressEvent)>>,
+  pub on_press_start: Option<BoxedPressCallback>,
 
   /// Handler that is called when a press interaction ends, either over the
   /// target or when the pointer leaves the target.
   #[builder(default, setter(into, strip_option))]
-  pub on_press_end: Option<Box<dyn Fn(&PressEvent)>>,
+  pub on_press_end: Option<BoxedPressCallback>,
 
   /// Handler that is called when the press state changes.
   #[builder(default, setter(into, strip_option))]
@@ -985,7 +992,7 @@ pub struct PressProps {
   /// Handler that is called when a press is released over the target,
   /// regardless of whether it started on the target or not.
   #[builder(default, setter(into, strip_option))]
-  pub on_press_up: Option<Box<dyn Fn(&PressEvent)>>,
+  pub on_press_up: Option<BoxedPressCallback>,
 
   /// Whether the target is in a controlled press state (e.g. an overlay it
   /// triggers is open).
@@ -1018,16 +1025,16 @@ pub struct PressProps {
 pub struct UsePressProps {
   /// Handler that is called when the press is released over the target.
   #[builder(default, setter(into, strip_option))]
-  pub on_press: Option<Box<dyn Fn(&PressEvent)>>,
+  pub on_press: Option<BoxedPressCallback>,
 
   /// Handler that is called when a press interaction starts.
   #[builder(default, setter(into, strip_option))]
-  pub on_press_start: Option<Box<dyn Fn(&PressEvent)>>,
+  pub on_press_start: Option<BoxedPressCallback>,
 
   /// Handler that is called when a press interaction ends, either over the
   /// target or when the pointer leaves the target.
   #[builder(default, setter(into, strip_option))]
-  pub on_press_end: Option<Box<dyn Fn(&PressEvent)>>,
+  pub on_press_end: Option<BoxedPressCallback>,
 
   /// Handler that is called when the press state changes.
   #[builder(default, setter(into, strip_option))]
@@ -1036,7 +1043,7 @@ pub struct UsePressProps {
   /// Handler that is called when a press is released over the target,
   /// regardless of whether it started on the target or not.
   #[builder(default, setter(into, strip_option))]
-  pub on_press_up: Option<Box<dyn Fn(&PressEvent)>>,
+  pub on_press_up: Option<BoxedPressCallback>,
 
   /// Whether the target is in a controlled press state (e.g. an overlay it
   /// triggers is open).
@@ -1097,6 +1104,12 @@ pub struct PressEvent {
 
   /// Whether the alt keyboard modifier was held during the press event.
   pub alt_key: bool,
+}
+
+impl AsRef<PressEvent> for PressEvent {
+  fn as_ref(&self) -> &PressEvent {
+    self
+  }
 }
 
 impl PressEvent {

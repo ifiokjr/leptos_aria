@@ -1,14 +1,7 @@
-use leptos::js_sys::Boolean;
 use leptos::js_sys::Function;
-use leptos::js_sys::JsString;
 use leptos::web_sys::EventTarget;
 use slotmap::DefaultKey;
-// use slotmap::Key;
-// use slotmap::SecondaryMap;
 use slotmap::SlotMap;
-
-use crate::Map;
-use crate::Tuple3;
 
 // type GlobalListenersMap = Map<Function, Tuple3<EventTarget, JsString,
 // Boolean>>;
