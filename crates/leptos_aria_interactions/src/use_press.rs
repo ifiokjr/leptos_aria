@@ -39,6 +39,7 @@ use web_sys::HtmlButtonElement;
 use web_sys::Node;
 
 use crate::text_selection::disable_text_selection;
+use crate::text_selection::restore_text_selection;
 
 pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
   let listeners = Arc::new(RwLock::new(GlobalListeners::default()));
@@ -157,7 +158,11 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
 
       listeners.write().unwrap().remove_all_listeners();
 
-      if !allow_text_selection_on_press.get() {}
+      if !allow_text_selection_on_press.get() {
+        if let Some(ref element) = target.get_untracked() {
+          restore_text_selection(cx, element);
+        }
+      }
     };
 
     Rc::new(Box::new(callback))
@@ -264,8 +269,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
         if !is_pressed.get_untracked() && !event.repeat() {
           target.set_untracked(Some(event_current_target.clone()));
           is_pressed.set_untracked(true);
-          let focusable_event =
-            FocusableEvent::Keyboard(event, Some(event_current_target.to_focusable_element()));
+          let focusable_event = FocusableEvent::Keyboard(event, None);
           trigger_press_start(&focusable_event, PointerType::Keyboard);
           let callback = {
             let global_on_key_up = global_on_key_up.clone();
@@ -329,8 +333,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
           focus_without_scrolling(&event_current_target);
         }
 
-        let focusable_event =
-          FocusableEvent::Mouse(event, Some(event_current_target.to_focusable_element()));
+        let focusable_event = FocusableEvent::Mouse(event, None);
         trigger_press_start(&focusable_event, PointerType::Virtual);
         trigger_press_up(&focusable_event, PointerType::Virtual);
         trigger_press_end(&focusable_event, PointerType::Virtual, true);
@@ -344,7 +347,21 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
   };
 
   let on_drag_start: PressCallback<DragEvent> = {
-    let handler = move |_| {};
+    let cancel = cancel.clone();
+
+    let handler = move |event: DragEvent| {
+      let event_current_target: Element = event.current_target().unwrap().unchecked_into();
+      let event_target: Option<Node> = event.target().map(|target| target.unchecked_into());
+
+      if !event_current_target.contains(event_target.as_ref()) {
+        return;
+      }
+
+      // Safari does not call onPointerCancel when a drag starts, whereas Chrome
+      // and Firefox do.
+      let focusable_event = FocusableEvent::Drag(event, None);
+      cancel(&focusable_event);
+    };
 
     Rc::new(Box::new(handler))
   };
@@ -375,29 +392,6 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
     Rc::new(Box::new(handler))
   };
 
-  let on_mouse_enter: PressCallback<MouseEvent> = {
-    let handler = move |_| {};
-
-    Rc::new(Box::new(handler))
-  };
-
-  let on_mouse_leave: PressCallback<MouseEvent> = {
-    let handler = move |_| {};
-
-    Rc::new(Box::new(handler))
-  };
-
-  let on_mouse_move: PressCallback<MouseEvent> = {
-    let handler = move |_| {};
-    Rc::new(Box::new(handler))
-  };
-
-  let on_mouse_up: PressCallback<MouseEvent> = {
-    let handler = move |_| {};
-
-    Rc::new(Box::new(handler))
-  };
-
   let on_pointer_cancel: PressCallback<PointerEvent> = {
     let cancel = cancel.clone();
 
@@ -424,6 +418,8 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
   // testing. See https://bugs.webkit.org/show_bug.cgi?id=199803
   let on_pointer_move: PressCallback<PointerEvent> = {
     let trigger_press_start = trigger_press_start.clone();
+    let trigger_press_end = trigger_press_end.clone();
+    let cancel = cancel.clone();
 
     let handler = move |event: PointerEvent| {
       if Some(event.pointer_id()) != active_pointer_id.get_untracked() {
@@ -434,12 +430,8 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
         return;
       };
 
-      let focusable_event = FocusableEvent::Pointer(
-        event.clone(),
-        target
-          .get_untracked()
-          .map(|element| element.to_focusable_element()),
-      );
+      let focusable_event =
+        FocusableEvent::Pointer(event.clone(), Some(element.to_focusable_element()));
 
       if is_above_target(&event, element) && !is_over_target.get_untracked() {
         is_over_target.set_untracked(true);
@@ -484,10 +476,48 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
     Rc::new(Box::new(handler))
   };
 
+  let global_on_pointer_up: PressCallback<PointerEvent> = {
+    let trigger_press_end = trigger_press_end.clone();
+    let listeners = listeners.clone();
+
+    let handler = move |event: PointerEvent| {
+      if Some(event.pointer_id()) != active_pointer_id.get_untracked()
+        || !is_pressed.get_untracked()
+        || event.button() != 0
+      {
+        return;
+      }
+
+      let Some(ref element) = target.get_untracked() else {
+        return;
+      };
+
+      let focusable_event =
+        FocusableEvent::Pointer(event.clone(), Some(element.to_focusable_element()));
+
+      if is_above_target(&event, element) {
+        trigger_press_end(&focusable_event, pointer_type.get_untracked(), true);
+      } else if is_over_target.get_untracked() {
+        trigger_press_end(&focusable_event, pointer_type.get_untracked(), false);
+      }
+
+      is_pressed.set_untracked(false);
+      is_over_target.set_untracked(false);
+      active_pointer_id.set_untracked(None);
+      pointer_type.set_untracked(PointerType::Unsupported);
+      listeners.write().unwrap().remove_all_listeners();
+
+      if !allow_text_selection_on_press.get_untracked() {
+        restore_text_selection(cx, element);
+      }
+    };
+
+    Rc::new(Box::new(handler))
+  };
+
   let on_pointer_down: PressCallback<PointerEvent> = {
     let trigger_press_start = trigger_press_start.clone();
     let on_pointer_move = on_pointer_move.clone();
-    let on_pointer_up = on_pointer_up.clone();
     let on_pointer_cancel = on_pointer_cancel.clone();
     // let listeners = listeners.clone();
 
@@ -537,8 +567,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
         disable_text_selection(cx, &target.get_untracked());
       }
 
-      let focusable_event =
-        FocusableEvent::Pointer(event, Some(event_current_target.to_focusable_element()));
+      let focusable_event = FocusableEvent::Pointer(event, None);
       trigger_press_start(&focusable_event, pointer_type.get_untracked());
 
       let pointer_move_function = {
@@ -553,7 +582,7 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
       };
 
       let pointer_up_function = {
-        let on_pointer_up = on_pointer_up.clone();
+        let on_pointer_up = global_on_pointer_up.clone();
         let callback = move |event: PointerEvent| {
           on_pointer_up(event);
         };
@@ -583,23 +612,6 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
     Rc::new(Box::new(handler))
   };
 
-  let on_touch_cancel: PressCallback<TouchEvent> = {
-    let handler = move |_| {};
-    Rc::new(Box::new(handler))
-  };
-  let on_touch_end: PressCallback<TouchEvent> = {
-    let handler = move |_| {};
-    Rc::new(Box::new(handler))
-  };
-  let on_touch_move: PressCallback<TouchEvent> = {
-    let handler = move |_| {};
-    Rc::new(Box::new(handler))
-  };
-  let on_touch_start: PressCallback<TouchEvent> = {
-    let handler = move |_| {};
-    Rc::new(Box::new(handler))
-  };
-
   PressResult {
     is_pressed: derived_is_pressed,
     is_disabled,
@@ -607,24 +619,14 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
     should_cancel_on_pointer_exit,
     allow_text_selection_on_press,
     on_click,
+    on_drag_start,
     on_key_down,
     on_key_up,
-    on_drag_start,
     on_mouse_down,
-    on_mouse_enter,
-    on_mouse_leave,
-    on_mouse_move,
-    on_mouse_up,
-    on_pointer_cancel,
     on_pointer_down,
     on_pointer_enter,
     on_pointer_leave,
-    on_pointer_move,
     on_pointer_up,
-    on_touch_cancel,
-    on_touch_end,
-    on_touch_move,
-    on_touch_start,
   }
 }
 
@@ -644,20 +646,10 @@ pub struct PressResult {
   pub on_key_down: PressCallback<KeyboardEvent>,
   pub on_key_up: PressCallback<KeyboardEvent>,
   pub on_mouse_down: PressCallback<MouseEvent>,
-  pub on_mouse_enter: PressCallback<MouseEvent>,
-  pub on_mouse_leave: PressCallback<MouseEvent>,
-  pub on_mouse_move: PressCallback<MouseEvent>,
-  pub on_mouse_up: PressCallback<MouseEvent>,
-  pub on_pointer_cancel: PressCallback<PointerEvent>,
   pub on_pointer_down: PressCallback<PointerEvent>,
   pub on_pointer_enter: PressCallback<PointerEvent>,
   pub on_pointer_leave: PressCallback<PointerEvent>,
-  pub on_pointer_move: PressCallback<PointerEvent>,
   pub on_pointer_up: PressCallback<PointerEvent>,
-  pub on_touch_cancel: PressCallback<TouchEvent>,
-  pub on_touch_end: PressCallback<TouchEvent>,
-  pub on_touch_move: PressCallback<TouchEvent>,
-  pub on_touch_start: PressCallback<TouchEvent>,
 }
 
 fn call_event<E>(callback: &Option<PressCallback<E>>, event: E) {
