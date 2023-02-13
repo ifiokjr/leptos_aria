@@ -8,9 +8,19 @@
 // NOTICE file in the root directory of this source tree.
 // See https://github.com/calvellido/focus-options-polyfill
 
+use leptos::create_rw_signal;
+use leptos::document;
+use leptos::wasm_bindgen::prelude::wasm_bindgen;
+use leptos::wasm_bindgen::JsValue;
+use leptos::web_sys::Element;
+use leptos::web_sys::Node;
 use leptos::JsCast;
-use web_sys::Element;
+use leptos::RwSignal;
+use leptos::Scope;
+use leptos::UntrackedGettableSignal;
+use leptos::UntrackedSettableSignal;
 
+use crate::ContextProvider;
 use crate::FocusOptions;
 use crate::HtmlElement;
 use crate::SvgElement;
@@ -56,6 +66,13 @@ impl From<&Element> for FocusableElement {
 }
 
 impl FocusableElement {
+  pub fn parent_node(&self) -> Option<Node> {
+    match self {
+      FocusableElement::Svg(element) => element.parent_node(),
+      FocusableElement::Html(element) => element.parent_node(),
+    }
+  }
+
   pub fn focus(&self) {
     match self {
       FocusableElement::Svg(element) => element.focus().unwrap(),
@@ -81,10 +98,124 @@ impl FocusableElement {
 /// See https://github.com/calvellido/focus-options-polyfill
 ///
 /// TODO: check if supported like in `react-aria`
-pub fn focus_without_scrolling(element: impl AsRef<Element>) {
+pub fn focus_without_scrolling(cx: Scope, element: impl AsRef<Element>) {
   let element = element.to_focusable_element();
-  let mut options = FocusOptions::new();
 
-  options.prevent_scroll(true);
-  element.focus_with_options(&options);
+  if supports_prevent_scroll(cx) {
+    let mut options = FocusOptions::new();
+    options.prevent_scroll(true);
+    element.focus_with_options(&options);
+  } else {
+    let scrollable_elements = get_scrollable_elements(&element);
+    element.focus();
+    restore_scroll_position(scrollable_elements);
+  }
+}
+
+#[derive(Copy, Clone)]
+pub(crate) struct SupportsPreventScrollContext(RwSignal<Option<bool>>);
+
+impl ContextProvider for SupportsPreventScrollContext {
+  type Value = Option<bool>;
+
+  fn from_leptos_scope(cx: Scope) -> Self {
+    Self(create_rw_signal(cx, Self::Value::default()))
+  }
+
+  fn get(&self) -> Self::Value {
+    self.0.get_untracked()
+  }
+
+  fn set(&self, value: Self::Value) {
+    self.0.set_untracked(value);
+  }
+}
+
+#[wasm_bindgen(
+  inline_js = "export function leptos_aria_supports_prevent_scroll() { let \
+               supports=false;document.createElement('div').focus({ get preventScroll(){supports \
+               = true; return true;}}); return supports;}"
+)]
+extern "C" {
+  /// Check to see support for `preventScroll` option in `focus()`.
+  /// Taken from https://stackoverflow.com/a/59518678
+  #[wasm_bindgen(catch)]
+  fn leptos_aria_supports_prevent_scroll() -> Result<bool, JsValue>;
+}
+
+fn supports_prevent_scroll(cx: Scope) -> bool {
+  let supports_prevent_scroll_context = SupportsPreventScrollContext::provide(cx);
+  let supports_prevent_scroll = supports_prevent_scroll_context.get();
+
+  match supports_prevent_scroll {
+    Some(supports_prevent_scroll) => supports_prevent_scroll,
+    None => {
+      match leptos_aria_supports_prevent_scroll() {
+        Ok(value) => {
+          supports_prevent_scroll_context.set(Some(value));
+          value
+        }
+        Err(_) => {
+          supports_prevent_scroll_context.set(Some(false));
+          false
+        }
+      }
+    }
+  }
+}
+
+fn get_scrollable_elements(element: &FocusableElement) -> Vec<ScrollableElement> {
+  let mut parent = element.parent_node();
+  let mut scrollable_elements: Vec<ScrollableElement> = vec![];
+  let root_scrolling_element = document()
+    .scrolling_element()
+    .unwrap_or(document().document_element().unwrap());
+
+  while parent.as_ref().map_or(false, |node| {
+    node.is_instance_of::<HtmlElement>()
+      && node.unchecked_ref::<Element>() != &root_scrolling_element
+  }) {
+    if let Some(ref node) = parent {
+      let element = node.unchecked_ref::<HtmlElement>();
+      if element.offset_height() < element.scroll_height()
+        || element.offset_width() < element.scroll_width()
+      {
+        scrollable_elements.push(ScrollableElement {
+          element: element.clone(),
+          scroll_top: element.scroll_top(),
+          scroll_left: element.scroll_left(),
+        });
+      }
+    }
+
+    parent = parent.and_then(|node| node.parent_node());
+  }
+
+  if root_scrolling_element.is_instance_of::<HtmlElement>() {
+    let element = root_scrolling_element.unchecked_ref::<HtmlElement>();
+    scrollable_elements.push(ScrollableElement {
+      element: element.clone(),
+      scroll_top: element.scroll_top(),
+      scroll_left: element.scroll_left(),
+    });
+  }
+
+  scrollable_elements
+}
+
+struct ScrollableElement {
+  element: HtmlElement,
+  scroll_top: i32,
+  scroll_left: i32,
+}
+
+fn restore_scroll_position(scrollable_elements: Vec<ScrollableElement>) {
+  for scrollable_element in scrollable_elements {
+    scrollable_element
+      .element
+      .set_scroll_top(scrollable_element.scroll_top);
+    scrollable_element
+      .element
+      .set_scroll_left(scrollable_element.scroll_left);
+  }
 }
