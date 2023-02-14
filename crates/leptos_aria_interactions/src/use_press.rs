@@ -18,11 +18,9 @@ use leptos::web_sys::MouseEvent;
 use leptos::web_sys::PointerEvent;
 use leptos::web_sys::TouchEvent;
 use leptos::web_sys::WheelEvent;
-use leptos::AnyElement;
 use leptos::IntoSignal;
 use leptos::JsCast;
 use leptos::MaybeSignal;
-use leptos::NodeRef;
 use leptos::Scope;
 use leptos::Signal;
 use leptos::UntrackedGettableSignal;
@@ -41,7 +39,34 @@ use web_sys::Node;
 use crate::text_selection::disable_text_selection;
 use crate::text_selection::restore_text_selection;
 
-pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
+/// ## Features
+///
+/// `use_press` handles press interactions across mouse, touch, keyboard, and
+/// screen readers. A press interaction starts when a user presses down with a
+/// mouse or their finger on the target, and ends when they move the pointer off
+/// the target. It may start again if the pointer re-enters the target.
+/// `use_press` returns the current press state, which can be used to adjust
+/// the visual appearance of the target. If the pointer is released over the
+/// target, then an `onPress` event is fired.
+///
+/// * Handles mouse and touch events
+/// * Handles <kbd>Enter</kbd> or <kbd>Space</kbd> key presses
+/// * Handles screen reader virtual clicks
+/// * Uses pointer events where available, with fallbacks to mouse and touch
+///   events
+/// * Normalizes focus behavior on mouse and touch interactions across browsers
+/// * Handles disabling text selection on mobile while the press interaction is
+///   active
+/// * Handles canceling press interactions on scroll
+/// * Normalizes many cross browser inconsistencies
+///
+/// Read the [`react-aria` blog post](https://react-spectrum.adobe.com/blog/building-a-button-part-1.html) about the complexities of press event handling to learn more.
+///
+/// ## Usage
+///
+/// `use_press` returns props that you should add the target component (spread
+/// is not yet supported in `leptos`):
+pub fn use_press(cx: Scope, props: UsePressProps) -> ReadSignal<PressResult> {
   // internal state
   let listeners = Arc::new(RwLock::new(GlobalListeners::default()));
   let ignore_emulated_mouse_events = create_rw_signal(cx, false);
@@ -311,7 +336,11 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
     let trigger_press_end = trigger_press_end.clone();
 
     let callback = move |event: MouseEvent| {
-      let event_current_target: Element = event.current_target().unwrap().unchecked_into();
+      let Some(event_current_target) = event.current_target() else {
+        return;
+      };
+
+      let event_current_target: Element = event_current_target.unchecked_into();
       let event_target: Option<Node> = event.target().map(|target| target.unchecked_into());
 
       if !event_current_target.contains(event_target.as_ref()) {
@@ -618,22 +647,27 @@ pub fn use_press(cx: Scope, props: UsePressProps) -> PressResult {
     Rc::new(Box::new(handler))
   };
 
-  PressResult {
-    is_pressed: derived_is_pressed,
-    is_disabled,
-    prevent_focus_on_press,
-    should_cancel_on_pointer_exit,
-    allow_text_selection_on_press,
-    on_click,
-    on_drag_start,
-    on_key_down,
-    on_key_up,
-    on_mouse_down,
-    on_pointer_down,
-    on_pointer_enter,
-    on_pointer_leave,
-    on_pointer_up,
-  }
+  let (press_result, _) = create_signal(
+    cx,
+    PressResult {
+      is_pressed: derived_is_pressed,
+      is_disabled,
+      prevent_focus_on_press,
+      should_cancel_on_pointer_exit,
+      allow_text_selection_on_press,
+      on_click,
+      on_drag_start,
+      on_key_down,
+      on_key_up,
+      on_mouse_down,
+      on_pointer_down,
+      on_pointer_enter,
+      on_pointer_leave,
+      on_pointer_up,
+    },
+  );
+
+  press_result
 }
 
 type BoxedPressCallback = Box<dyn Fn(&PressEvent)>;
@@ -1024,25 +1058,25 @@ pub struct PressProps {
 #[derive(TypedBuilder)]
 pub struct UsePressProps {
   /// Handler that is called when the press is released over the target.
-  #[builder(default, setter(into, strip_option))]
+  #[builder(default, setter(strip_option))]
   pub on_press: Option<BoxedPressCallback>,
 
   /// Handler that is called when a press interaction starts.
-  #[builder(default, setter(into, strip_option))]
+  #[builder(default, setter(strip_option))]
   pub on_press_start: Option<BoxedPressCallback>,
 
   /// Handler that is called when a press interaction ends, either over the
   /// target or when the pointer leaves the target.
-  #[builder(default, setter(into, strip_option))]
+  #[builder(default, setter(strip_option))]
   pub on_press_end: Option<BoxedPressCallback>,
 
   /// Handler that is called when the press state changes.
-  #[builder(default, setter(into, strip_option))]
+  #[builder(default, setter(strip_option))]
   pub on_press_change: Option<Box<dyn Fn(bool)>>,
 
   /// Handler that is called when a press is released over the target,
   /// regardless of whether it started on the target or not.
-  #[builder(default, setter(into, strip_option))]
+  #[builder(default, setter(strip_option))]
   pub on_press_up: Option<BoxedPressCallback>,
 
   /// Whether the target is in a controlled press state (e.g. an overlay it
@@ -1070,13 +1104,11 @@ pub struct UsePressProps {
   /// Whether text selection should be enabled on the pressable element.
   #[builder(default, setter(strip_option, into))]
   pub allow_text_selection_on_press: Option<MaybeSignal<bool>>,
-
-  /// The children of this provider.
-  // pub children: Box<dyn FnOnce(Scope) -> Fragment>,
-
-  /// The ref.
-  #[builder(setter(into))]
-  pub _ref: NodeRef<AnyElement>,
+  // /// The children of this provider.
+  // /// pub children: Box<dyn FnOnce(Scope) -> Fragment>,
+  // /// The ref.
+  // #[builder(setter(into))]
+  // pub _ref: NodeRef<AnyElement>,
 }
 
 #[derive(TypedBuilder, Clone, Debug)]
@@ -1170,5 +1202,56 @@ impl From<String> for PointerType {
 impl From<PointerEvent> for PointerType {
   fn from(value: PointerEvent) -> Self {
     Self::from(value.pointer_type())
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use leptos::*;
+  use wasm_bindgen_test::*;
+
+  use super::*;
+
+  wasm_bindgen_test_configure!(run_in_browser);
+
+  #[component]
+  fn Example(cx: Scope) -> impl IntoView {
+    let (disabled, _) = create_signal(cx, false);
+    let input = UsePressProps::builder()
+      .on_press_start(Box::new(|_: &PressEvent| {}))
+      .is_disabled(disabled)
+      .build();
+    let props = use_press(cx, input);
+
+    view! {
+      cx,
+      <button
+        on:click=move |event| {  (props.get().on_click)(event)}
+        on:dragstart=move |event| { (props.get().on_drag_start)(event)}
+        on:keydown=move |event| { (props.get().on_key_down)(event)}
+        on:keyup=move |event| { (props.get().on_key_up)(event)}
+        on:mousedown=move |event| { (props.get().on_mouse_down)(event)}
+        on:pointerdown=move |event| { (props.get().on_pointer_down)(event)}
+        on:pointerenter=move |event| { (props.get().on_pointer_enter)(event)}
+        on:pointerleave=move |event| { (props.get().on_pointer_leave)(event)}
+        on:pointerup=move |event| { (props.get().on_pointer_up)(event)}
+      >
+        "Example"
+      </button>
+    }
+  }
+
+  #[wasm_bindgen_test]
+  fn basic() {
+    console_error_panic_hook::set_once();
+
+    mount_to_body(|cx| view! { cx,  <Example/> });
+    let button = document()
+      .query_selector("button")
+      .unwrap()
+      .unwrap()
+      .unchecked_into::<web_sys::HtmlButtonElement>();
+    assert_eq!(button.inner_html(), "Example");
+    button.click();
   }
 }

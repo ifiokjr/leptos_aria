@@ -131,11 +131,17 @@ impl ContextProvider for SupportsPreventScrollContext {
   }
 }
 
-#[wasm_bindgen(
-  inline_js = "export function leptos_aria_supports_prevent_scroll() { let \
-               supports=false;document.createElement('div').focus({ get preventScroll(){supports \
-               = true; return true;}}); return supports;}"
-)]
+#[wasm_bindgen(inline_js = r#"
+  export function leptos_aria_supports_prevent_scroll() {
+    let supports = false;
+    document.createElement("div").focus({
+      get preventScroll() {
+        supports = true;
+        return true;
+      },
+    });
+    return supports;
+  }"#)]
 extern "C" {
   /// Check to see support for `preventScroll` option in `focus()`.
   /// Taken from https://stackoverflow.com/a/59518678

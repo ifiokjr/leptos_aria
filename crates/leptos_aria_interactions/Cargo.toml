@@ -17,3 +17,9 @@ description = "Accessible components for the leptos framework"
 leptos = { workspace = true, features = ["stable"] }
 leptos_aria_utils = { workspace = true }
 web-sys = { workspace = true, features = ["TouchList", "Touch", "DomRect"] }
+
+[dev-dependencies]
+console_error_panic_hook = { workspace = true }
+console_log = { workspace = true }
+insta = { workspace = true }
+wasm-bindgen-test = { workspace = true }
