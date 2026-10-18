@@ -35,8 +35,10 @@ web-sys = "=0.3.106"
 leptos_aria_breadcrumbs = { path = "crates/leptos_aria_breadcrumbs", version = "0.0.0" }
 leptos_aria_button = { path = "crates/leptos_aria_button", version = "0.0.0" }
 leptos_aria_checkbox = { path = "crates/leptos_aria_checkbox", version = "0.0.0" }
+leptos_aria_color = { path = "crates/leptos_aria_color", version = "0.0.0" }
 leptos_aria_combo_box = { path = "crates/leptos_aria_combo_box", version = "0.0.0" }
 leptos_aria_disclosure = { path = "crates/leptos_aria_disclosure", version = "0.0.0" }
+leptos_aria_drop_zone = { path = "crates/leptos_aria_drop_zone", version = "0.0.0" }
 leptos_aria_file_trigger = { path = "crates/leptos_aria_file_trigger", version = "0.0.0" }
 leptos_aria_form = { path = "crates/leptos_aria_form", version = "0.0.0" }
 leptos_aria_grid = { path = "crates/leptos_aria_grid", version = "0.0.0" }

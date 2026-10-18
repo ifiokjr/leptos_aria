@@ -18,8 +18,10 @@ leptos = { workspace = true, features = ["csr"] }
 leptos_aria_breadcrumbs = { workspace = true }
 leptos_aria_button = { workspace = true }
 leptos_aria_checkbox = { workspace = true }
+leptos_aria_color = { workspace = true }
 leptos_aria_combo_box = { workspace = true }
 leptos_aria_disclosure = { workspace = true }
+leptos_aria_drop_zone = { workspace = true }
 leptos_aria_file_trigger = { workspace = true }
 leptos_aria_form = { workspace = true }
 leptos_aria_grid = { workspace = true }
