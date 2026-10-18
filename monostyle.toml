@@ -1,0 +1,22 @@
+# monostyle's configuration for this repository.
+#
+# The ignore list names what a reader is not meant to read: generated output
+# and vendored upstream sources. Everything authored and readable is measured
+# with the default rules — no per-path threshold overrides.
+
+[rules]
+max-line-width = 100
+tab-width = 4
+
+[rules.ignore]
+patterns = [
+	"CHANGELOG.md",
+	"**/CHANGELOG.md",
+	"**/changelog.md",
+]
+
+# The bar for code that ships. Any single file dropping below this is a signal
+# that something went wrong, so CI fails and names it.
+[[section]]
+path = "crates"
+fail-under = { readability = 85.0, complexity = 85.0 }
