@@ -780,8 +780,10 @@ dependencies = [
  "leptos_aria_breadcrumbs",
  "leptos_aria_button",
  "leptos_aria_checkbox",
+ "leptos_aria_color",
  "leptos_aria_combo_box",
  "leptos_aria_disclosure",
+ "leptos_aria_drop_zone",
  "leptos_aria_file_trigger",
  "leptos_aria_form",
  "leptos_aria_grid",
@@ -852,6 +854,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos_aria_color"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_text_field",
+ "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "leptos_aria_combo_box"
 version = "0.0.0"
 dependencies = [
@@ -869,6 +886,20 @@ dependencies = [
 
 [[package]]
 name = "leptos_aria_disclosure"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_drop_zone"
 version = "0.0.0"
 dependencies = [
  "console_error_panic_hook",
