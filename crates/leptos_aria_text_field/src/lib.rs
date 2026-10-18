@@ -108,7 +108,7 @@ impl TextFieldState {
 }
 
 /// The shared labeling and description wiring of the text fields.
-pub(crate) struct FieldAria {
+pub struct FieldAria {
 	pub label_id: String,
 	pub field_id: String,
 	pub aria_labelledby: Option<String>,
@@ -116,7 +116,7 @@ pub(crate) struct FieldAria {
 
 /// Resolve the label and field wiring for a labeled field.
 #[allow(clippy::option_option)]
-pub(crate) fn field_aria(label: Option<&str>, aria_label: Option<&str>) -> FieldAria {
+pub fn field_aria(label: Option<&str>, aria_label: Option<&str>) -> FieldAria {
 	let labels = use_labels(UseLabelsProps {
 		label: label.map(str::to_string).filter(|label| !label.is_empty()),
 		aria_label: aria_label.map(str::to_string),
