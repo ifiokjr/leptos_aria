@@ -780,6 +780,7 @@ dependencies = [
  "leptos_aria_breadcrumbs",
  "leptos_aria_button",
  "leptos_aria_checkbox",
+ "leptos_aria_combo_box",
  "leptos_aria_disclosure",
  "leptos_aria_file_trigger",
  "leptos_aria_form",
@@ -794,6 +795,7 @@ dependencies = [
  "leptos_aria_progress",
  "leptos_aria_radio",
  "leptos_aria_search_field",
+ "leptos_aria_select_box",
  "leptos_aria_selection",
  "leptos_aria_slider",
  "leptos_aria_table",
@@ -842,6 +844,22 @@ dependencies = [
  "js-sys",
  "leptos",
  "leptos_aria_toggle",
+ "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_combo_box"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_list_box",
+ "leptos_aria_selection",
  "leptos_aria_utils",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -1041,6 +1059,22 @@ dependencies = [
  "js-sys",
  "leptos",
  "leptos_aria_text_field",
+ "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_select_box"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_list_box",
+ "leptos_aria_selection",
  "leptos_aria_utils",
  "wasm-bindgen",
  "wasm-bindgen-futures",
