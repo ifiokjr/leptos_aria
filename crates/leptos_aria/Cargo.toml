@@ -20,6 +20,7 @@ leptos_aria_button = { workspace = true }
 leptos_aria_checkbox = { workspace = true }
 leptos_aria_file_trigger = { workspace = true }
 leptos_aria_form = { workspace = true }
+leptos_aria_grid = { workspace = true }
 leptos_aria_interactions = { workspace = true }
 leptos_aria_link = { workspace = true }
 leptos_aria_list_box = { workspace = true }
@@ -30,11 +31,14 @@ leptos_aria_progress = { workspace = true }
 leptos_aria_radio = { workspace = true }
 leptos_aria_search_field = { workspace = true }
 leptos_aria_selection = { workspace = true }
+leptos_aria_slider = { workspace = true }
+leptos_aria_table = { workspace = true }
 leptos_aria_tabs = { workspace = true }
 leptos_aria_tag = { workspace = true }
 leptos_aria_text_field = { workspace = true }
 leptos_aria_toggle = { workspace = true }
 leptos_aria_toolbar = { workspace = true }
+leptos_aria_tree = { workspace = true }
 leptos_aria_utils = { workspace = true }
 
 [dev-dependencies]
