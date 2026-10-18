@@ -18,6 +18,7 @@ leptos = { workspace = true, features = ["csr"] }
 leptos_aria_breadcrumbs = { workspace = true }
 leptos_aria_button = { workspace = true }
 leptos_aria_checkbox = { workspace = true }
+leptos_aria_combo_box = { workspace = true }
 leptos_aria_disclosure = { workspace = true }
 leptos_aria_file_trigger = { workspace = true }
 leptos_aria_form = { workspace = true }
@@ -32,6 +33,7 @@ leptos_aria_primitives = { workspace = true }
 leptos_aria_progress = { workspace = true }
 leptos_aria_radio = { workspace = true }
 leptos_aria_search_field = { workspace = true }
+leptos_aria_select_box = { workspace = true }
 leptos_aria_selection = { workspace = true }
 leptos_aria_slider = { workspace = true }
 leptos_aria_table = { workspace = true }
