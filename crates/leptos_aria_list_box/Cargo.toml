@@ -1,0 +1,32 @@
+[package]
+name = "leptos_aria_list_box"
+version.workspace = true
+authors.workspace = true
+categories.workspace = true
+documentation = "https://docs.rs/leptos_aria_list_box"
+edition.workspace = true
+include = ["src/**/*.rs", "Cargo.toml", "readme.md"]
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Components for the leptos_aria component library"
+
+[dependencies]
+leptos = { workspace = true, features = ["csr"] }
+leptos_aria_selection = { workspace = true }
+leptos_aria_utils = { workspace = true }
+wasm-bindgen = { workspace = true }
+web-sys = { workspace = true, features = ["Document", "Element", "NodeList"] }
+
+[dev-dependencies]
+console_error_panic_hook = { workspace = true }
+js-sys = { workspace = true }
+wasm-bindgen = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
+wasm-bindgen-test = { workspace = true }
+web-sys = { workspace = true, features = ["Document", "Element", "NodeList", "HtmlInputElement"] }
+
+[lints]
+workspace = true
