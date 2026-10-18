@@ -2,23 +2,25 @@
 
 A direct port of the [`react-aria`](https://react-spectrum.adobe.com/react-aria/) ecosystem to [`leptos`](https://leptos.dev), one interaction and one component at a time. Each entry links to the upstream source it mirrors; the crate column names where the port lives.
 
-Status legend: **done** (ported and tested), **next** (queued), **planned** (not started).
+Status legend: **done** (ported and tested), **planned** (not started).
 
 ## Interactions
 
-| Hook                           | Status  | Crate                                        |
-| ------------------------------ | ------- | -------------------------------------------- |
-| `usePress`                     | done    | `leptos_aria_interactions::use_press`        |
-| `useFocus`                     | done    | `leptos_aria_interactions::use_focus`        |
-| `useFocusWithin`               | done    | `leptos_aria_interactions::use_focus_within` |
-| `useHover`                     | done    | `leptos_aria_interactions::use_hover`        |
-| `useFocusable`                 | next    | `leptos_aria_interactions`                   |
-| `useKeyboard` / `useClickable` | next    | `leptos_aria_interactions`                   |
-| `useLongPress`                 | planned | `leptos_aria_interactions`                   |
-| `useScroll`                    | planned | `leptos_aria_interactions`                   |
-| `useDrag` / `useDrop`          | planned | `leptos_aria_interactions`                   |
-| `useMove`                      | planned | `leptos_aria_interactions`                   |
-| `useDismiss`                   | planned | `leptos_aria_interactions`                   |
+| Hook                  | Status  | Crate                                        |
+| --------------------- | ------- | -------------------------------------------- |
+| `usePress`            | done    | `leptos_aria_interactions::use_press`        |
+| `useFocus`            | done    | `leptos_aria_interactions::use_focus`        |
+| `useFocusWithin`      | done    | `leptos_aria_interactions::use_focus_within` |
+| `useHover`            | done    | `leptos_aria_interactions::use_hover`        |
+| `useFocusable`        | done    | `leptos_aria_interactions::use_focusable`    |
+| `useFocusRing`        | done    | `leptos_aria_interactions::use_focus_ring`   |
+| `useKeyboard`         | done    | `leptos_aria_interactions::use_keyboard`     |
+| `useLongPress`        | done    | `leptos_aria_interactions::use_long_press`   |
+| `useScroll`           | planned | `leptos_aria_interactions`                   |
+| `useDrag` / `useDrop` | planned | `leptos_aria_interactions`                   |
+| `useMove`             | planned | `leptos_aria_interactions`                   |
+| `useDismiss`          | done    | `leptos_aria_overlay::use_overlay_dismiss`   |
+| `useModal`            | done    | `leptos_aria_overlay::use_modal`             |
 
 ## Utilities
 
@@ -29,81 +31,85 @@ Status legend: **done** (ported and tested), **next** (queued), **planned** (not
 | `isVirtualClick` / `isVirtualPointerEvent` | done       | `leptos_aria_utils`                          |
 | `useGlobalListeners`                       | done       | `leptos_aria_utils::GlobalListeners`         |
 | `platform` detection                       | done       | `leptos_aria_utils`                          |
-| `getSyntheticLinkProps` / `openLink`       | planned    | `leptos_aria_utils`                          |
-| `useLabels` / `filterDOMProps`             | planned    | `leptos_aria_utils`                          |
-| `mergeRefs` equivalent                     | planned    | `leptos_aria_utils`                          |
+| interaction modality                       | done       | `leptos_aria_utils::interaction_modality`    |
+| `focusSafely`                              | done       | `leptos_aria_utils::focus_safely`            |
+| `isFocusable` / `isTabbable`               | done       | `leptos_aria_utils`                          |
+| `useId`                                    | done       | `leptos_aria_utils::use_id`                  |
+| `useLabel` / `useLabels`                   | done       | `leptos_aria_utils`                          |
+| `getSyntheticLinkProps` / `openLink`       | done       | `leptos_aria_utils::open_link`               |
+| `usePreventScroll`                         | done       | `leptos_aria_overlay::use_prevent_scroll`    |
+| `useFormReset`                             | done       | `leptos_aria_form::use_form_reset`           |
 | `useDeepMemo` equivalent                   | not needed | idiomatic leptos signals memoize             |
 
 ## Focus
 
-| Feature                            | Status  | Crate                         |
-| ---------------------------------- | ------- | ----------------------------- |
-| `focusSafely`                      | next    | new `leptos_aria_focus` crate |
-| `useFocusManagement` / focus scope | planned | `leptos_aria_focus`           |
-| `useAutofocus`                     | planned | `leptos_aria_focus`           |
-| `useChildNodes` / `useCollection`  | planned | `leptos_aria_utils`           |
+| Feature                               | Status  | Crate                            |
+| ------------------------------------- | ------- | -------------------------------- |
+| focus containment (scope equivalent)  | done    | `leptos_aria_overlay::use_modal` |
+| `useFocusManagement` programmatic API | planned | `leptos_aria_overlay`            |
+| `useAutofocus`                        | planned | `leptos_aria_overlay`            |
 
 ## Selection
 
-| Feature                     | Status  | Crate                             |
-| --------------------------- | ------- | --------------------------------- |
-| `useTypeSelect`             | planned | new `leptos_aria_selection` crate |
-| `SelectionManager`          | planned | `leptos_aria_selection`           |
-| `useMultipleSelectionState` | planned | `leptos_aria_selection`           |
+| Feature                     | Status | Crate                                                              |
+| --------------------------- | ------ | ------------------------------------------------------------------ |
+| `useTypeSelect`             | done   | `leptos_aria_selection` (type-ahead in `CollectionKeys` + ListBox) |
+| `SelectionManager`          | done   | `leptos_aria_selection` (`SelectionState`)                         |
+| `useMultipleSelectionState` | done   | `leptos_aria_selection` (`use_selection_state`)                    |
 
 ## Components
 
-| Component                                                   | Status  | Crate                          |
-| ----------------------------------------------------------- | ------- | ------------------------------ |
-| `Button` (native element)                                   | done    | `leptos_aria_button::Button`   |
-| `Button` (custom element types, `useButton` anchors/inputs) | next    | `leptos_aria_button`           |
-| `ToggleButton` / `useToggle`                                | next    | new `leptos_aria_toggle` crate |
-| `Form` / `useFormReset`                                     | planned | `leptos_aria_form`             |
-| `TextField` / `useTextField`                                | planned | `leptos_aria_text_field`       |
-| `TextArea`                                                  | planned | `leptos_aria_text_field`       |
-| `SearchField`                                               | planned | `leptos_aria_search_field`     |
-| `NumberField`                                               | planned | `leptos_aria_number_field`     |
-| `Checkbox` / `useCheckbox`                                  | planned | `leptos_aria_checkbox`         |
-| `CheckboxGroup`                                             | planned | `leptos_aria_checkbox`         |
-| `RadioGroup` / `useRadioGroup`                              | planned | `leptos_aria_radio`            |
-| `Slider` / `useSlider`                                      | planned | `leptos_aria_slider`           |
-| `Switch` (deprecated upstream in favour of `ToggleButton`)  | skipped | —                              |
-| `SelectBox` / `useSelectBox`                                | planned | `leptos_aria_select_box`       |
-| `ComboBox` / `useComboBox`                                  | planned | `leptos_aria_combo_box`        |
-| `ListBox` / `useListBox`                                    | planned | `leptos_aria_list_box`         |
-| `Menu` / `useMenu`                                          | planned | `leptos_aria_menu`             |
-| `Tabs` / `useTabs`                                          | planned | `leptos_aria_tabs`             |
-| `TagGroup` / `useTagGroup`                                  | planned | `leptos_aria_tag`              |
-| `Toolbar`                                                   | planned | `leptos_aria_toolbar`          |
-| `Tooltip` / `useTooltip`                                    | planned | `leptos_aria_tooltip`          |
-| `Popover` / `usePopover`                                    | planned | `leptos_aria_overlay`          |
-| `Modal` / `useModal`                                        | planned | `leptos_aria_overlay`          |
-| `ModalOverlay`                                              | planned | `leptos_aria_overlay`          |
-| `OverlayArrow`                                              | planned | `leptos_aria_overlay`          |
-| `Dialog` / `useDialog`                                      | planned | `leptos_aria_dialog`           |
-| `Calendar` / `useCalendar`                                  | planned | `leptos_aria_calendar`         |
-| `DatePicker` / `useDatePicker`                              | planned | `leptos_aria_date_picker`      |
-| `DateRangePicker`                                           | planned | `leptos_aria_date_picker`      |
-| `TimeField` / `useTimeField`                                | planned | `leptos_aria_date_picker`      |
-| `FileTrigger`                                               | planned | `leptos_aria_file_trigger`     |
-| `Grid` / `useGrid`                                          | planned | `leptos_aria_grid`             |
-| `Table` / `useTable`                                        | planned | `leptos_aria_table`            |
-| `Tree` / `useTree`                                          | planned | `leptos_aria_tree`             |
-| `Meter` / `useMeter`                                        | planned | `leptos_aria_progress`         |
-| `ProgressBar` / `useProgressBar`                            | planned | `leptos_aria_progress`         |
-| `Toast` / `useToast`                                        | planned | `leptos_aria_toast`            |
-| `DropZone` / `useDropZone`                                  | planned | `leptos_aria_dnd`              |
-| `DragAndDrop` (newer API)                                   | planned | `leptos_aria_dnd`              |
-| `ColorField` / color area / wheel / sliders                 | planned | `leptos_aria_color`            |
-| `Breadcrumb`                                                | planned | `leptos_aria_breadcrumbs`      |
-| `Link` / `useLink`                                          | planned | `leptos_aria_link`             |
-| `Heading` / `Text` primitives                               | planned | `leptos_aria_primitives`       |
+| Component                                         | Status  | Crate                                                                  |
+| ------------------------------------------------- | ------- | ---------------------------------------------------------------------- |
+| `Button` (native element)                         | done    | `leptos_aria_button::Button`                                           |
+| `Button` (custom element types)                   | planned | `leptos_aria_button`                                                   |
+| `ToggleButton` / `useToggle`                      | done    | `leptos_aria_toggle`                                                   |
+| `Switch` (deprecated upstream for `ToggleButton`) | skipped | —                                                                      |
+| `Form`                                            | done    | `leptos_aria_form::Form`                                               |
+| `TextField`                                       | done    | `leptos_aria_text_field::TextField`                                    |
+| `TextArea`                                        | done    | `leptos_aria_text_field::TextArea`                                     |
+| `SearchField`                                     | done    | `leptos_aria_search_field::SearchField`                                |
+| `NumberField`                                     | done    | `leptos_aria_number_field::NumberField`                                |
+| `Checkbox` / `useCheckbox`                        | done    | `leptos_aria_checkbox::Checkbox`                                       |
+| `CheckboxGroup`                                   | done    | `leptos_aria_checkbox::CheckboxGroup`                                  |
+| `RadioGroup`                                      | done    | `leptos_aria_radio::RadioGroup`                                        |
+| `Slider`                                          | done    | `leptos_aria_slider::Slider`                                           |
+| `ComboBox`                                        | done    | `leptos_aria_combo_box::ComboBox`                                      |
+| `SelectBox`                                       | done    | `leptos_aria_select_box::SelectBox`                                    |
+| `ListBox`                                         | done    | `leptos_aria_list_box::ListBox`                                        |
+| `Menu`                                            | done    | `leptos_aria_menu::Menu` (list-based; trigger chains planned)          |
+| `Tabs`                                            | done    | `leptos_aria_tabs::Tabs`                                               |
+| `TagGroup`                                        | done    | `leptos_aria_tag::TagGroup`                                            |
+| `Toolbar`                                         | done    | `leptos_aria_toolbar::Toolbar`                                         |
+| `Tooltip`                                         | done    | `leptos_aria_overlay::Tooltip`                                         |
+| `Popover`                                         | done    | `leptos_aria_overlay::Popover` (flip/shift collision handling planned) |
+| `Modal` / `ModalOverlay`                          | done    | `leptos_aria_overlay::Modal`                                           |
+| `Dialog`                                          | done    | `leptos_aria_overlay::Dialog`                                          |
+| `Calendar`                                        | done    | `leptos_aria_calendar::Calendar`                                       |
+| `DatePicker` / `DateField`                        | done    | `leptos_aria_date_picker`                                              |
+| `DateRangePicker`                                 | planned | `leptos_aria_date_picker`                                              |
+| `TimeField`                                       | done    | `leptos_aria_time_field::TimeField`                                    |
+| `FileTrigger`                                     | done    | `leptos_aria_file_trigger::FileTrigger`                                |
+| `Grid`                                            | done    | `leptos_aria_grid::Grid`                                               |
+| `Table`                                           | done    | `leptos_aria_table::Table`                                             |
+| `Tree`                                            | done    | `leptos_aria_tree::Tree`                                               |
+| `Meter`                                           | done    | `leptos_aria_progress::Meter`                                          |
+| `ProgressBar`                                     | done    | `leptos_aria_progress::ProgressBar`                                    |
+| `Toast`                                           | done    | `leptos_aria_toast`                                                    |
+| `DropZone`                                        | done    | `leptos_aria_drop_zone::DropZone`                                      |
+| `DragAndDrop` (newer draggable-item API)          | planned | `leptos_aria_drop_zone`                                                |
+| `Link`                                            | done    | `leptos_aria_link::Link`                                               |
+| `Breadcrumb`                                      | done    | `leptos_aria_breadcrumbs`                                              |
+| `Heading` / `Text` / `VisuallyHidden`             | done    | `leptos_aria_primitives`                                               |
+| `Disclosure`                                      | done    | `leptos_aria_disclosure::Disclosure`                                   |
+| `Color` / `ColorField` / `ColorSwatch`            | done    | `leptos_aria_color` (area/wheel/sliders planned)                       |
+| `DateValue` / `DateDuration`                      | done    | `leptos_aria_date`                                                     |
 
 ## Porting conventions
 
-- One crate per component family, matching the workspace layout, with a single `leptos_aria` facade crate re-exporting everything.
+- One crate per component family, matching the workspace layout, with a single `leptos_aria` facade crate re-exporting everything; crate names use underscores (`leptos_aria_name`).
 - Hooks take a `...Props` builder struct and return a `...Result` carrying the props to spread onto the target element, mirroring the upstream `useX(props) -> {xProps}` shape.
-- Upstream refs become `Rc`-shared state structs whose handler methods are wrapped as cloneable callbacks.
-- Upstream module-level singletons (`textSelection`, transition tracking) become thread-local state.
-- Callbacks are boxed `dyn Fn` in props and `Rc`-wrapped internally; event payloads that upstream wraps (press, hover, focus) become small owned structs carrying the resolved target.
+- Upstream refs become `Rc`/`Arc`-shared state structs whose handler methods are wrapped as cloneable callbacks.
+- Upstream module-level singletons (`textSelection`, transition tracking, interaction modality) become thread-local state.
+- Callbacks are boxed `dyn Fn` in props and `Rc`/`Arc`-wrapped internally; event payloads that upstream wraps (press, hover, focus) become small owned structs carrying the resolved target.
 - React-specific polyfills (synthetic blur via `MutationObserver`, the React 16 `PointerEvent` fallbacks) are adapted or noted in code comments where the platform no longer needs them.
