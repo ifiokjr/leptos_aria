@@ -714,6 +714,8 @@ pub struct UsePressProps {
 
 #[cfg(all(test, target_arch = "wasm32"))]
 mod tests {
+	use std::cell::RefCell;
+
 	use leptos::mount::mount_to_body;
 	use wasm_bindgen::JsCast;
 	use wasm_bindgen_test::*;
@@ -723,11 +725,25 @@ mod tests {
 
 	wasm_bindgen_test_configure!(run_in_browser);
 
+	thread_local! {
+		static PRESS_COUNT: RefCell<Option<RwSignal<u32>>> = const { RefCell::new(None) };
+	}
+
 	#[component]
 	fn Example() -> impl IntoView {
 		let disabled = RwSignal::new(false);
+		let press_count = RwSignal::new(0);
+		let on_press_count = press_count;
+		PRESS_COUNT.with_borrow_mut(|slot| *slot = Some(on_press_count));
 		let press = use_press(
 			UsePressProps::builder()
+				.on_press(Box::new(|_: &PressEvent| {
+					PRESS_COUNT.with_borrow(|slot| {
+						if let Some(count) = slot {
+							count.set(count.get_untracked() + 1);
+						}
+					});
+				}))
 				.on_press_start(Box::new(|_: &PressEvent| {}))
 				.is_disabled(Signal::derive(move || disabled.get()))
 				.build(),
@@ -762,5 +778,9 @@ mod tests {
 
 		assert_eq!(button.inner_html(), "Example");
 		button.click();
+
+		let count = PRESS_COUNT.with_borrow(|slot| slot.map(|count| count.get_untracked()));
+
+		assert_eq!(count, Some(1), "a synthetic click fires on_press");
 	}
 }

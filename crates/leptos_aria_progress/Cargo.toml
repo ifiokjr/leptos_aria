@@ -1,0 +1,26 @@
+[package]
+name = "leptos_aria_progress"
+version.workspace = true
+authors.workspace = true
+categories.workspace = true
+documentation = "https://docs.rs/leptos_aria_progress"
+edition.workspace = true
+include = ["src/**/*.rs", "Cargo.toml", "readme.md"]
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Components for the leptos_aria component library"
+
+[dependencies]
+leptos = { workspace = true, features = ["csr"] }
+leptos_aria_utils = { workspace = true }
+
+[dev-dependencies]
+console_error_panic_hook = { workspace = true }
+wasm-bindgen-test = { workspace = true }
+web-sys = { workspace = true, features = ["HtmlButtonElement"] }
+
+[lints]
+workspace = true

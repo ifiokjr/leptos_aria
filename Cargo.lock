@@ -778,7 +778,11 @@ version = "0.0.0"
 dependencies = [
  "leptos",
  "leptos_aria_button",
+ "leptos_aria_form",
  "leptos_aria_interactions",
+ "leptos_aria_link",
+ "leptos_aria_progress",
+ "leptos_aria_toggle",
  "leptos_aria_utils",
  "wasm-bindgen-test",
 ]
@@ -797,6 +801,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos_aria_form"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "leptos_aria_interactions"
 version = "0.0.0"
 dependencies = [
@@ -807,6 +824,45 @@ dependencies = [
  "leptos_aria_utils",
  "typed-builder",
  "wasm-bindgen",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_link"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "leptos",
+ "leptos_aria_button",
+ "leptos_aria_interactions",
+ "leptos_aria_utils",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_progress"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "leptos",
+ "leptos_aria_utils",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_toggle"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_button",
+ "leptos_aria_interactions",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
 ]

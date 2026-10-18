@@ -27,6 +27,17 @@ pub fn Button(
 	/// The behavior of the button when used in an HTML form.
 	#[prop(optional, into)]
 	r#type: Signal<ButtonType>,
+	/// Indicates the current "pressed" state of toggle buttons.
+	#[prop(optional, into)]
+	aria_pressed: Option<Signal<bool>>,
+	/// Indicates whether the element, or another grouping element it controls,
+	/// is currently expanded or collapsed.
+	#[prop(optional, into)]
+	aria_expanded: Option<Signal<bool>>,
+	/// Indicates the availability and type of interactive popup element that
+	/// can be triggered by this element.
+	#[prop(optional, into)]
+	aria_haspopup: Option<Signal<String>>,
 	children: Children,
 ) -> impl IntoView {
 	let press = use_press(UsePressProps {
@@ -42,6 +53,9 @@ pub fn Button(
 			type=move || r#type.get().to_string()
 			disabled=move || is_disabled.get()
 			aria-disabled=move || is_disabled.get().to_string()
+			aria-pressed=move || aria_pressed.map(|pressed| pressed.get().to_string())
+			aria-expanded=move || aria_expanded.map(|expanded| expanded.get().to_string())
+			aria-haspopup=move || aria_haspopup
 			on:click=move |event| (press.on_click)(event)
 			on:dragstart=move |event| (press.on_drag_start)(event)
 			on:keydown=move |event| (press.on_key_down)(event)
@@ -85,6 +99,8 @@ impl ButtonType {
 
 #[cfg(all(test, target_arch = "wasm32"))]
 mod tests {
+	use std::cell::RefCell;
+
 	use leptos::mount::mount_to_body;
 	use leptos::prelude::document;
 	use leptos_aria_interactions::PressEvent;
@@ -93,11 +109,16 @@ mod tests {
 
 	use super::*;
 
+	thread_local! {
+		static PRESSED: RefCell<Option<RwSignal<bool>>> = const { RefCell::new(None) };
+	}
+
 	wasm_bindgen_test_configure!(run_in_browser);
 
 	#[component]
 	fn Example() -> impl IntoView {
 		let pressed = RwSignal::new(false);
+		PRESSED.with_borrow_mut(|slot| *slot = Some(pressed));
 
 		view! {
 			<Button on_press=Box::new(move |_: &PressEvent| pressed.set(true))>
@@ -111,6 +132,7 @@ mod tests {
 		console_error_panic_hook::set_once();
 
 		mount_to_body(|| view! { <Example /> });
+		let pressed = PRESSED.with_borrow(|slot| *slot).unwrap();
 
 		let button = document()
 			.query_selector("button")
@@ -125,5 +147,10 @@ mod tests {
 		);
 
 		button.click();
+
+		assert!(
+			pressed.get_untracked(),
+			"a synthetic click fires on_press through use_press"
+		);
 	}
 }
