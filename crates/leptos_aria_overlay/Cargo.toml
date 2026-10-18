@@ -1,0 +1,33 @@
+[package]
+name = "leptos_aria_overlay"
+version.workspace = true
+authors.workspace = true
+categories.workspace = true
+documentation = "https://docs.rs/leptos_aria_overlay"
+edition.workspace = true
+include = ["src/**/*.rs", "Cargo.toml", "readme.md"]
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Overlay components for the leptos_aria component library"
+
+[dependencies]
+js-sys = { workspace = true }
+leptos = { workspace = true, features = ["csr"] }
+leptos_aria_utils = { workspace = true }
+send_wrapper = { workspace = true }
+typed-builder = { workspace = true }
+wasm-bindgen = { workspace = true }
+web-sys = { workspace = true, features = ["Document", "DomRect", "Element", "HtmlElement", "HtmlInputElement", "NodeList", "Window"] }
+
+[dev-dependencies]
+console_error_panic_hook = { workspace = true }
+js-sys = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
+wasm-bindgen-test = { workspace = true }
+web-sys = { workspace = true, features = ["NodeList"] }
+
+[lints]
+workspace = true
