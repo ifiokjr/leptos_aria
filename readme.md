@@ -41,4 +41,4 @@ test:all    # run the native and wasm32 browser test suites
 test:wasm   # run the browser test suite only
 ```
 
-The browser tests run through `wasm-bindgen-test-runner` with a local Chrome driven by `chromedriver`; both come from the devenv shell. The `wasm-bindgen` dependency is pinned to the `wasm-bindgen-cli` version shipped in nixpkgs so the runner and the crate always match.
+The browser tests run through `wasm-bindgen-test-runner` with a local Chrome driven by `chromedriver`; both come from the devenv shell. The `wasm-bindgen` dependency is pinned to the `wasm-bindgen-cli` version in the devenv lock so the runner and the crate always match.

@@ -42,6 +42,7 @@
 	"excludes": [
 		"target/**",
 		".devenv/**",
+		".devcontainer/**",
 		".direnv/**",
 		".zcode/**",
 		"**/node_modules/**",
