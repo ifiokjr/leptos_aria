@@ -1,4 +1,4 @@
-name: "ci"
+name: ci
 
 on:
   push:
@@ -9,28 +9,91 @@ on:
     branches:
       - main
 
+  merge_group:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
-  checks:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+  lint:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: setup development environment
         uses: ./.github/actions/devenv
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: cache rust dependencies
-        uses: Swatinem/rust-cache@v2
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+        shell: devenv shell -- bash -e {0}
+
+      - name: dprint
+        run: dprint check
+        shell: devenv shell -- bash -e {0}
+
+      - name: actionlint
+        run: actionlint .github/workflows/*.yml
+        shell: devenv shell -- bash -e {0}
+
+      - name: clippy
+        run: cargo clippy --all-targets --locked -- -D warnings
+        shell: devenv shell -- bash -e {0}
+
+  build:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          key: ${{ runner.os }}
+          persist-credentials: false
+
+      - name: setup development environment
+        uses: ./.github/actions/devenv
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: build
         run: build:all
+        shell: devenv shell -- bash -e {0}
 
-      - name: lint
-        run: lint:all
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: setup development environment
+        uses: ./.github/actions/devenv
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: rust tests (native)
+        run: cargo test --locked
+        shell: devenv shell -- bash -e {0}
+
+      # The ubuntu runner image ships a ChromeDriver matched to its Chrome,
+      # exposed through `CHROMEWEBDRIVER`; the nix-provided chromedriver is the
+      # fallback for environments without it.
+      - name: rust tests (wasm)
+        run: |
+          if [ -n "${CHROMEWEBDRIVER:-}" ] && [ -x "${CHROMEWEBDRIVER}/chromedriver" ]; then
+            export CHROMEDRIVER="$CHROMEWEBDRIVER/chromedriver"
+          fi
+          cargo test --target wasm32-unknown-unknown --locked
+        shell: devenv shell -- bash -e {0}
