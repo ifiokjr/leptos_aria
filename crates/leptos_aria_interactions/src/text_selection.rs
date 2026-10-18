@@ -37,6 +37,10 @@ enum Selection {
 	Restoring,
 }
 
+/// There appears to be a delay on iOS where selection still might occur after
+/// pointer up, so restoring waits a bit before removing user-select.
+const SELECTION_RESTORE_DELAY: Duration = Duration::from_millis(300);
+
 thread_local! {
 	static SELECTION: Cell<Selection> = const { Cell::new(Selection::Default) };
 	static SAVED_USER_SELECT: RefCell<Option<String>> = const { RefCell::new(None) };
@@ -56,24 +60,8 @@ fn document() -> web_sys::Document {
 /// other platforms only to the pressed `target`.
 pub(crate) fn disable_text_selection(target: Option<&Element>) {
 	if is_ios() {
-		if SELECTION.get() == Selection::Default {
-			let style = document()
-				.document_element()
-				.unwrap()
-				.unchecked_into::<HtmlElement>()
-				.style();
-
-			SAVED_USER_SELECT.with_borrow_mut(|saved| {
-				*saved = style.get_property_value("-webkit-user-select").ok();
-			});
-
-			style.set_property("-webkit-user-select", "none").ok();
-		}
-
-		SELECTION.set(Selection::Disabled);
-	} else if let Some(target) = target.filter(|element| {
-		element.is_instance_of::<HtmlElement>() || element.is_instance_of::<SvgElement>()
-	}) {
+		disable_text_selection_on_ios();
+	} else if let Some(target) = target.filter(|element| is_stylable_element(element)) {
 		// If not iOS, store the target's original user-select and change to
 		// `user-select: none`. The shared state does not apply outside iOS.
 		let style = target.unchecked_ref::<HtmlElement>().style();
@@ -90,83 +78,121 @@ pub(crate) fn disable_text_selection(target: Option<&Element>) {
 	}
 }
 
+/// Only `HTMLElement`s and `SVGElement`s accept styling.
+fn is_stylable_element(element: &Element) -> bool {
+	element.is_instance_of::<HtmlElement>() || element.is_instance_of::<SvgElement>()
+}
+
+/// Apply `user-select: none` to the whole document, remembering what it was.
+fn disable_text_selection_on_ios() {
+	if SELECTION.get() == Selection::Default {
+		let style = document_element_style();
+		let saved = style.get_property_value("-webkit-user-select").ok();
+
+		SAVED_USER_SELECT.with_borrow_mut(|slot| *slot = saved);
+
+		style.set_property("-webkit-user-select", "none").ok();
+	}
+
+	SELECTION.set(Selection::Disabled);
+}
+
 /// Restore text selection disabled by [`disable_text_selection`].
 pub(crate) fn restore_text_selection(target: impl AsRef<Element>) {
 	let target = target.as_ref();
 
 	if is_ios() {
-		// If the state is already default there's nothing to do, and if it is
-		// restoring there's no need to queue a second restore.
-		if SELECTION.get() != Selection::Disabled {
-			return;
-		}
-
-		SELECTION.set(Selection::Restoring);
-
-		// There appears to be a delay on iOS where selection still might occur
-		// after pointer up, so wait a bit before removing user-select.
-		set_timeout(
-			move || {
-				// Wait for any CSS transitions to complete so recomputing the
-				// style for the whole page does not happen in the middle of an
-				// animation and cause jank.
-				run_after_transition(|| {
-					// Avoid race conditions.
-					if SELECTION.get() != Selection::Restoring {
-						return;
-					}
-
-					let document_element = document()
-						.document_element()
-						.unwrap()
-						.unchecked_into::<HtmlElement>();
-
-					if document_element
-						.style()
-						.get_property_value("-webkit-user-select")
-						.ok()
-						.as_deref() == Some("none")
-					{
-						let saved = SAVED_USER_SELECT
-							.with_borrow_mut(std::mem::take)
-							.unwrap_or_default();
-
-						document_element
-							.style()
-							.set_property("-webkit-user-select", &saved)
-							.ok();
-					}
-
-					SELECTION.set(Selection::Default);
-				});
-			},
-			Duration::from_millis(300),
-		);
-	} else if target.is_instance_of::<HtmlElement>() || target.is_instance_of::<SvgElement>() {
+		restore_text_selection_on_ios();
+	} else if is_stylable_element(target) {
 		// If not iOS, restore the target's original user-select if any. The
 		// shared state does not apply outside iOS.
-		MODIFIED_ELEMENTS.with_borrow_mut(|elements| {
-			let Some(found_selection) = elements.get(target) else {
-				return;
-			};
-
-			let style = target.unchecked_ref::<HtmlElement>().style();
-
-			if style.get_property_value("user-select").ok().as_deref() == Some("none") {
-				let found_selection: String = String::from(found_selection);
-
-				style.set_property("user-select", &found_selection).ok();
-			}
-
-			if target
-				.get_attribute("style")
-				.as_deref()
-				.is_none_or(str::is_empty)
-			{
-				target.remove_attribute("style").ok();
-			}
-
-			elements.delete(target);
-		});
+		restore_element_text_selection(target);
 	}
+}
+
+/// Restore the target's original `user-select` and drop the empty `style`
+/// attribute it may have left behind.
+fn restore_element_text_selection(target: &Element) {
+	MODIFIED_ELEMENTS.with_borrow_mut(|elements| {
+		let Some(found_selection) = elements.get(target) else {
+			return;
+		};
+
+		let style = target.unchecked_ref::<HtmlElement>().style();
+
+		if style.get_property_value("user-select").ok().as_deref() == Some("none") {
+			style
+				.set_property("user-select", &String::from(found_selection))
+				.ok();
+		}
+
+		if target
+			.get_attribute("style")
+			.as_deref()
+			.is_none_or(str::is_empty)
+		{
+			target.remove_attribute("style").ok();
+		}
+
+		elements.delete(target);
+	});
+}
+
+/// Queue the page-wide restore on iOS.
+///
+/// If the state is already default there's nothing to do, and if it is
+/// restoring there's no need to queue a second restore.
+fn restore_text_selection_on_ios() {
+	if SELECTION.get() != Selection::Disabled {
+		return;
+	}
+
+	SELECTION.set(Selection::Restoring);
+
+	set_timeout(
+		|| {
+			// Wait for any CSS transitions to complete so recomputing the
+			// style for the whole page does not happen in the middle of an
+			// animation and cause jank.
+			run_after_transition(|| {
+				// Avoid race conditions.
+				if SELECTION.get() != Selection::Restoring {
+					return;
+				}
+
+				restore_document_user_select();
+
+				SELECTION.set(Selection::Default);
+			});
+		},
+		SELECTION_RESTORE_DELAY,
+	);
+}
+
+/// Put back the saved user-select value when the document still has ours.
+fn restore_document_user_select() {
+	let style = document_element_style();
+
+	if style
+		.get_property_value("-webkit-user-select")
+		.ok()
+		.as_deref()
+		!= Some("none")
+	{
+		return;
+	}
+
+	let saved = SAVED_USER_SELECT
+		.with_borrow_mut(std::mem::take)
+		.unwrap_or_default();
+
+	style.set_property("-webkit-user-select", &saved).ok();
+}
+
+fn document_element_style() -> web_sys::CssStyleDeclaration {
+	document()
+		.document_element()
+		.unwrap()
+		.unchecked_into::<HtmlElement>()
+		.style()
 }

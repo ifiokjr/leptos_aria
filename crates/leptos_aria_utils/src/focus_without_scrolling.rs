@@ -143,46 +143,61 @@ fn supports_prevent_scroll() -> bool {
 	}
 }
 
+/// Collect the scroll position of every ancestor that can scroll, plus the
+/// scrolling root, so the fallback path can restore them after focusing moves
+/// the caret into view.
 fn get_scrollable_elements(element: &FocusableElement) -> Vec<ScrollableElement> {
-	let mut parent = element.parent_node();
 	let mut scrollable_elements: Vec<ScrollableElement> = vec![];
 	let root_scrolling_element = document()
 		.scrolling_element()
 		.unwrap_or_else(|| document().document_element().unwrap());
 
-	while parent
-		.as_ref()
-		.is_some_and(JsCast::is_instance_of::<HtmlElement>)
-	{
-		let node = parent.as_ref().unwrap();
+	collect_ancestor_positions(element, &root_scrolling_element, &mut scrollable_elements);
 
-		if node.unchecked_ref::<Element>() != &root_scrolling_element {
-			let element = node.unchecked_ref::<HtmlElement>();
-
-			if element.offset_height() < element.scroll_height()
-				|| element.offset_width() < element.scroll_width()
-			{
-				scrollable_elements.push(ScrollableElement {
-					element: element.clone(),
-					scroll_top: element.scroll_top(),
-					scroll_left: element.scroll_left(),
-				});
-			}
-		}
-
-		parent = node.parent_node();
-	}
-
-	if root_scrolling_element.is_instance_of::<HtmlElement>() {
-		let element = root_scrolling_element.unchecked_ref::<HtmlElement>();
-		scrollable_elements.push(ScrollableElement {
-			element: element.clone(),
-			scroll_top: element.scroll_top(),
-			scroll_left: element.scroll_left(),
-		});
+	if let Some(root) = root_scrolling_element.dyn_ref::<HtmlElement>() {
+		scrollable_elements.push(scroll_position(root));
 	}
 
 	scrollable_elements
+}
+
+/// Walk the `HTMLElement` ancestors, recording the ones that can scroll.
+///
+/// The walk stops at the first ancestor that is not an `HTMLElement`.
+fn collect_ancestor_positions(
+	element: &FocusableElement,
+	root: &Element,
+	scrollable_elements: &mut Vec<ScrollableElement>,
+) {
+	let mut parent = element.parent_node();
+
+	while let Some(node) = parent.take() {
+		let Some(ancestor) = node.dyn_ref::<HtmlElement>() else {
+			break;
+		};
+
+		parent = node.parent_node();
+
+		if ancestor.unchecked_ref::<Element>() == root || !is_scrollable(ancestor) {
+			continue;
+		}
+
+		scrollable_elements.push(scroll_position(ancestor));
+	}
+}
+
+/// An element scrolls when its content is larger than its box.
+fn is_scrollable(element: &HtmlElement) -> bool {
+	element.offset_height() < element.scroll_height()
+		|| element.offset_width() < element.scroll_width()
+}
+
+fn scroll_position(element: &HtmlElement) -> ScrollableElement {
+	ScrollableElement {
+		element: element.clone(),
+		scroll_top: element.scroll_top(),
+		scroll_left: element.scroll_left(),
+	}
 }
 
 struct ScrollableElement {
