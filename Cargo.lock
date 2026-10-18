@@ -780,6 +780,7 @@ dependencies = [
  "leptos_aria_breadcrumbs",
  "leptos_aria_button",
  "leptos_aria_checkbox",
+ "leptos_aria_disclosure",
  "leptos_aria_file_trigger",
  "leptos_aria_form",
  "leptos_aria_interactions",
@@ -788,6 +789,7 @@ dependencies = [
  "leptos_aria_menu",
  "leptos_aria_number_field",
  "leptos_aria_overlay",
+ "leptos_aria_primitives",
  "leptos_aria_progress",
  "leptos_aria_radio",
  "leptos_aria_search_field",
@@ -795,6 +797,7 @@ dependencies = [
  "leptos_aria_tabs",
  "leptos_aria_tag",
  "leptos_aria_text_field",
+ "leptos_aria_toast",
  "leptos_aria_toggle",
  "leptos_aria_toolbar",
  "leptos_aria_utils",
@@ -835,6 +838,20 @@ dependencies = [
  "js-sys",
  "leptos",
  "leptos_aria_toggle",
+ "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_disclosure"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
  "leptos_aria_utils",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -960,6 +977,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos_aria_primitives"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "leptos_aria_progress"
 version = "0.0.0"
 dependencies = [
@@ -1043,6 +1073,20 @@ dependencies = [
 
 [[package]]
 name = "leptos_aria_text_field"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_toast"
 version = "0.0.0"
 dependencies = [
  "console_error_panic_hook",
