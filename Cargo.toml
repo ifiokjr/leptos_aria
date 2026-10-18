@@ -32,10 +32,14 @@ web-sys = "=0.3.106"
 
 # internal
 leptos_aria_button = { path = "crates/leptos_aria_button", version = "0.0.0" }
+leptos_aria_checkbox = { path = "crates/leptos_aria_checkbox", version = "0.0.0" }
 leptos_aria_form = { path = "crates/leptos_aria_form", version = "0.0.0" }
 leptos_aria_interactions = { path = "crates/leptos_aria_interactions", version = "0.0.0" }
 leptos_aria_link = { path = "crates/leptos_aria_link", version = "0.0.0" }
 leptos_aria_progress = { path = "crates/leptos_aria_progress", version = "0.0.0" }
+leptos_aria_radio = { path = "crates/leptos_aria_radio", version = "0.0.0" }
+leptos_aria_search_field = { path = "crates/leptos_aria_search_field", version = "0.0.0" }
+leptos_aria_text_field = { path = "crates/leptos_aria_text_field", version = "0.0.0" }
 leptos_aria_toggle = { path = "crates/leptos_aria_toggle", version = "0.0.0" }
 leptos_aria_utils = { path = "crates/leptos_aria_utils", version = "0.0.0" }
 
