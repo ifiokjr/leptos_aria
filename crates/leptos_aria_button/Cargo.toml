@@ -18,5 +18,11 @@ leptos = { workspace = true, features = ["csr"] }
 leptos_aria_interactions = { workspace = true }
 leptos_aria_utils = { workspace = true }
 
+[dev-dependencies]
+console_error_panic_hook = { workspace = true }
+wasm-bindgen = { workspace = true }
+wasm-bindgen-test = { workspace = true }
+web-sys = { workspace = true, features = ["HtmlButtonElement"] }
+
 [lints]
 workspace = true

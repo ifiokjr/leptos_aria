@@ -787,9 +787,13 @@ dependencies = [
 name = "leptos_aria_button"
 version = "0.0.0"
 dependencies = [
+ "console_error_panic_hook",
  "leptos",
  "leptos_aria_interactions",
  "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+ "web-sys",
 ]
 
 [[package]]
