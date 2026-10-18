@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use leptos::prelude::*;
 use leptos_aria_button::BoxedPressEventCallback;
@@ -7,7 +7,7 @@ use leptos_aria_button::ButtonType;
 use leptos_aria_interactions::PressEvent;
 
 /// A callback invoked when the selection state changes.
-pub type BoxedSelectionChangeCallback = Box<dyn Fn(bool)>;
+pub type BoxedSelectionChangeCallback = Box<dyn Fn(bool) + Send + Sync>;
 
 /// State management for toggle components like checkboxes and switches.
 ///
@@ -27,7 +27,7 @@ enum Selection {
 	Uncontrolled(RwSignal<bool>),
 }
 
-type RcChangeCallback = Rc<dyn Fn(bool)>;
+type RcChangeCallback = Arc<dyn Fn(bool) + Send + Sync>;
 
 /// The options accepted by [`use_toggle_state`].
 #[derive(Default)]
@@ -56,7 +56,8 @@ pub fn use_toggle_state(props: UseToggleStateProps) -> ToggleState {
 	};
 
 	let on_change = props.on_change.map(|callback| {
-		let callback: Rc<dyn Fn(bool)> = Rc::new(move |selected: bool| callback(selected));
+		let callback: Arc<dyn Fn(bool) + Send + Sync> =
+			Arc::new(move |selected: bool| callback(selected));
 
 		callback
 	});
@@ -71,7 +72,14 @@ pub fn use_toggle_state(props: UseToggleStateProps) -> ToggleState {
 
 impl ToggleState {
 	/// Whether the toggle is selected.
+	///
+	/// Reactive: reading inside an effect or view tracks the selection.
 	pub fn is_selected(&self) -> bool {
+		self.selected_signal().get()
+	}
+
+	/// Whether the toggle is selected, without tracking.
+	pub fn is_selected_untracked(&self) -> bool {
 		self.selected_signal().get_untracked()
 	}
 
@@ -98,7 +106,7 @@ impl ToggleState {
 	/// A controlled state reports upward and lets the owner decide; an
 	/// uncontrolled one updates itself.
 	pub fn set_selected(&self, selected: bool) {
-		if self.is_read_only || self.is_selected() == selected {
+		if self.is_read_only || self.is_selected_untracked() == selected {
 			return;
 		}
 
@@ -113,7 +121,7 @@ impl ToggleState {
 
 	/// Toggle the selection state, unless read only.
 	pub fn toggle(&self) {
-		let selected = self.is_selected();
+		let selected = self.is_selected_untracked();
 		self.set_selected(!selected);
 	}
 }

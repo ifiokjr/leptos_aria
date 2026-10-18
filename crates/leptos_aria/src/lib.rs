@@ -1,7 +1,17 @@
 pub use leptos_aria_button::*;
+pub use leptos_aria_checkbox::BoxedValuesChangeCallback;
+pub use leptos_aria_checkbox::Checkbox;
+pub use leptos_aria_checkbox::CheckboxGroup;
+pub use leptos_aria_checkbox::CheckboxGroupState;
+pub use leptos_aria_checkbox::SelectedValues;
+pub use leptos_aria_checkbox::UseCheckboxGroupStateProps;
+pub use leptos_aria_checkbox::use_checkbox_group_state;
 pub use leptos_aria_form::*;
 pub use leptos_aria_interactions::*;
 pub use leptos_aria_link::*;
 pub use leptos_aria_progress::*;
+pub use leptos_aria_radio::*;
+pub use leptos_aria_search_field::*;
+pub use leptos_aria_text_field::*;
 pub use leptos_aria_toggle::*;
 pub use leptos_aria_utils::*;

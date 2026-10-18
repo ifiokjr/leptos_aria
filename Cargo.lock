@@ -778,10 +778,14 @@ version = "0.0.0"
 dependencies = [
  "leptos",
  "leptos_aria_button",
+ "leptos_aria_checkbox",
  "leptos_aria_form",
  "leptos_aria_interactions",
  "leptos_aria_link",
  "leptos_aria_progress",
+ "leptos_aria_radio",
+ "leptos_aria_search_field",
+ "leptos_aria_text_field",
  "leptos_aria_toggle",
  "leptos_aria_utils",
  "wasm-bindgen-test",
@@ -796,6 +800,21 @@ dependencies = [
  "leptos_aria_interactions",
  "leptos_aria_utils",
  "wasm-bindgen",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_checkbox"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_toggle",
+ "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
 ]
@@ -848,6 +867,49 @@ dependencies = [
  "console_error_panic_hook",
  "leptos",
  "leptos_aria_utils",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_radio"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_search_field"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_text_field",
+ "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_text_field"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
 ]
