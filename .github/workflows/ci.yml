@@ -5,9 +5,9 @@ on:
     branches:
       - main
 
+  # Unfiltered so stacked pull requests targeting each other also run the
+  # checks before they are retargeted at main.
   pull_request:
-    branches:
-      - main
 
   merge_group:
     branches:
