@@ -3,21 +3,63 @@ members = ["crates/*"]
 default-members = ["crates/*"]
 resolver = "2"
 
+[workspace.package]
+version = "0.0.0"
+authors = ["Ifiok Jr. <ifiokotung@gmail.com>"]
+categories = ["wasm", "web-programming", "gui", "accessibility"]
+edition = "2024"
+keywords = ["leptos", "aria", "a11y", "ui"]
+license = "Unlicense"
+readme = "readme.md"
+repository = "https://github.com/ifiokjr/leptos_aria"
+rust-version = "1.85.0"
+
 [workspace.dependencies]
 console_error_panic_hook = "0.1"
-leptos = { git = "https://github.com/leptos-rs/leptos", rev = "b9f05f9" }
-once_cell = "1"
-slotmap = "1"
 console_log = "0.2"
-smallvec = "1"
-wasm-bindgen = "0.2"
-wasm-bindgen-test = "0.3"
-web-sys = "0.3"
-typed-builder = "0.12"
-insta = "1"
+js-sys = "=0.3.104"
+leptos = "0.8.22"
+slotmap = "1"
+typed-builder = "0.23"
+# Pinned to the `wasm-bindgen-cli` version shipped in nixpkgs, so the
+# `wasm-bindgen-test-runner` from the devenv shell always matches the crate.
+# `wasm-bindgen-test` is pinned to the release pairing with exactly this
+# `wasm-bindgen` version.
+wasm-bindgen = "=0.2.127"
+wasm-bindgen-test = "=0.3.77"
+web-sys = "=0.3.104"
 
 # internal
-leptos_aria = { path = "crates/leptos_aria", version = "0.0.0" }
 leptos_aria_button = { path = "crates/leptos_aria_button", version = "0.0.0" }
 leptos_aria_interactions = { path = "crates/leptos_aria_interactions", version = "0.0.0" }
 leptos_aria_utils = { path = "crates/leptos_aria_utils", version = "0.0.0" }
+
+[workspace.lints.rust]
+rust_2021_compatibility = { level = "warn", priority = -1 }
+rust_2024_compatibility = { level = "warn", priority = -1 }
+unsafe_code = "deny"
+unstable_features = "deny"
+unused_extern_crates = "warn"
+unused_import_braces = "warn"
+unused_lifetimes = "warn"
+unused_macro_rules = "warn"
+unused_qualifications = "warn"
+
+[workspace.lints.clippy]
+complexity = { level = "warn", priority = -1 }
+correctness = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+indexing_slicing = "deny"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+too_many_lines = "allow"
+wildcard_imports = "allow"

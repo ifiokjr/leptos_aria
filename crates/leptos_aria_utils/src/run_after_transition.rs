@@ -1,210 +1,221 @@
+use std::cell::Cell;
 use std::cell::RefCell;
-use std::ptr::eq;
 use std::rc::Rc;
 
-use leptos::create_rw_signal;
-use leptos::document;
-use leptos::js_sys::JsString;
-use leptos::request_animation_frame;
-use leptos::wasm_bindgen::prelude::Closure;
-use leptos::web_sys::Element;
-use leptos::web_sys::Event;
-use leptos::web_sys::TransitionEvent;
-use leptos::JsCast;
-use leptos::RwSignal;
-use leptos::Scope;
-use leptos::UntrackedGettableSignal;
-use leptos::UntrackedSettableSignal;
+use js_sys::JsString;
+use leptos::prelude::*;
+use wasm_bindgen::JsCast;
+use wasm_bindgen::closure::Closure;
+use web_sys::Element;
+use web_sys::Event;
+use web_sys::TransitionEvent;
 
 use crate::silly_map::Map;
 use crate::silly_map::Set;
-use crate::ContextProvider;
 
-/// We store a global list of elements that are currently transitioning,
-/// mapped to a set of CSS properties that are transitioning for that element.
-/// This is necessary rather than a simple count of transitions because of
-/// browser bugs, e.g. Chrome sometimes fires both transitionend and
-/// transitioncancel rather than one or the other. So we need to track what's
-/// actually transitioning so that we can ignore these duplicate events.
-#[derive(Copy, Clone)]
-pub(crate) struct ElementTransitionsContext(RwSignal<Map<Element, Set<JsString>>>);
+type TransitionCallback = Rc<dyn Fn()>;
 
-impl ContextProvider for ElementTransitionsContext {
-  type Value = Map<Element, Set<JsString>>;
+/// A list of callbacks to run once no elements are transitioning.
+type TransitionCallbacks = Vec<TransitionCallback>;
 
-  fn from_leptos_scope(cx: Scope) -> Self {
-    Self(create_rw_signal(cx, Default::default()))
-  }
+/// A `transitionrun` or `transitionend` listener attached to the document or
+/// a single element.
+type TransitionHandler = Closure<dyn FnMut(TransitionEvent)>;
 
-  fn get(&self) -> Self::Value {
-    self.0.get_untracked()
-  }
+/// The listener that sets up the global events once the document has loaded.
+type DomContentLoadedHandler = Closure<dyn FnMut(Event)>;
 
-  fn set(&self, value: Self::Value) {
-    let reference = &value;
-    self.0.set_untracked(if eq(reference, &self.get()) {
-      // this happens when the value was directly mutated.
-      reference.clone()
-    } else {
-      value
-    });
-  }
-}
+/// A `transitioncancel` listener attached to one element, alongside the element
+/// so it can be found again for removal.
+type CancelHandler = (Element, TransitionHandler);
 
-type TransitionCallback = Rc<Box<dyn Fn()>>;
-
-/// A list of callbacks to call once there are no transitioning elements.
-#[derive(Copy, Clone)]
-pub(crate) struct TransitionCallbacksContext(RwSignal<Vec<TransitionCallback>>);
-
-impl ContextProvider for TransitionCallbacksContext {
-  type Value = Vec<TransitionCallback>;
-
-  fn from_leptos_scope(cx: Scope) -> Self {
-    Self(create_rw_signal(cx, Default::default()))
-  }
-
-  fn get(&self) -> Self::Value {
-    self.0.get_untracked()
-  }
-
-  fn set(&self, value: Self::Value) {
-    let reference = &value;
-    self.0.set_untracked(if eq(reference, &self.get()) {
-      // this happens when the value was directly mutated.
-      reference.clone()
-    } else {
-      value
-    });
-  }
-}
-
-fn setup_global_events(cx: Scope) {
-  type CallbackClosureType = Rc<RefCell<Closure<dyn Fn(TransitionEvent)>>>;
-  let closure: CallbackClosureType = Rc::new(RefCell::new(Closure::new(|_| {})));
-  let update_closure = closure.clone();
-  let other_closure = closure.clone();
-
-  let on_transition_end = move |event: TransitionEvent| {
-    let element: Element = event.target().unwrap().unchecked_into();
-    let transitions_context = ElementTransitionsContext::provide(cx);
-    let js_map = transitions_context.get();
-
-    // Remove property from list of transitioning properties.
-    let Some(properties) = js_map.get(&element) else {
-      return;
-    };
-
-    properties.delete(&event.property_name().into());
-
-    // If empty, remove transitioncancel event, and remove the element from the list
-    // of transitioning elements.
-    if properties.is_empty() {
-      element
-        .remove_event_listener_with_callback(
-          "transitioncancel",
-          other_closure.borrow().as_ref().unchecked_ref(),
-        )
-        .ok();
-
-      js_map.delete(&element);
-    }
-
-    if js_map.is_empty() {
-      let callbacks_context = TransitionCallbacksContext::provide(cx);
-
-      for callback in callbacks_context.get().iter() {
-        callback.clone()();
-      }
-
-      callbacks_context.set(Vec::new());
-    }
-  };
-
-  let on_transition_start = move |event: TransitionEvent| {
-    let element: Element = event.target().unwrap().unchecked_into();
-    let transitions_context = ElementTransitionsContext::provide(cx);
-    let js_map = transitions_context.get();
-
-    match js_map.get(&element) {
-      Some(set) => {
-        set.add(&event.property_name().into());
-      }
-      None => {
-        let set: Set<JsString> = Default::default();
-        set.add(&event.property_name().into());
-
-        element
-          .add_event_listener_with_callback(
-            "transitioncancel",
-            closure.borrow().as_ref().unchecked_ref(),
-          )
-          .ok();
-
-        js_map.set(&element, &set);
-      }
-    }
-  };
-
-  let document_transition_end: Closure<dyn Fn(TransitionEvent)> = Closure::new(on_transition_end);
-  let cloned = document_transition_end.as_ref().clone();
-  update_closure.replace(document_transition_end);
-
-  let on_start_closure =
-    Closure::wrap(Box::new(on_transition_start) as Box<dyn Fn(TransitionEvent)>);
-  document()
-    .body()
-    .unwrap()
-    .add_event_listener_with_callback("transitionrun", on_start_closure.as_ref().unchecked_ref())
-    .ok();
-
-  document()
-    .body()
-    .unwrap()
-    .add_event_listener_with_callback("transitionend", cloned.unchecked_ref())
-    .ok();
-}
-
-/// Setup a listener for transition events on the page.
+/// The elements currently transitioning, mapped to the set of CSS properties
+/// that are transitioning for that element.
 ///
-/// This should only be run in the browser.
-pub(crate) fn setup_transition_listener(cx: Scope) {
-  if document().ready_state() != "loading" {
-    setup_global_events(cx);
-  } else {
-    let callback = move |_: Event| setup_global_events(cx);
-    let closure = Closure::wrap(Box::new(callback) as Box<dyn Fn(Event)>);
+/// This is tracked rather than a simple count of transitions because of
+/// browser bugs: Chrome sometimes fires both `transitionend` and
+/// `transitioncancel` rather than one or the other, so the actual transitioning
+/// properties are tracked in order to ignore these duplicate events.
+type ElementTransitions = Map<Element, Set<JsString>>;
 
-    document()
-      .add_event_listener_with_callback("DOMContentLoaded", closure.as_ref().unchecked_ref())
-      .ok();
-  }
+thread_local! {
+	static ELEMENT_TRANSITIONS: RefCell<ElementTransitions> = RefCell::default();
+	static TRANSITION_CALLBACKS: RefCell<TransitionCallbacks> = const { RefCell::new(Vec::new()) };
+	static TRANSITION_CANCEL_HANDLERS: RefCell<Vec<CancelHandler>> =
+		const { RefCell::new(Vec::new()) };
+	static DOCUMENT_HANDLERS: RefCell<Vec<TransitionHandler>> =
+		const { RefCell::new(Vec::new()) };
+	static DOM_CONTENT_LOADED_HANDLER: RefCell<Option<DomContentLoadedHandler>> =
+		const { RefCell::new(None) };
+	static LISTENERS_SETUP: Cell<bool> = const { Cell::new(false) };
 }
 
-/// Perform a certain action after all CSS transitions have finished on the
-/// page.
+fn document() -> web_sys::Document {
+	web_sys::window()
+		.expect("the `window` global is available in the browser")
+		.document()
+		.expect("the `document` global is available in the browser")
+}
+
+/// Perform an action after all CSS transitions have finished on the page.
 ///
-/// This prevents
-pub fn run_after_transition<F>(cx: Scope, callback: F)
-where
-  F: Fn() + 'static,
-{
-  let cb = move || {
-    let transitions_context = ElementTransitionsContext::provide(cx);
-    let transitions = transitions_context.get();
+/// When no transitions are running the callback runs immediately; otherwise it
+/// is queued to run at the end of the last transition. A single animation
+/// frame is waited first so that a transition starting on mount is noticed.
+pub fn run_after_transition(callback: impl Fn() + 'static) {
+	setup_transition_listener();
 
-    if transitions.is_empty() {
-      // When no transitions are running, call the function immediately.
-      // Otherwise, add it to a list of callbacks to run at the end of the animation.
-      callback();
-    } else {
-      let callbacks_context = TransitionCallbacksContext::provide(cx);
-      let mut callbacks = callbacks_context.get();
-      let callback = Rc::new(Box::new(callback) as Box<dyn Fn() + 'static>);
-      callbacks.push(callback);
-    }
-  };
+	let callback = Rc::new(callback);
 
-  // Wait one frame to see if an animation starts, e.g. a transition on mount.
-  request_animation_frame(cb);
+	request_animation_frame(move || {
+		let no_transitions_running = ELEMENT_TRANSITIONS.with_borrow(Map::is_empty);
+
+		if no_transitions_running {
+			callback();
+		} else {
+			TRANSITION_CALLBACKS.with_borrow_mut(|callbacks| callbacks.push(callback));
+		}
+	});
+}
+
+/// Set up the global listeners for transition events on the page.
+///
+/// The listeners are attached lazily on the first call and never removed: they
+/// only record which elements and properties are transitioning.
+fn setup_transition_listener() {
+	if LISTENERS_SETUP.get() {
+		return;
+	}
+
+	LISTENERS_SETUP.set(true);
+
+	if document().ready_state() == "loading" {
+		let handler: DomContentLoadedHandler = Closure::new(|_: Event| setup_global_events());
+
+		document()
+			.add_event_listener_with_callback(
+				"DOMContentLoaded",
+				handler.as_ref().unchecked_ref::<js_sys::Function>(),
+			)
+			.ok();
+
+		DOM_CONTENT_LOADED_HANDLER.with_borrow_mut(|slot| *slot = Some(handler));
+	} else {
+		setup_global_events();
+	}
+}
+
+fn setup_global_events() {
+	let run_handler = Closure::new(|event: TransitionEvent| on_transition_run(&event));
+	let end_handler = Closure::new(|event: TransitionEvent| on_transition_end(&event));
+
+	let body: web_sys::EventTarget = document().body().expect("the document body").into();
+
+	body.add_event_listener_with_callback(
+		"transitionrun",
+		run_handler.as_ref().unchecked_ref::<js_sys::Function>(),
+	)
+	.ok();
+
+	body.add_event_listener_with_callback(
+		"transitionend",
+		end_handler.as_ref().unchecked_ref::<js_sys::Function>(),
+	)
+	.ok();
+
+	DOCUMENT_HANDLERS.with_borrow_mut(|handlers| {
+		handlers.push(run_handler);
+		handlers.push(end_handler);
+	});
+}
+
+/// Record the element and property for a transition that just started.
+fn on_transition_run(event: &TransitionEvent) {
+	let Some(element) = transition_element(event) else {
+		return;
+	};
+
+	let property: JsString = event.property_name().into();
+
+	ELEMENT_TRANSITIONS.with_borrow_mut(|transitions| {
+		if let Some(properties) = transitions.get(&element) {
+			properties.add(&property);
+			return;
+		}
+
+		let properties: Set<JsString> = Set::new();
+		properties.add(&property);
+
+		// A transitioncancel handler on the element itself cleans up when a
+		// transition is cancelled rather than completed.
+		let cancel_handler = Closure::new(|event: TransitionEvent| on_transition_end(&event));
+
+		element
+			.add_event_listener_with_callback(
+				"transitioncancel",
+				cancel_handler.as_ref().unchecked_ref::<js_sys::Function>(),
+			)
+			.ok();
+
+		TRANSITION_CANCEL_HANDLERS.with_borrow_mut(|handlers| {
+			handlers.push((element.clone(), cancel_handler));
+		});
+
+		transitions.set(&element, &properties);
+	});
+}
+
+/// Remove the property for a transition that finished or was cancelled, and
+/// run the queued callbacks once nothing is transitioning any more.
+fn on_transition_end(event: &TransitionEvent) {
+	let Some(element) = transition_element(event) else {
+		return;
+	};
+
+	let property: JsString = event.property_name().into();
+	let mut is_empty_after = false;
+
+	ELEMENT_TRANSITIONS.with_borrow_mut(|transitions| {
+		let Some(properties) = transitions.get(&element) else {
+			return;
+		};
+
+		properties.delete(&property);
+
+		if properties.is_empty() {
+			remove_cancel_handler(&element);
+			transitions.delete(&element);
+		}
+
+		is_empty_after = transitions.is_empty();
+	});
+
+	if is_empty_after {
+		let callbacks = TRANSITION_CALLBACKS.with_borrow_mut(std::mem::take);
+
+		for callback in callbacks {
+			callback();
+		}
+	}
+}
+
+fn transition_element(event: &TransitionEvent) -> Option<Element> {
+	event
+		.target()
+		.and_then(|target| target.dyn_into::<Element>().ok())
+}
+
+fn remove_cancel_handler(element: &Element) {
+	TRANSITION_CANCEL_HANDLERS.with_borrow_mut(|handlers| {
+		if let Some(index) = handlers.iter().position(|(target, _)| target == element) {
+			let (_, closure) = handlers.remove(index);
+
+			element
+				.remove_event_listener_with_callback(
+					"transitioncancel",
+					closure.as_ref().unchecked_ref::<js_sys::Function>(),
+				)
+				.ok();
+		}
+	});
 }
