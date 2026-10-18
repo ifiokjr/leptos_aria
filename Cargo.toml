@@ -19,6 +19,7 @@ console_error_panic_hook = "0.1"
 console_log = "0.2"
 js-sys = "=0.3.106"
 leptos = "0.8.22"
+send_wrapper = "0.6"
 slotmap = "1"
 typed-builder = "0.23"
 # Pinned to the `wasm-bindgen-cli` version shipped in the devenv lock's
@@ -36,6 +37,7 @@ leptos_aria_checkbox = { path = "crates/leptos_aria_checkbox", version = "0.0.0"
 leptos_aria_form = { path = "crates/leptos_aria_form", version = "0.0.0" }
 leptos_aria_interactions = { path = "crates/leptos_aria_interactions", version = "0.0.0" }
 leptos_aria_link = { path = "crates/leptos_aria_link", version = "0.0.0" }
+leptos_aria_overlay = { path = "crates/leptos_aria_overlay", version = "0.0.0" }
 leptos_aria_progress = { path = "crates/leptos_aria_progress", version = "0.0.0" }
 leptos_aria_radio = { path = "crates/leptos_aria_radio", version = "0.0.0" }
 leptos_aria_search_field = { path = "crates/leptos_aria_search_field", version = "0.0.0" }

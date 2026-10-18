@@ -9,6 +9,7 @@ pub use leptos_aria_checkbox::use_checkbox_group_state;
 pub use leptos_aria_form::*;
 pub use leptos_aria_interactions::*;
 pub use leptos_aria_link::*;
+pub use leptos_aria_overlay::*;
 pub use leptos_aria_progress::*;
 pub use leptos_aria_radio::*;
 pub use leptos_aria_search_field::*;
