@@ -1,48 +1,101 @@
 name: devenv
-description: "Setup development environment with devenv"
+description: Set up the leptos_aria development environment with devenv
 inputs:
   github-token:
-    description: Provide a github token
+    description: GitHub token used by Nix and GitHub API backed tools.
     required: true
+  cache-version:
+    description: Version prefix for caches.
+    required: false
+    default: v1
+  free-runner-space:
+    description: Free Ubuntu runner disk space before installing dependencies.
+    required: false
+    default: "false"
 
 runs:
   using: composite
   steps:
-    - name: cache nix store
-      uses: actions/cache@v3
-      id: nix-cache
+    - name: free ubuntu runner space
+      if: runner.os == 'Linux' && inputs.free-runner-space == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "Disk space before cleanup:"
+        df -h
+        sudo rm -rf /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup /usr/local/lib/android /usr/share/dotnet
+        docker system prune --all --force || true
+        sudo apt-get clean
+        echo "Disk space after cleanup:"
+        df -h
+
+    - name: cache rust dependencies
+      id: cache-rust-dependencies
+      continue-on-error: true
+      uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       with:
-        path: /tmp/nixcache
-        key: ${{ runner.os }}-nix-cache
+        prefix-key: ${{ inputs.cache-version }}
+        cache-targets: false
 
     - name: install nix
-      uses: cachix/install-nix-action@v18
+      id: install-nix
+      continue-on-error: true
+      uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
       with:
         github_access_token: ${{ inputs.github-token }}
 
-    - name: import nix store cache
-      if: "steps.nix-cache.outputs.cache-hit == 'true'"
-      run: "nix-store --import < /tmp/nixcache"
-      shell: bash
-
-    - name: enable cachix
-      uses: cachix/cachix-action@v12
+    - name: retry install nix
+      if: steps.install-nix.outcome != 'success'
+      uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
       with:
-        name: devenv
+        github_access_token: ${{ inputs.github-token }}
 
-    - name: install devenv.sh
-      run: nix profile install github:cachix/devenv/v0.5.1
+    - name: set up devenv
       shell: bash
+      run: |
+        set -euo pipefail
+        # Pin the installer inputs to a fixed nixpkgs-unstable snapshot
+        # (0af3d1402dec3fc7e93635e511d1f7428c89cebf, devenv 2.2.2 / cachix
+        # 1.9.1+). The channel is a moving target: when an unstable snapshot
+        # ships an invalid stdenv bootstrap path, every fresh evaluation fails
+        # until the channel self-heals.
+        nixpkgs_rev="0af3d1402dec3fc7e93635e511d1f7428c89cebf"
+        for attempt in 1 2 3; do
+          if nix profile add --accept-flake-config "github:NixOS/nixpkgs/${nixpkgs_rev}#cachix" && cachix use devenv && nix profile add "github:NixOS/nixpkgs/${nixpkgs_rev}#devenv"; then
+            exit 0
+          fi
+          if [ "$attempt" -eq 3 ]; then
+            echo "::error::Failed to set up devenv after ${attempt} attempts"
+            exit 1
+          fi
+          sleep $((attempt * 10))
+        done
 
-    - name: run devenv in ci
-      run: devenv ci
+    - name: warm devenv shell
       shell: bash
+      # The first evaluation bootstraps the nix store; a transient
+      # cache.nixos.org substitution failure during that window kills the
+      # whole job. Retry: a second evaluation finds every path already
+      # substituted, so the flake self-heals.
+      run: |
+        set -euo pipefail
+        for attempt in 1 2 3; do
+          if devenv shell -- echo "devenv ready"; then
+            exit 0
+          fi
+          if [ "$attempt" -eq 3 ]; then
+            echo "::error::devenv shell failed after ${attempt} attempts"
+            exit 1
+          fi
+          sleep $((attempt * 20))
+        done
 
-    - name: update paths
-      run: devenv shell setup:ci
+    - name: install pinned rust toolchain
       shell: bash
-
-    - name: export nix store cache
-      if: "steps.nix-cache.outputs.cache-hit != 'true'"
-      run: "nix-store --export $(find /nix/store -maxdepth 1 -name '*-*')> /tmp/nixcache"
-      shell: bash
+      run: |
+        set -euo pipefail
+        devenv shell -- rustup toolchain install nightly-2026-09-07 --profile default \
+          --component cargo \
+          --component clippy \
+          --component rustfmt
+        devenv shell -- rustup target add wasm32-unknown-unknown --toolchain nightly-2026-09-07

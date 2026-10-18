@@ -15,3 +15,4 @@ devenv.local.nix
 # setup
 /.helix
 /.vscode
+.video_agent/
