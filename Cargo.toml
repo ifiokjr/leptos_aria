@@ -38,6 +38,7 @@ leptos_aria_checkbox = { path = "crates/leptos_aria_checkbox", version = "0.0.0"
 leptos_aria_disclosure = { path = "crates/leptos_aria_disclosure", version = "0.0.0" }
 leptos_aria_file_trigger = { path = "crates/leptos_aria_file_trigger", version = "0.0.0" }
 leptos_aria_form = { path = "crates/leptos_aria_form", version = "0.0.0" }
+leptos_aria_grid = { path = "crates/leptos_aria_grid", version = "0.0.0" }
 leptos_aria_interactions = { path = "crates/leptos_aria_interactions", version = "0.0.0" }
 leptos_aria_link = { path = "crates/leptos_aria_link", version = "0.0.0" }
 leptos_aria_list_box = { path = "crates/leptos_aria_list_box", version = "0.0.0" }
@@ -49,12 +50,15 @@ leptos_aria_progress = { path = "crates/leptos_aria_progress", version = "0.0.0"
 leptos_aria_radio = { path = "crates/leptos_aria_radio", version = "0.0.0" }
 leptos_aria_search_field = { path = "crates/leptos_aria_search_field", version = "0.0.0" }
 leptos_aria_selection = { path = "crates/leptos_aria_selection", version = "0.0.0" }
+leptos_aria_slider = { path = "crates/leptos_aria_slider", version = "0.0.0" }
+leptos_aria_table = { path = "crates/leptos_aria_table", version = "0.0.0" }
 leptos_aria_tabs = { path = "crates/leptos_aria_tabs", version = "0.0.0" }
 leptos_aria_tag = { path = "crates/leptos_aria_tag", version = "0.0.0" }
 leptos_aria_text_field = { path = "crates/leptos_aria_text_field", version = "0.0.0" }
 leptos_aria_toast = { path = "crates/leptos_aria_toast", version = "0.0.0" }
 leptos_aria_toggle = { path = "crates/leptos_aria_toggle", version = "0.0.0" }
 leptos_aria_toolbar = { path = "crates/leptos_aria_toolbar", version = "0.0.0" }
+leptos_aria_tree = { path = "crates/leptos_aria_tree", version = "0.0.0" }
 leptos_aria_utils = { path = "crates/leptos_aria_utils", version = "0.0.0" }
 
 [workspace.lints.rust]
