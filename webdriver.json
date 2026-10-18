@@ -1,0 +1,8 @@
+{
+	"capabilities": {
+		"goog:chromeOptions": {
+			"args": ["--headless", "--no-sandbox", "--disable-gpu"]
+		},
+		"safari:options": {}
+	}
+}

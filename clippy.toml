@@ -1,0 +1,2 @@
+allow-indexing-slicing-in-tests = true
+msrv = "1.85.0"
