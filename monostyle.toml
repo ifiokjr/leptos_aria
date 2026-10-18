@@ -15,6 +15,18 @@ patterns = [
 	"**/changelog.md",
 ]
 
+# Test files assert on concrete calendar dates and month lengths, which read
+# as magic numbers out of context; the language fixture suites in the
+# reference repository get the same relief.
+[[section]]
+path = "crates/leptos_aria_date/tests"
+reason = "tests assert on concrete calendar dates and month lengths, which read as magic numbers out of context"
+rules.report-magic-numbers = false
+max-nesting-depth = 8
+max-parameters-inline = 8
+max-unit-lines = 200
+fail-under = { readability = 60.0, complexity = 60.0 }
+
 # The floor is a safety net rather than the target: component functions
 # binding a dozen event handlers are inherently branch-heavy the way a
 # hand-written lexer is, and a floor of 85 fails on files that are fine but
