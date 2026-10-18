@@ -34,9 +34,12 @@ web-sys = "=0.3.106"
 # internal
 leptos_aria_breadcrumbs = { path = "crates/leptos_aria_breadcrumbs", version = "0.0.0" }
 leptos_aria_button = { path = "crates/leptos_aria_button", version = "0.0.0" }
+leptos_aria_calendar = { path = "crates/leptos_aria_calendar", version = "0.0.0" }
 leptos_aria_checkbox = { path = "crates/leptos_aria_checkbox", version = "0.0.0" }
 leptos_aria_color = { path = "crates/leptos_aria_color", version = "0.0.0" }
 leptos_aria_combo_box = { path = "crates/leptos_aria_combo_box", version = "0.0.0" }
+leptos_aria_date = { path = "crates/leptos_aria_date", version = "0.0.0" }
+leptos_aria_date_picker = { path = "crates/leptos_aria_date_picker", version = "0.0.0" }
 leptos_aria_disclosure = { path = "crates/leptos_aria_disclosure", version = "0.0.0" }
 leptos_aria_drop_zone = { path = "crates/leptos_aria_drop_zone", version = "0.0.0" }
 leptos_aria_file_trigger = { path = "crates/leptos_aria_file_trigger", version = "0.0.0" }
@@ -59,6 +62,7 @@ leptos_aria_table = { path = "crates/leptos_aria_table", version = "0.0.0" }
 leptos_aria_tabs = { path = "crates/leptos_aria_tabs", version = "0.0.0" }
 leptos_aria_tag = { path = "crates/leptos_aria_tag", version = "0.0.0" }
 leptos_aria_text_field = { path = "crates/leptos_aria_text_field", version = "0.0.0" }
+leptos_aria_time_field = { path = "crates/leptos_aria_time_field", version = "0.0.0" }
 leptos_aria_toast = { path = "crates/leptos_aria_toast", version = "0.0.0" }
 leptos_aria_toggle = { path = "crates/leptos_aria_toggle", version = "0.0.0" }
 leptos_aria_toolbar = { path = "crates/leptos_aria_toolbar", version = "0.0.0" }

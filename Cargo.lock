@@ -782,6 +782,8 @@ dependencies = [
  "leptos_aria_checkbox",
  "leptos_aria_color",
  "leptos_aria_combo_box",
+ "leptos_aria_date",
+ "leptos_aria_date_picker",
  "leptos_aria_disclosure",
  "leptos_aria_drop_zone",
  "leptos_aria_file_trigger",
@@ -804,6 +806,7 @@ dependencies = [
  "leptos_aria_tabs",
  "leptos_aria_tag",
  "leptos_aria_text_field",
+ "leptos_aria_time_field",
  "leptos_aria_toast",
  "leptos_aria_toggle",
  "leptos_aria_toolbar",
@@ -834,6 +837,20 @@ dependencies = [
  "leptos_aria_interactions",
  "leptos_aria_utils",
  "wasm-bindgen",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_calendar"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_date",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
 ]
@@ -878,6 +895,33 @@ dependencies = [
  "leptos_aria_list_box",
  "leptos_aria_selection",
  "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_date"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_date_picker"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_calendar",
+ "leptos_aria_date",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
@@ -1189,6 +1233,19 @@ dependencies = [
  "js-sys",
  "leptos",
  "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_time_field"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
