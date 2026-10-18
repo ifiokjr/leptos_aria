@@ -18,7 +18,7 @@ js-sys = { workspace = true }
 leptos = { workspace = true, features = ["csr"] }
 slotmap = { workspace = true }
 wasm-bindgen = { workspace = true }
-web-sys = { workspace = true, features = ["CssStyleDeclaration", "Document", "Element", "Event", "EventTarget", "FocusOptions", "HtmlElement", "Navigator", "Node", "SvgElement", "TransitionEvent", "Window"] }
+web-sys = { workspace = true, features = ["CssStyleDeclaration", "DomRect", "Document", "Element", "Event", "EventTarget", "FocusOptions", "HtmlElement", "Navigator", "Node", "SvgElement", "TransitionEvent", "Window"] }
 
 [lints]
 workspace = true
