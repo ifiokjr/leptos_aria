@@ -187,3 +187,100 @@ mod tests {
 		);
 	}
 }
+
+/// A callback invoked when a drag starts or ends.
+pub type BoxedDragStateCallback = Box<dyn Fn() + Send + Sync + 'static>;
+
+/// A draggable item participates in HTML5 drag and drop.
+///
+/// The port of the upstream `useDraggableItem`: the element becomes
+/// draggable, its payload is written to the data transfer on drag start, and
+/// an `is-dragging` attribute tracks the state for styling.
+#[component]
+pub fn DraggableItem(
+	/// The data transfer type the payload is written under.
+	#[prop(into)]
+	data_type: String,
+	/// The payload dropped targets read back.
+	#[prop(into)]
+	value: String,
+	/// Handler that is called when the drag starts.
+	#[prop(optional)]
+	on_drag_start: Option<BoxedDragStateCallback>,
+	/// Handler that is called when the drag ends.
+	#[prop(optional)]
+	on_drag_end: Option<BoxedDragStateCallback>,
+	children: Children,
+) -> impl IntoView {
+	let is_dragging = RwSignal::new(false);
+
+	view! {
+		<div
+			class="leptos-aria-draggable"
+			draggable="true"
+			data-is-dragging=move || if is_dragging.get() { "true" } else { "false" }
+			on:dragstart=move |event: web_sys::DragEvent| {
+				let Some(transfer) = event.data_transfer() else {
+					return;
+				};
+
+				transfer.set_data(&data_type, &value).ok();
+				is_dragging.set(true);
+
+				if let Some(on_drag_start) = &on_drag_start {
+					(*on_drag_start)();
+				}
+			}
+			on:dragend=move |_| {
+				is_dragging.set(false);
+
+				if let Some(on_drag_end) = &on_drag_end {
+					(*on_drag_end)();
+				}
+			}
+		>
+			{children()}
+		</div>
+	}
+}
+
+#[cfg(all(test, target_arch = "wasm32"))]
+mod draggable_tests {
+	use leptos::mount::mount_to_body;
+	use wasm_bindgen::JsCast;
+	use wasm_bindgen_test::*;
+
+	use super::*;
+
+	wasm_bindgen_test_configure!(run_in_browser);
+
+	#[wasm_bindgen_test]
+	async fn draggable_item_renders_draggable_with_state() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<DraggableItem data_type="text/plain".to_string() value="card".to_string()>
+					"Card"
+				</DraggableItem>
+			}
+		});
+
+		let item = document()
+			.query_selector(".leptos-aria-draggable")
+			.unwrap()
+			.unwrap()
+			.unchecked_into::<web_sys::Element>();
+
+		assert_eq!(
+			item.get_attribute("draggable").as_deref(),
+			Some("true"),
+			"the item is draggable"
+		);
+		assert_eq!(
+			item.get_attribute("data-is-dragging").as_deref(),
+			Some("false"),
+			"the drag state starts idle"
+		);
+	}
+}

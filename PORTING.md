@@ -6,21 +6,21 @@ Status legend: **done** (ported and tested), **planned** (not started).
 
 ## Interactions
 
-| Hook                  | Status  | Crate                                        |
-| --------------------- | ------- | -------------------------------------------- |
-| `usePress`            | done    | `leptos_aria_interactions::use_press`        |
-| `useFocus`            | done    | `leptos_aria_interactions::use_focus`        |
-| `useFocusWithin`      | done    | `leptos_aria_interactions::use_focus_within` |
-| `useHover`            | done    | `leptos_aria_interactions::use_hover`        |
-| `useFocusable`        | done    | `leptos_aria_interactions::use_focusable`    |
-| `useFocusRing`        | done    | `leptos_aria_interactions::use_focus_ring`   |
-| `useKeyboard`         | done    | `leptos_aria_interactions::use_keyboard`     |
-| `useLongPress`        | done    | `leptos_aria_interactions::use_long_press`   |
-| `useScroll`           | planned | `leptos_aria_interactions`                   |
-| `useDrag` / `useDrop` | planned | `leptos_aria_interactions`                   |
-| `useMove`             | planned | `leptos_aria_interactions`                   |
-| `useDismiss`          | done    | `leptos_aria_overlay::use_overlay_dismiss`   |
-| `useModal`            | done    | `leptos_aria_overlay::use_modal`             |
+| Hook                  | Status | Crate                                        |
+| --------------------- | ------ | -------------------------------------------- |
+| `usePress`            | done   | `leptos_aria_interactions::use_press`        |
+| `useFocus`            | done   | `leptos_aria_interactions::use_focus`        |
+| `useFocusWithin`      | done   | `leptos_aria_interactions::use_focus_within` |
+| `useHover`            | done   | `leptos_aria_interactions::use_hover`        |
+| `useFocusable`        | done   | `leptos_aria_interactions::use_focusable`    |
+| `useFocusRing`        | done   | `leptos_aria_interactions::use_focus_ring`   |
+| `useKeyboard`         | done   | `leptos_aria_interactions::use_keyboard`     |
+| `useLongPress`        | done   | `leptos_aria_interactions::use_long_press`   |
+| `useScroll`           | done   | `leptos_aria_interactions::use_scroll`       |
+| `useDrag` / `useDrop` | done   | `leptos_aria_interactions`                   |
+| `useMove`             | done   | `leptos_aria_interactions::use_move`         |
+| `useDismiss`          | done   | `leptos_aria_overlay::use_overlay_dismiss`   |
+| `useModal`            | done   | `leptos_aria_overlay::use_modal`             |
 
 ## Utilities
 
@@ -43,11 +43,11 @@ Status legend: **done** (ported and tested), **planned** (not started).
 
 ## Focus
 
-| Feature                               | Status  | Crate                            |
-| ------------------------------------- | ------- | -------------------------------- |
-| focus containment (scope equivalent)  | done    | `leptos_aria_overlay::use_modal` |
-| `useFocusManagement` programmatic API | planned | `leptos_aria_overlay`            |
-| `useAutofocus`                        | planned | `leptos_aria_overlay`            |
+| Feature                               | Status | Crate                                |
+| ------------------------------------- | ------ | ------------------------------------ |
+| focus containment (scope equivalent)  | done   | `leptos_aria_overlay::use_modal`     |
+| `useFocusManagement` programmatic API | done   | `leptos_aria_overlay::FocusManager`  |
+| `useAutofocus`                        | done   | `leptos_aria_overlay::use_autofocus` |
 
 ## Selection
 
@@ -59,51 +59,51 @@ Status legend: **done** (ported and tested), **planned** (not started).
 
 ## Components
 
-| Component                                         | Status  | Crate                                                                  |
-| ------------------------------------------------- | ------- | ---------------------------------------------------------------------- |
-| `Button` (native element)                         | done    | `leptos_aria_button::Button`                                           |
-| `Button` (custom element types)                   | planned | `leptos_aria_button`                                                   |
-| `ToggleButton` / `useToggle`                      | done    | `leptos_aria_toggle`                                                   |
-| `Switch` (deprecated upstream for `ToggleButton`) | skipped | —                                                                      |
-| `Form`                                            | done    | `leptos_aria_form::Form`                                               |
-| `TextField`                                       | done    | `leptos_aria_text_field::TextField`                                    |
-| `TextArea`                                        | done    | `leptos_aria_text_field::TextArea`                                     |
-| `SearchField`                                     | done    | `leptos_aria_search_field::SearchField`                                |
-| `NumberField`                                     | done    | `leptos_aria_number_field::NumberField`                                |
-| `Checkbox` / `useCheckbox`                        | done    | `leptos_aria_checkbox::Checkbox`                                       |
-| `CheckboxGroup`                                   | done    | `leptos_aria_checkbox::CheckboxGroup`                                  |
-| `RadioGroup`                                      | done    | `leptos_aria_radio::RadioGroup`                                        |
-| `Slider`                                          | done    | `leptos_aria_slider::Slider`                                           |
-| `ComboBox`                                        | done    | `leptos_aria_combo_box::ComboBox`                                      |
-| `SelectBox`                                       | done    | `leptos_aria_select_box::SelectBox`                                    |
-| `ListBox`                                         | done    | `leptos_aria_list_box::ListBox`                                        |
-| `Menu`                                            | done    | `leptos_aria_menu::Menu` (list-based; trigger chains planned)          |
-| `Tabs`                                            | done    | `leptos_aria_tabs::Tabs`                                               |
-| `TagGroup`                                        | done    | `leptos_aria_tag::TagGroup`                                            |
-| `Toolbar`                                         | done    | `leptos_aria_toolbar::Toolbar`                                         |
-| `Tooltip`                                         | done    | `leptos_aria_overlay::Tooltip`                                         |
-| `Popover`                                         | done    | `leptos_aria_overlay::Popover` (flip/shift collision handling planned) |
-| `Modal` / `ModalOverlay`                          | done    | `leptos_aria_overlay::Modal`                                           |
-| `Dialog`                                          | done    | `leptos_aria_overlay::Dialog`                                          |
-| `Calendar`                                        | done    | `leptos_aria_calendar::Calendar`                                       |
-| `DatePicker` / `DateField`                        | done    | `leptos_aria_date_picker`                                              |
-| `DateRangePicker`                                 | planned | `leptos_aria_date_picker`                                              |
-| `TimeField`                                       | done    | `leptos_aria_time_field::TimeField`                                    |
-| `FileTrigger`                                     | done    | `leptos_aria_file_trigger::FileTrigger`                                |
-| `Grid`                                            | done    | `leptos_aria_grid::Grid`                                               |
-| `Table`                                           | done    | `leptos_aria_table::Table`                                             |
-| `Tree`                                            | done    | `leptos_aria_tree::Tree`                                               |
-| `Meter`                                           | done    | `leptos_aria_progress::Meter`                                          |
-| `ProgressBar`                                     | done    | `leptos_aria_progress::ProgressBar`                                    |
-| `Toast`                                           | done    | `leptos_aria_toast`                                                    |
-| `DropZone`                                        | done    | `leptos_aria_drop_zone::DropZone`                                      |
-| `DragAndDrop` (newer draggable-item API)          | planned | `leptos_aria_drop_zone`                                                |
-| `Link`                                            | done    | `leptos_aria_link::Link`                                               |
-| `Breadcrumb`                                      | done    | `leptos_aria_breadcrumbs`                                              |
-| `Heading` / `Text` / `VisuallyHidden`             | done    | `leptos_aria_primitives`                                               |
-| `Disclosure`                                      | done    | `leptos_aria_disclosure::Disclosure`                                   |
-| `Color` / `ColorField` / `ColorSwatch`            | done    | `leptos_aria_color` (area/wheel/sliders planned)                       |
-| `DateValue` / `DateDuration`                      | done    | `leptos_aria_date`                                                     |
+| Component                                         | Status  | Crate                                                |
+| ------------------------------------------------- | ------- | ---------------------------------------------------- |
+| `Button` (native element)                         | done    | `leptos_aria_button::Button`                         |
+| `Button` (custom element types)                   | done    | `leptos_aria_button::AnchorButton / CustomButton`    |
+| `ToggleButton` / `useToggle`                      | done    | `leptos_aria_toggle`                                 |
+| `Switch` (deprecated upstream for `ToggleButton`) | skipped | —                                                    |
+| `Form`                                            | done    | `leptos_aria_form::Form`                             |
+| `TextField`                                       | done    | `leptos_aria_text_field::TextField`                  |
+| `TextArea`                                        | done    | `leptos_aria_text_field::TextArea`                   |
+| `SearchField`                                     | done    | `leptos_aria_search_field::SearchField`              |
+| `NumberField`                                     | done    | `leptos_aria_number_field::NumberField`              |
+| `Checkbox` / `useCheckbox`                        | done    | `leptos_aria_checkbox::Checkbox`                     |
+| `CheckboxGroup`                                   | done    | `leptos_aria_checkbox::CheckboxGroup`                |
+| `RadioGroup`                                      | done    | `leptos_aria_radio::RadioGroup`                      |
+| `Slider`                                          | done    | `leptos_aria_slider::Slider`                         |
+| `ComboBox`                                        | done    | `leptos_aria_combo_box::ComboBox`                    |
+| `SelectBox`                                       | done    | `leptos_aria_select_box::SelectBox`                  |
+| `ListBox`                                         | done    | `leptos_aria_list_box::ListBox`                      |
+| `Menu`                                            | done    | `leptos_aria_menu::Menu` + `MenuTrigger`             |
+| `Tabs`                                            | done    | `leptos_aria_tabs::Tabs`                             |
+| `TagGroup`                                        | done    | `leptos_aria_tag::TagGroup`                          |
+| `Toolbar`                                         | done    | `leptos_aria_toolbar::Toolbar`                       |
+| `Tooltip`                                         | done    | `leptos_aria_overlay::Tooltip`                       |
+| `Popover`                                         | done    | `leptos_aria_overlay::Popover` (flip/shift included) |
+| `Modal` / `ModalOverlay`                          | done    | `leptos_aria_overlay::Modal`                         |
+| `Dialog`                                          | done    | `leptos_aria_overlay::Dialog`                        |
+| `Calendar`                                        | done    | `leptos_aria_calendar::Calendar`                     |
+| `DatePicker` / `DateField`                        | done    | `leptos_aria_date_picker`                            |
+| `DateRangePicker`                                 | done    | `leptos_aria_date_picker`                            |
+| `TimeField`                                       | done    | `leptos_aria_time_field::TimeField`                  |
+| `FileTrigger`                                     | done    | `leptos_aria_file_trigger::FileTrigger`              |
+| `Grid`                                            | done    | `leptos_aria_grid::Grid`                             |
+| `Table`                                           | done    | `leptos_aria_table::Table`                           |
+| `Tree`                                            | done    | `leptos_aria_tree::Tree`                             |
+| `Meter`                                           | done    | `leptos_aria_progress::Meter`                        |
+| `ProgressBar`                                     | done    | `leptos_aria_progress::ProgressBar`                  |
+| `Toast`                                           | done    | `leptos_aria_toast`                                  |
+| `DropZone`                                        | done    | `leptos_aria_drop_zone::DropZone`                    |
+| `DragAndDrop` (newer draggable-item API)          | done    | `leptos_aria_drop_zone::DraggableItem`               |
+| `Link`                                            | done    | `leptos_aria_link::Link`                             |
+| `Breadcrumb`                                      | done    | `leptos_aria_breadcrumbs`                            |
+| `Heading` / `Text` / `VisuallyHidden`             | done    | `leptos_aria_primitives`                             |
+| `Disclosure`                                      | done    | `leptos_aria_disclosure::Disclosure`                 |
+| `Color` / `ColorField` / `ColorSwatch`            | done    | `leptos_aria_color` (incl. area/slider/wheel)        |
+| `DateValue` / `DateDuration`                      | done    | `leptos_aria_date`                                   |
 
 ## Porting conventions
 
