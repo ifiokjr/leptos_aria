@@ -3,6 +3,9 @@
 use std::sync::Arc;
 use std::time::Duration;
 
+pub use focus_manager::FocusManager;
+pub use focus_manager::use_autofocus;
+pub use focus_manager::use_focus_manager;
 pub use hooks::BoxedOverlayCloseCallback;
 pub use hooks::use_modal;
 pub use hooks::use_overlay_dismiss;
@@ -11,6 +14,7 @@ use leptos::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::closure::Closure;
 
+mod focus_manager;
 mod hooks;
 
 /// A modal is an overlay element which blocks interaction with the page
@@ -283,7 +287,11 @@ mod tests {
 		let trigger: NodeRef<leptos::html::Button> = NodeRef::new();
 
 		view! {
-			<button node_ref=trigger on:click=move |_| is_open.set(!is_open.get_untracked())>
+			<button
+				class="leptos-aria-modal-test__trigger"
+				node_ref=trigger
+				on:click=move |_| is_open.set(!is_open.get_untracked())
+			>
 				"Open"
 			</button>
 			<Modal is_open=is_open>
@@ -304,7 +312,7 @@ mod tests {
 		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
 
 		let open_button = document()
-			.query_selector("button")
+			.query_selector(".leptos-aria-modal-test__trigger")
 			.unwrap()
 			.unwrap()
 			.unchecked_into::<web_sys::HtmlButtonElement>();
