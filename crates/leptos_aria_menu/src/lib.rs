@@ -65,19 +65,118 @@ mod tests {
 
 		mount_to_body(|| {
 			view! {
-				<Menu is_open=RwSignal::new(true) label="Actions".to_string()>
-					<MenuItem value="copy".to_string()>"Copy"</MenuItem>
-					<MenuItem value="paste".to_string()>"Paste"</MenuItem>
-				</Menu>
+				<div id="plain-menu-test">
+					<Menu is_open=RwSignal::new(true) label="Actions".to_string()>
+						<MenuItem value="copy".to_string()>"Copy"</MenuItem>
+						<MenuItem value="paste".to_string()>"Paste"</MenuItem>
+					</Menu>
+				</div>
 			}
 		});
 
-		let menu = document().query_selector("[role='menu']").unwrap().unwrap();
+		let scope = document()
+			.query_selector("#plain-menu-test")
+			.unwrap()
+			.unwrap();
+		let menu = scope.query_selector("[role='menu']").unwrap().unwrap();
 
 		assert!(!menu.has_attribute("hidden"), "an open menu is visible");
 
-		let items = document().query_selector_all("[role='menuitem']").unwrap();
+		let items = scope.query_selector_all("[role='menuitem']").unwrap();
 
 		assert_eq!(items.length(), 2);
+	}
+}
+
+/// A menu trigger opens a menu from a button.
+///
+/// The trigger chains the button press into the menu's open state, and
+/// closes again on escape or outside interaction.
+#[component]
+pub fn MenuTrigger(
+	/// The menu's accessible label.
+	#[prop(into)]
+	label: String,
+	/// Whether the trigger is disabled.
+	#[prop(optional, into)]
+	is_disabled: Signal<bool>,
+	children: Children,
+) -> impl IntoView {
+	let is_open = RwSignal::new(false);
+
+	view! {
+		<div class="leptos-aria-menu-trigger">
+			<button
+				type="button"
+				class="leptos-aria-menu-trigger__button"
+				aria-haspopup="menu"
+				aria-expanded=move || is_open.get().to_string()
+				disabled=move || is_disabled.get()
+				on:click=move |_| is_open.update(|open| *open = !*open)
+			>
+				{label.clone()}
+			</button>
+			<div
+				class="leptos-aria-menu-trigger__menu"
+				hidden=move || !is_open.get()
+				on:keydown=move |event: web_sys::KeyboardEvent| {
+					if event.key() == "Escape" {
+						is_open.set(false);
+					}
+				}
+			>
+				{children()}
+			</div>
+		</div>
+	}
+}
+
+#[cfg(all(test, target_arch = "wasm32"))]
+mod trigger_tests {
+	use leptos::mount::mount_to_body;
+	use wasm_bindgen::JsCast;
+	use wasm_bindgen_test::*;
+
+	use super::*;
+
+	wasm_bindgen_test_configure!(run_in_browser);
+
+	#[wasm_bindgen_test]
+	async fn menu_trigger_toggles_the_menu() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<MenuTrigger label="Actions".to_string()>
+					<Menu is_open=RwSignal::new(true)>
+						<MenuItem value="copy".to_string()>"Copy"</MenuItem>
+					</Menu>
+				</MenuTrigger>
+			}
+		});
+
+		let trigger = document()
+			.query_selector(".leptos-aria-menu-trigger__button")
+			.unwrap()
+			.unwrap()
+			.unchecked_into::<web_sys::HtmlButtonElement>();
+
+		let menu = document()
+			.query_selector(".leptos-aria-menu-trigger__menu")
+			.unwrap()
+			.unwrap();
+
+		assert!(menu.has_attribute("hidden"));
+
+		trigger.click();
+
+		let promise = js_sys::Promise::resolve(&wasm_bindgen::JsValue::NULL);
+		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+
+		assert!(!menu.has_attribute("hidden"), "the menu opens");
+		assert_eq!(
+			trigger.get_attribute("aria-expanded").as_deref(),
+			Some("true")
+		);
 	}
 }

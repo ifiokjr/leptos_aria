@@ -148,23 +148,61 @@ pub fn Popover(
 /// Resolve the fixed-position style anchoring the popover to the trigger.
 fn popover_style(trigger: &web_sys::Element, placement: PopoverPlacement) -> String {
 	let rect = trigger.get_bounding_client_rect();
+	let flipped = flip_placement(&rect, placement);
+
+	position_style(&rect, shifted_left(&rect), flipped)
+}
+
+/// The placement actually used: flipped when the preferred side would push
+/// the popover off the viewport.
+fn flip_placement(rect: &web_sys::DomRect, placement: PopoverPlacement) -> PopoverPlacement {
+	let viewport_height = window()
+		.inner_height()
+		.ok()
+		.and_then(|h| h.as_f64())
+		.unwrap_or(0.0);
 
 	match placement {
+		PopoverPlacement::Bottom if viewport_height - rect.bottom() < MIN_POPOVER_SPACE => {
+			PopoverPlacement::Top
+		}
+		PopoverPlacement::Top if rect.top() < MIN_POPOVER_SPACE => PopoverPlacement::Bottom,
+		other => other,
+	}
+}
+
+/// The left position clamped so the popover stays inside the viewport.
+fn shifted_left(rect: &web_sys::DomRect) -> f64 {
+	let viewport_width = window()
+		.inner_width()
+		.ok()
+		.and_then(|w| w.as_f64())
+		.unwrap_or(0.0);
+	let max_left = (viewport_width - MIN_POPOVER_SPACE).max(0.0);
+
+	rect.left().clamp(0.0, max_left)
+}
+
+/// The fixed-position style for a placement.
+fn position_style(rect: &web_sys::DomRect, left: f64, placement: PopoverPlacement) -> String {
+	match placement {
 		PopoverPlacement::Bottom => {
-			format!(
-				"position: fixed; top: {}px; left: {}px;",
-				rect.bottom(),
-				rect.left()
-			)
+			format!("position: fixed; top: {}px; left: {left}px;", rect.bottom())
 		}
 		PopoverPlacement::Top => {
 			format!(
-				"position: fixed; top: {}px; left: {}px; transform: translateY(-100%);",
-				rect.top(),
-				rect.left()
+				"position: fixed; top: {}px; left: {left}px; transform: translateY(-100%);",
+				rect.top()
 			)
 		}
 	}
+}
+
+/// The space a popover needs on its preferred side, in pixels.
+const MIN_POPOVER_SPACE: f64 = 120.0;
+
+fn window() -> web_sys::Window {
+	web_sys::window().expect("the `window` global is available in the browser")
 }
 
 /// How a tooltip is triggered.
