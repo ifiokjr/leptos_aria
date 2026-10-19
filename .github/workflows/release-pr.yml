@@ -1,0 +1,136 @@
+name: release-pr
+
+# Creates or refreshes the monochange release pull request on every push to
+# main. When a merged commit IS a release record, the publish workflow is
+# dispatched instead: that merge is the publish trigger.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    # The local checkout cannot open the pull request with the job token in
+    # this repository's configuration, so monochange writes the release
+    # branch and the pull request is opened through the GitHub CLI with the
+    # workflow's own write grant below.
+    if: github.repository_owner == 'ifiokjr'
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: install monochange
+        run: |
+          set -euo pipefail
+          asset="$(curl -fsSL https://api.github.com/repos/monochange/monochange/releases/latest \
+            | jq -r '.assets[] | select(.name | test("monochange-x86_64-unknown-linux-musl-.*\\.tar\\.gz")) | .browser_download_url' | head -1)"
+          curl -fsSL "$asset" | tar -xz --strip-components=1 -C /usr/local/bin
+          chmod +x /usr/local/bin/monochange
+          monochange --version
+
+      - name: configure release git credentials
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: refresh tags from origin
+        run: git fetch --force --tags origin
+
+      - name: detect current release commit
+        id: release_record
+        run: |
+          set -euo pipefail
+          release_record_error="$(mktemp)"
+          if is_release_commit="$(monochange step release-record --from HEAD --format json --jq '.resolved_commit == .record_commit' 2>"$release_record_error")"; then
+            echo "is_release_commit=${is_release_commit}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          subject="$(git log -1 --pretty=%s)"
+          body="$(git log -1 --pretty=%B)"
+          if [[ "$subject" == chore\(release\):\ prepare\ release* ]] || grep -q '<!-- monochange:release-record:start -->' <<<"$body"; then
+            echo "::error::Release-looking commit could not be read as a release record; failing instead of silently skipping release automation."
+            cat "$release_record_error" >&2
+            exit 1
+          fi
+          echo "is_release_commit=false" >> "$GITHUB_OUTPUT"
+
+      # A HEAD that is a release record means the release PR merged: the
+      # publish workflow runs against the merged tree, and the release PR
+      # must not be refreshed on top of it.
+      - name: dispatch publish
+        if: steps.release_record.outputs.is_release_commit == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="$(monochange step release-record --from HEAD --format json \
+            | jq -r '[.record.release_targets[] | select(.tag == true)] | first | .tag_name // empty')"
+          if [ -z "$tag" ]; then
+            echo "::error::Could not determine the release tag from the merged release record." >&2
+            exit 1
+          fi
+          gh workflow run publish.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f "tag=$tag"
+
+      - name: skip refresh on merged release commit
+        if: steps.release_record.outputs.is_release_commit == 'true'
+        run: echo "HEAD is a merged release commit; publish dispatched."
+
+      - name: prepare release
+        if: steps.release_record.outputs.is_release_commit != 'true'
+        run: |
+          set -euo pipefail
+          if ! output="$(monochange run release --create-pr=false 2>&1)"; then
+            if printf '%s\n' "$output" | grep -q 'no releaseable packages were found in discovered changesets'; then
+              echo "No releaseable packages in current changesets; nothing to release."
+              exit 0
+            fi
+            printf '%s\n' "$output" >&2
+            exit 1
+          fi
+          printf '%s\n' "$output"
+
+      - name: open or refresh release pull request
+        if: steps.release_record.outputs.is_release_commit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          branch="monochange/release/release"
+          if ! git ls-remote --heads origin "$branch" | grep -q .; then
+            echo "No release branch was created; nothing to publish as a pull request."
+            exit 0
+          fi
+          git push --force origin "HEAD:refs/heads/$branch"
+          body="$(git log --format='-%h %s' main..HEAD | head -40)"
+          if ! pr_number="$(gh pr list --head "$branch" --json number --jq '.[0].number // empty')"; then
+            echo "Failed to list existing pull requests." >&2
+            exit 1
+          fi
+          if [ -n "$pr_number" ]; then
+            gh pr edit "$pr_number" --title "chore(release): prepare release" --body "$body"
+          else
+            gh pr create --head "$branch" --base main \
+              --title "chore(release): prepare release" \
+              --body "$body" --label release --label automated
+          fi

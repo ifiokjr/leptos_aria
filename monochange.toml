@@ -1,0 +1,1645 @@
+#:schema https://monochange.github.io/monochange/schemas/monochange.schema.json
+# =============================================================================
+# monochange.toml - repository configuration for monochange
+# =============================================================================
+#
+# This file is the single source of truth for release planning, CLI commands,
+# changelog generation, and automation flows in this monorepo.
+#
+# Run `monochange step validate` to check this file against the workspace.
+# Run `monochange init` to generate a starter config from detected packages.
+
+# =============================================================================
+# [defaults] - repository-wide defaults applied to every package unless
+# overridden at the package or group level.
+# =============================================================================
+
+[defaults]
+# Bump severity applied to transitive dependents when a dependency changes.
+# When package A depends on package B, and B gets a minor bump, A receives
+# whichever bump is configured here.
+#
+# Options: "none", "patch", "minor", "major"
+# Default: "patch"
+parent_bump = "patch"
+
+# Whether to include private packages (publish = false) in discovery and
+# release planning. When false, private packages are discovered but excluded
+# from release plans and version bumps.
+#
+# Default: false
+include_private = false
+
+# Emit a warning when version-group members have mismatched current versions.
+# Helps catch accidental version drift in grouped packages.
+#
+# Default: true
+warn_on_group_mismatch = true
+
+# Default package type for all packages that don't declare their own `type`.
+# Setting this avoids repeating `type = "cargo"` on every [package.*] entry.
+#
+# Options: "cargo", "npm", "deno", "dart", "flutter", "python", "go",
+#          "github_actions"
+# Default: none (each package must declare its own type)
+# package_type = "cargo"
+
+# Default changelog configuration applied to every package that doesn't
+# declare its own `changelog` field.
+#
+# Accepts three forms:
+#   true                           → use "{{ path }}/CHANGELOG.md" for every package
+#   false                          → disable changelogs by default
+#   "{{ path }}/changelog.md"      → pattern where {{ path }} is replaced with each package path
+#
+# As a table, you can set path, format, and the initial header used when
+# monochange creates a changelog from empty content:
+#   [defaults.changelog]
+#   path = "{{ path }}/changelog.md"
+#   format = "keep_a_changelog"
+#   initial_header = """
+#   # Changelog
+#
+#   All notable changes to this project will be documented in this file.
+#   """
+#
+# Supported formats: "monochange" (default), "keep_a_changelog"
+# Default: none (changelogs are disabled unless configured)
+# [defaults.changelog]
+# path = "{{ path }}/changelog.md"
+# format = "keep_a_changelog"
+# initial_header = """
+# # Changelog
+#
+# All notable changes to this project will be documented in this file.
+#
+# This changelog is managed by [monochange](https://github.com/monochange/monochange).
+# """
+
+# Default changelog configuration. When [changelog] is not specified,
+# built-in defaults provide standard sections (Major, Breaking Change, Added,
+# Minor, Changed, Fixed, Patch, Testing, Refactor, Documentation, Security,
+# Performance, None) and corresponding types. See [changelog] section below
+# for customization.
+# [changelog] - workspace-wide changelog configuration
+#
+# Controls templates, sections, types, audience streams, and named outputs.
+# When omitted, built-in defaults provide standard sections and types.
+#
+# [changelog]
+# templates - Templates that control how individual change entries render.
+# Each template is tried in order; the first one whose required variables are
+# all present wins. If none match, falls back to "- ".
+#
+# sections - Named changelog sections with heading and priority (lower = first).
+# The built-in defaults provide standard sections matching the commented example.
+#
+# section_thresholds - Optional rendering cutoffs based on section priority.
+# Use these to collapse lower-priority sections into markdown <details> blocks
+# or omit them entirely.
+#
+# types - Change type definitions mapping changeset types to section and bump severity.
+# Each type key references a section key, declares a default bump severity, and
+# may route the whole changeset to one named stream. Types without `stream`
+# use the built-in `default` stream.
+# The built-in defaults provide standard types matching the commented example.
+#
+# streams - Named content partitions. The `default` stream always exists and
+# preserves the developer-oriented package/group changelogs used before streams.
+#
+# outputs - Named destinations for one stream. `targets` contains package or
+# group ids. `path` supports , , and . Formats
+# are `monochange`, `keep_a_changelog`, `json`, or `text`. `mode = "append"`
+# updates a cumulative Markdown changelog; `mode = "release"` writes only the
+# current release and is required for JSON and text.
+
+# [changelog.templates]
+# Add custom templates if the defaults don't match your style.
+
+# [changelog.sections]
+# major = { heading = "Major", description = "Major version bumps", priority = 5 }
+# breaking = { heading = "Breaking Change", description = "API changes requiring migration", priority = 10 }
+# minor = { heading = "Minor", description = "Minor version bumps", priority = 15 }
+# feat = { heading = "Added", description = "New features added", priority = 20 }
+# change = { heading = "Changed", description = "Changes to existing functionality", priority = 25 }
+# fix = { heading = "Fixed", description = "Bug fixes", priority = 30 }
+# patch = { heading = "Patch", description = "Patch version bumps", priority = 35 }
+# test = { heading = "Testing", description = "Changes that only modify tests", priority = 40 }
+# refactor = { heading = "Refactor", description = "Code refactoring without functional changes", priority = 40 }
+# docs = { heading = "Documentation", description = "Changes that only modify documentation", priority = 40 }
+# security = { heading = "Security", description = "Security-related changes", priority = 40 }
+# perf = { heading = "Performance", description = "Performance improvements", priority = 40 }
+# none = { heading = "None", description = "No version bump", priority = 50 }
+
+# [changelog.section_thresholds]
+# collapse = 127
+# ignored = 127
+
+# [changelog.types]
+# breaking = { section = "breaking", bump = "major" }
+# major = { section = "major", bump = "major" }
+# feat = { section = "feat", bump = "minor" }
+# minor = { section = "minor", bump = "minor" }
+# change = { section = "change", bump = "minor" }
+# fix = { section = "fix", bump = "patch" }
+# patch = { section = "patch", bump = "patch" }
+# test = { section = "test" }
+# none = { section = "none" }
+# docs = { section = "docs" }
+# security = { section = "security" }
+# refactor = { section = "refactor", bump = "patch" }
+# perf = { heading = "perf" }
+
+# A changeset may only contain target types that resolve to one stream. Write a
+# second changeset when the same implementation needs both developer-facing and
+# user-facing wording.
+# [changelog.streams.user]
+# description = "Product release notes for app users"
+
+# [changelog.types.native]
+# bump = "major"
+# section = "breaking"
+
+# [changelog.types.app_feature]
+# bump = "minor"
+# section = "feat"
+# stream = "user"
+
+# [changelog.outputs.user]
+# stream = "user"
+# format = "json"
+# mode = "release"
+# path = "{{ path }}/release-notes/{{ version }}.json"
+# targets = ["app"]
+
+
+# Version schemes render "vanity" display labels from calendar parts, release
+# ordinals, and declared release values. Reference one from a package with
+# `display_version = "<scheme id>"`.
+#
+# Available variables:
+#   Identity:      
+#              
+#   Calendar:     
+#                 
+#   Ordinals:    
+#   Declared:  every `[package.<id>.values.<value id>]` id, plus ``
+#              for the package's own rendered label.
+#
+# [version_scheme.calver]
+# template = ".."
+
+# [version_scheme.ubuntu]
+# template = "."
+
+# Declared release values become template variables and, for file counters, are
+# stamped on every release. The counter file is yours to create and commit:
+#   { "build": 0 }
+#
+# Sources (declare exactly one):
+#   file + field   stamped or read-only counter at a dot-separated JSON field
+#   hash           digest of a file; supports algorithm/encoding/length
+#   env            environment variable value
+#   git            short_hash or commit_count of the release commit
+#   timestamp      now or commit
+#
+# Behaviours for `file` counters:
+#   on_release = "increment"              add one (default)
+#   on_release = { add = { amount = 10 }} add a fixed amount
+#   on_release = "none"                   read without changing
+#   reset = "never"                       never restart (Google Play, macOS)
+#   reset = "version"                     restart when the version changes (iOS)
+#
+# [package.app.values.build]
+# file = "build.json"
+# field = "build"
+# on_release = "increment"
+# reset = "version"
+
+# [package.app.values.play_code]
+# file = "build.json"
+# field = "play_code"
+# reset = "never"
+
+# [package.app.values.artifact]
+# hash = "artifacts/app.aab"
+# encoding = "base36"
+# length = 8
+
+# A versioned file can render a whole value instead of the plain version, so
+# store counters reach pubspec.yaml or an Expo app.json.
+#
+# [[package.app.versioned_files]]
+# path = "pubspec.yaml"
+# type = "dart"
+# value_template = "+"
+
+
+# Default empty_update_message applied when a package is bumped but has no
+# direct changeset entries (e.g. transitive dependency bumps or group
+# synchronization). Template placeholders are interpolated at render time
+# using minijinja syntax.
+#
+# Available placeholders:
+#   {{ package }}, {{ package_name }}, {{ package_id }}
+#   {{ group }}, {{ group_name }}, {{ group_id }}
+#   {{ version }}, {{ new_version }}, {{ current_version }}, {{ previous_version }}
+#   {{ bump }}, {{ trigger }}, {{ ecosystem }}
+#   {{ release_owner }}, {{ release_owner_kind }}
+#   {{ members }}, {{ member_count }}  (group changelogs only)
+#   {{ reasons }}
+#
+# Precedence: package → group → defaults → built-in message
+# Default: built-in message varies by grouped/ungrouped context
+#
+# empty_update_message = "No direct changes; {{ package }} updated to {{ version }}."
+
+
+# Default release_title applied when creating provider releases.
+# This is a plain-text title used for GitHub, GitLab, and Gitea releases.
+#
+# Available placeholders:
+#   {{ version }}, {{ id }}, {{ date }}, {{ time }}, {{ datetime }}
+#   {{ changes_count }}, {{ tag_url }}, {{ compare_url }}
+#
+# Defaults:
+#   Primary versioning:    " ()"
+#   Namespaced versioning: "  ()"
+#
+# release_title = "{{ version }} ({{ date }})"
+
+
+# Default changelog_version_title controls how changelog version headings render.
+# This is markdown-capable and supports links.
+#
+# Available placeholders: same as release_title above.
+#
+# Defaults:
+#   Primary:    "[]() ()" (linked when source configured)
+#   Namespaced: " []() ()"
+#
+# To restore headings without dates (the previous default), set:
+#   changelog_version_title = "{{ version }}"
+#
+# changelog_version_title = "[{{ version }}]({{ tag_url }}) ({{ date }})"
+
+
+# =============================================================================
+# [changelog] - workspace-wide changelog configuration
+# =============================================================================
+
+# [changelog]
+# Templates that control how individual change entries render in changelogs.
+# Each template is tried in order; the first one whose required variables are
+# all present wins (uses minijinja strict mode - all referenced variables must
+# be defined). If none match, falls back to "- {{ summary }}".
+#
+# Available variables:
+#   {{ summary }}       - the change summary from the changeset
+#   {{ details }}       - optional multi-line details block
+#   {{ package }}       - package name
+#   {{ version }}       - planned version
+#   {{ target_id }}     - release owner id (package or group)
+#   {{ bump }}          - bump severity (none, patch, minor, major)
+#   {{ type }}          - optional change type (e.g. "security", "note")
+#   {{ context }}       - rendered context context block
+#   {{ context }}    - alias for {{ context }}
+#   {{ changeset_path }} - path to the changeset file
+#   {{ change_owner }}, {{ change_owner_link }}
+#   {{ review_request }}, {{ review_request_link }}
+#   {{ introduced_commit }}, {{ introduced_commit_link }}
+#   {{ last_updated_commit }}, {{ last_updated_commit_link }}
+#   {{ related_issues }}, {{ related_issue_links }}
+#   {{ closed_issues }}, {{ closed_issue_links }}
+#
+# Default: ["#### {{ summary }}\n\n{{ details }}", "- {{ summary }}"]
+# templates = [
+#   "#### {{ summary }}\n\n{{ details }}\n\n{{ context }}",
+#   "#### {{ summary }}\n\n{{ context }}",
+#   "#### {{ summary }}\n\n{{ details }}",
+#   "- {{ summary }}",
+# ]
+
+
+# =============================================================================
+# [package.*] - declare each release-managed package explicitly
+# =============================================================================
+#
+# Required fields:
+#   path  - relative path from repo root to the package directory
+#
+# Optional fields:
+#   type                    - "cargo", "npm", "deno", "dart", "flutter", "python",
+#                             "go", "github_actions"
+#                             (not needed when defaults.package_type is set)
+#   changelog               - true, false, "path/to/changelog.md", or a table
+#                             with { path, format, initial_header }; overrides
+#                             [defaults.changelog]
+#   excluded_changelog_types - list of changelog type keys to exclude from this target
+#   empty_update_message    - per-package fallback text for transitive bumps
+#   versioned_files         - additional files to update with the new version
+#                             package-scoped string entries infer the package ecosystem,
+#                             e.g. ["Cargo.toml"] or ["**/crates/*/Cargo.toml"]
+#                             explicit typed entries remain supported, e.g.
+#                             [{ path = "group.toml", type = "cargo" }]
+#                             typed manifest entries can update dependency
+#                             sections and arbitrary string fields inside TOML
+#                             or JSON manifests, e.g.
+#                             [{ path = "Cargo.toml", type = "cargo", fields = ["workspace.metadata.bin.monochange.version"], prefix = "" }]
+#                             regex entries update plain-text files and must include a
+#                             named `version` capture group, e.g.
+#                             [{ path = "README.md", regex = 'v(?<version>\d+\.\d+\.\d+)' }]
+#                             regex entries cannot set `type`, `prefix`, `fields`, or `name`
+#                             lockfiles can still be listed explicitly, but
+#                             ecosystem-level lockfile refresh now prefers
+#                             [ecosystems.<name>].lockfile_commands
+#   ignore_ecosystem_versioned_files - opt out of inherited [ecosystems.<name>].versioned_files
+#                             defaults for this package (default: false)
+#   ignored_paths           - glob patterns for paths within this package to
+#                             exclude from changeset verification
+#   additional_paths        - glob patterns for paths outside the package
+#                             directory that should trigger changeset verification
+#   publish                 - package publishing settings; package values
+#                             override inherited [ecosystems.<name>].publish
+#                             defaults
+#     enabled               - include this package in managed publishing
+#                             flows (default: true)
+#     mode                  - "builtin" for monochange-managed publishing to
+#                             the default public registry for the ecosystem, or
+#                             "external" when your CI or scripts handle
+#                             publishing themselves (default: "builtin").
+#                             npm-family workspaces use the detected workspace
+#                             manager for built-in publish commands, so pnpm
+#                             workspaces publish via `pnpm publish`.
+#     registry              - registry override. Built-in publishing only
+#                             supports the default public registry for each
+#                             ecosystem: "crates_io", "npm", "jsr", or
+#                             "pub_dev". Custom/private registries must use
+#                             mode = "external".
+#     trusted_publishing    - whether this package is expected to use registry
+#                             trusted/OIDC publishing flows when available.
+#                             Set `trusted_publishing = true` for defaults, or
+#                             use a table to override GitHub trust metadata:
+#                             enabled, repository, workflow, environment
+#                             (default: enabled)
+#     rate_limits.enforce   - block built-in publish runs when the selected
+#                             package set requires more than one known registry
+#                             rate-limit window. Use `monochange publish-plan` to inspect
+#                             batches first. (default: false)
+#     timeout.timeout_seconds - maximum seconds a single package publish command
+#                             may run before it is killed and retried. Set to 0
+#                             to disable the timeout. (default: 60)
+#     timeout.retries       - number of times to retry a publish command that
+#                             times out before reporting the package as failed.
+#                             (default: 2)
+#     placeholder.readme    - inline README text to use when publishing a
+#                             placeholder package for the first bootstrap
+#                             release
+#     placeholder.readme_file - workspace-relative path to a README file used
+#                             for placeholder publishing. Set either
+#                             placeholder.readme or placeholder.readme_file.
+#   tag                     - whether to create a git tag for this package (default: false)
+#   release                 - whether to create a provider release (default: false)
+#   version_format          - "namespaced" (default: "pkg/v1.0.0") or
+#                             "primary" (just "v1.0.0"); only one package/group
+#                             may use "primary"
+
+
+[package.leptos_aria]
+path = "crates/leptos_aria"
+type = "cargo"
+
+# [package.leptos_aria.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria-placeholder.md"
+
+
+[package.leptos_aria_accordion]
+path = "crates/leptos_aria_accordion"
+type = "cargo"
+
+# [package.leptos_aria_accordion.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_accordion.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_accordion.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_accordion-placeholder.md"
+
+
+[package.leptos_aria_breadcrumbs]
+path = "crates/leptos_aria_breadcrumbs"
+type = "cargo"
+
+# [package.leptos_aria_breadcrumbs.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_breadcrumbs.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_breadcrumbs.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_breadcrumbs-placeholder.md"
+
+
+[package.leptos_aria_button]
+path = "crates/leptos_aria_button"
+type = "cargo"
+
+# [package.leptos_aria_button.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_button.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_button.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_button-placeholder.md"
+
+
+[package.leptos_aria_calendar]
+path = "crates/leptos_aria_calendar"
+type = "cargo"
+
+# [package.leptos_aria_calendar.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_calendar.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_calendar.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_calendar-placeholder.md"
+
+
+[package.leptos_aria_checkbox]
+path = "crates/leptos_aria_checkbox"
+type = "cargo"
+
+# [package.leptos_aria_checkbox.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_checkbox.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_checkbox.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_checkbox-placeholder.md"
+
+
+[package.leptos_aria_cli]
+path = "crates/leptos_aria_cli"
+type = "cargo"
+
+# [package.leptos_aria_cli.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_cli.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_cli.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_cli-placeholder.md"
+
+
+[package.leptos_aria_color]
+path = "crates/leptos_aria_color"
+type = "cargo"
+
+# [package.leptos_aria_color.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_color.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_color.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_color-placeholder.md"
+
+
+[package.leptos_aria_combo_box]
+path = "crates/leptos_aria_combo_box"
+type = "cargo"
+
+# [package.leptos_aria_combo_box.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_combo_box.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_combo_box.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_combo_box-placeholder.md"
+
+
+[package.leptos_aria_date]
+path = "crates/leptos_aria_date"
+type = "cargo"
+
+# [package.leptos_aria_date.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_date.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_date.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_date-placeholder.md"
+
+
+[package.leptos_aria_date_picker]
+path = "crates/leptos_aria_date_picker"
+type = "cargo"
+
+# [package.leptos_aria_date_picker.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_date_picker.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_date_picker.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_date_picker-placeholder.md"
+
+
+[package.leptos_aria_disclosure]
+path = "crates/leptos_aria_disclosure"
+type = "cargo"
+
+# [package.leptos_aria_disclosure.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_disclosure.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_disclosure.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_disclosure-placeholder.md"
+
+
+[package.leptos_aria_drop_zone]
+path = "crates/leptos_aria_drop_zone"
+type = "cargo"
+
+# [package.leptos_aria_drop_zone.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_drop_zone.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_drop_zone.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_drop_zone-placeholder.md"
+
+
+[package.leptos_aria_file_trigger]
+path = "crates/leptos_aria_file_trigger"
+type = "cargo"
+
+# [package.leptos_aria_file_trigger.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_file_trigger.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_file_trigger.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_file_trigger-placeholder.md"
+
+
+[package.leptos_aria_form]
+path = "crates/leptos_aria_form"
+type = "cargo"
+
+# [package.leptos_aria_form.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_form.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_form.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_form-placeholder.md"
+
+
+[package.leptos_aria_grid]
+path = "crates/leptos_aria_grid"
+type = "cargo"
+
+# [package.leptos_aria_grid.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_grid.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_grid.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_grid-placeholder.md"
+
+
+[package.leptos_aria_interactions]
+path = "crates/leptos_aria_interactions"
+type = "cargo"
+
+# [package.leptos_aria_interactions.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_interactions.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_interactions.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_interactions-placeholder.md"
+
+
+[package.leptos_aria_link]
+path = "crates/leptos_aria_link"
+type = "cargo"
+
+# [package.leptos_aria_link.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_link.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_link.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_link-placeholder.md"
+
+
+[package.leptos_aria_list_box]
+path = "crates/leptos_aria_list_box"
+type = "cargo"
+
+# [package.leptos_aria_list_box.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_list_box.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_list_box.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_list_box-placeholder.md"
+
+
+[package.leptos_aria_menu]
+path = "crates/leptos_aria_menu"
+type = "cargo"
+
+# [package.leptos_aria_menu.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_menu.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_menu.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_menu-placeholder.md"
+
+
+[package.leptos_aria_number_field]
+path = "crates/leptos_aria_number_field"
+type = "cargo"
+
+# [package.leptos_aria_number_field.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_number_field.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_number_field.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_number_field-placeholder.md"
+
+
+[package.leptos_aria_overlay]
+path = "crates/leptos_aria_overlay"
+type = "cargo"
+
+# [package.leptos_aria_overlay.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_overlay.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_overlay.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_overlay-placeholder.md"
+
+
+[package.leptos_aria_pagination]
+path = "crates/leptos_aria_pagination"
+type = "cargo"
+
+# [package.leptos_aria_pagination.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_pagination.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_pagination.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_pagination-placeholder.md"
+
+
+[package.leptos_aria_primitives]
+path = "crates/leptos_aria_primitives"
+type = "cargo"
+
+# [package.leptos_aria_primitives.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_primitives.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_primitives.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_primitives-placeholder.md"
+
+
+[package.leptos_aria_progress]
+path = "crates/leptos_aria_progress"
+type = "cargo"
+
+# [package.leptos_aria_progress.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_progress.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_progress.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_progress-placeholder.md"
+
+
+[package.leptos_aria_radio]
+path = "crates/leptos_aria_radio"
+type = "cargo"
+
+# [package.leptos_aria_radio.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_radio.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_radio.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_radio-placeholder.md"
+
+
+[package.leptos_aria_search_field]
+path = "crates/leptos_aria_search_field"
+type = "cargo"
+
+# [package.leptos_aria_search_field.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_search_field.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_search_field.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_search_field-placeholder.md"
+
+
+[package.leptos_aria_select_box]
+path = "crates/leptos_aria_select_box"
+type = "cargo"
+
+# [package.leptos_aria_select_box.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_select_box.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_select_box.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_select_box-placeholder.md"
+
+
+[package.leptos_aria_selection]
+path = "crates/leptos_aria_selection"
+type = "cargo"
+
+# [package.leptos_aria_selection.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_selection.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_selection.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_selection-placeholder.md"
+
+
+[package.leptos_aria_slider]
+path = "crates/leptos_aria_slider"
+type = "cargo"
+
+# [package.leptos_aria_slider.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_slider.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_slider.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_slider-placeholder.md"
+
+
+[package.leptos_aria_table]
+path = "crates/leptos_aria_table"
+type = "cargo"
+
+# [package.leptos_aria_table.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_table.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_table.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_table-placeholder.md"
+
+
+[package.leptos_aria_tabs]
+path = "crates/leptos_aria_tabs"
+type = "cargo"
+
+# [package.leptos_aria_tabs.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_tabs.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_tabs.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_tabs-placeholder.md"
+
+
+[package.leptos_aria_tag]
+path = "crates/leptos_aria_tag"
+type = "cargo"
+
+# [package.leptos_aria_tag.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_tag.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_tag.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_tag-placeholder.md"
+
+
+[package.leptos_aria_text_field]
+path = "crates/leptos_aria_text_field"
+type = "cargo"
+
+# [package.leptos_aria_text_field.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_text_field.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_text_field.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_text_field-placeholder.md"
+
+
+[package.leptos_aria_time_field]
+path = "crates/leptos_aria_time_field"
+type = "cargo"
+
+# [package.leptos_aria_time_field.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_time_field.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_time_field.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_time_field-placeholder.md"
+
+
+[package.leptos_aria_toast]
+path = "crates/leptos_aria_toast"
+type = "cargo"
+
+# [package.leptos_aria_toast.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_toast.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_toast.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_toast-placeholder.md"
+
+
+[package.leptos_aria_toggle]
+path = "crates/leptos_aria_toggle"
+type = "cargo"
+
+# [package.leptos_aria_toggle.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_toggle.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_toggle.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_toggle-placeholder.md"
+
+
+[package.leptos_aria_toolbar]
+path = "crates/leptos_aria_toolbar"
+type = "cargo"
+
+# [package.leptos_aria_toolbar.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_toolbar.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_toolbar.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_toolbar-placeholder.md"
+
+
+[package.leptos_aria_tree]
+path = "crates/leptos_aria_tree"
+type = "cargo"
+
+# [package.leptos_aria_tree.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_tree.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_tree.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_tree-placeholder.md"
+
+
+[package.leptos_aria_utils]
+path = "crates/leptos_aria_utils"
+type = "cargo"
+
+# [package.leptos_aria_utils.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [package.leptos_aria_utils.publish.trusted_publishing]
+# enabled = true
+# repository = "owner/repo"
+# workflow = "publish.yml"
+# environment = "release"
+# registry = "crates_io"
+
+# [package.leptos_aria_utils.publish.placeholder]
+# readme = "This package is a placeholder published by monochange until the first real release."
+# readme_file = "docs/leptos_aria_utils-placeholder.md"
+
+
+# =============================================================================
+# [group.*] - version groups that share a single release identity
+# =============================================================================
+#
+# When packages belong to a group, they share a synchronized version and a
+# single release tag/identity. If any member bumps, all members bump to the
+# group's highest severity.
+#
+# Required fields:
+#   packages - list of [package.*] ids that belong to this group
+#
+# Optional fields:
+#   changelog               - path or table for the group-level changelog;
+#                             tables may also set `include = "all"`,
+#                             `include = "group-only"`, or
+#                             `include = ["package-id"]` to control which
+#                             member-targeted changesets appear in the group
+#                             changelog (direct group-targeted changesets are
+#                             always included; default: "all")
+#   excluded_changelog_types - list of changelog type keys to exclude from this target
+#   empty_update_message    - fallback text when the group bumps but a
+#                             specific member has no direct changeset entries
+#   versioned_files         - additional files to version-bump with the group
+#                             groups must use explicit typed entries because the
+#                             ecosystem cannot be inferred from a bare string;
+#                             regex entries are also supported, e.g.
+#                             [{ path = "**/install.sh", regex = 'SDK_VERSION="(?<version>\d+\.\d+\.\d+)"' }]
+#   tag                     - create a git tag for the group release (default: false)
+#   release                 - create a provider release for the group (default: false)
+#   version_format          - "namespaced" (default) or "primary"
+#
+# Rules:
+#   - group members must be declared under [package.*]
+#   - package and group ids share one namespace (no collisions)
+#   - a package may belong to only one group
+#   - only one package or group may use version_format = "primary"
+#   - group tag/release/version_format override member package settings
+#   - prefer package ids in authored changesets when possible; dependents and
+#     grouped members propagate automatically, so group ids are best for
+#     intentionally group-owned releases
+
+
+[group.main]
+packages = ["leptos_aria", "leptos_aria_accordion", "leptos_aria_breadcrumbs", "leptos_aria_button", "leptos_aria_calendar", "leptos_aria_checkbox", "leptos_aria_cli", "leptos_aria_color", "leptos_aria_combo_box", "leptos_aria_date", "leptos_aria_date_picker", "leptos_aria_disclosure", "leptos_aria_drop_zone", "leptos_aria_file_trigger", "leptos_aria_form", "leptos_aria_grid", "leptos_aria_interactions", "leptos_aria_link", "leptos_aria_list_box", "leptos_aria_menu", "leptos_aria_number_field", "leptos_aria_overlay", "leptos_aria_pagination", "leptos_aria_primitives", "leptos_aria_progress", "leptos_aria_radio", "leptos_aria_search_field", "leptos_aria_select_box", "leptos_aria_selection", "leptos_aria_slider", "leptos_aria_table", "leptos_aria_tabs", "leptos_aria_tag", "leptos_aria_text_field", "leptos_aria_time_field", "leptos_aria_toast", "leptos_aria_toggle", "leptos_aria_toolbar", "leptos_aria_tree", "leptos_aria_utils"]
+tag = true
+release = true
+version_format = "primary"
+# [group.main.changelog]
+# path = "changelog.md"
+# include = ["package-id"]
+
+
+# =============================================================================
+# [[deployments]] - deployment intent definitions
+# =============================================================================
+#
+# Deployments are structured intents emitted in the release manifest so
+# downstream CI can decide when and how to execute them. monochange does not
+# run deployments directly - it declares them.
+#
+# Fields:
+#   name            - unique deployment name
+#   trigger         - when to deploy: "workflow" (manual), "release_pr_merge",
+#                     or "release_published"
+#   workflow        - CI workflow to trigger
+#   environment     - target environment name (optional)
+#   release_targets - which release targets activate this deployment (default: all)
+#   requires        - dependencies that must be met before deploying
+#   metadata        - arbitrary key-value pairs passed to the workflow
+#
+# Example:
+# [[deployments]]
+# name = "docs"
+# trigger = "release_published"
+# workflow = "docs-release"
+# environment = "github-pages"
+# release_targets = ["main"]
+# requires = ["main"]
+# metadata = { site = "github-pages" }
+
+# =============================================================================
+# [ecosystems.*] - per-ecosystem discovery and publishing settings
+# =============================================================================
+#
+# Each supported ecosystem can be configured independently.
+#
+# Fields:
+#   enabled / roots / exclude - declared intent only; currently do not filter
+#              discovery or configured package ownership. Discovery scans every
+#              supported ecosystem. Use auto_discover.include / .exclude to
+#              select registered packages instead, and inspect `monochange config`.
+#   dependency_version_prefix - default dependency prefix for typed versioned_files
+#   versioned_files - ecosystem-wide default versioned_files inherited by matching packages;
+#                     entries may be typed manifest updates (including
+#                     arbitrary TOML/JSON field paths) or plain-text regex
+#                     replacements with a named `version` capture, e.g.
+#                     [{ path = "src/lib.rs", regex = 'VERSION: &str = "(?<version>\d+\.\d+\.\d+)"' }]
+#   lockfile_commands — optional escape-hatch commands that refresh ecosystem
+#                       lockfiles after a release updates manifest versions.
+#                       By default monochange rewrites supported lockfiles
+#                       directly from the release plan so `monochange release` stays on
+#                       the fast path. Cargo is not re-run automatically anymore,
+#                       so incomplete Cargo.lock files should be refreshed with
+#                       explicit commands here or manually afterwards. When set,
+#                       these commands fully own lockfile refresh for that ecosystem.
+#   publish          — ecosystem-wide publishing defaults inherited by matching
+#                      packages unless the package overrides them
+#     enabled        — enable managed publishing for the ecosystem (default: true)
+#     mode           — "builtin" or "external" (default: "builtin")
+#     registry       — default public registry for this ecosystem. Built-in
+#                      publishing only supports the ecosystem's canonical public
+#                      registry.
+#     trusted_publishing — whether packages in this ecosystem should default to
+#                      trusted/OIDC publishing flows when available. Set
+#                      `trusted_publishing = true` for defaults, or use a table
+#                      with enabled/repository/workflow/environment to inherit
+#                      trust metadata into matching packages (default: enabled)
+#     rate_limits.enforce — block built-in publish runs for matching packages
+#                      when the selected package set exceeds a known single
+#                      registry window. (default: false)
+#     placeholder.readme / placeholder.readme_file — default placeholder README
+#                      source inherited by packages during bootstrap publishing
+#   auto_discover    — automatically discover packages by walking the workspace
+#                      for ecosystem manifests (Cargo.toml, package.json, etc.)
+#                      instead of declaring each one in a [package.*] section.
+#
+#     auto_discover.include — glob patterns for directories to scan (required)
+#     auto_discover.exclude — glob patterns to skip within included paths (optional)
+#     auto_discover.id — package id template (default: "")
+#                        variables: name, path, sanitized_path, manifest, ecosystem
+#     auto_discover.defaults — package-level defaults for all discovered packages
+#                           tag — override the default tag setting (optional)
+#                           release — override the default release setting (optional)
+#                           version_format — override the default version format (optional)
+#
+#   When auto_discover is enabled, packages found by scanning the workspace
+#   inherit defaults from [ecosystems.*].auto_discover.defaults, then from
+#   [defaults]. Explicit [package.*] entries always override auto-discovered
+#   packages, so you only need to declare packages that deviate from defaults.
+
+# =============================================================================
+# [lints] - manifest lint configuration
+# =============================================================================
+#
+# Configure lint presets, global rules, and scoped overrides for package
+# manifests. Lint suites live in ecosystem crates, but configuration lives in
+# this top-level section.
+#
+[lints]
+# Start with baseline presets so existing repositories can adopt `monochange check`
+# without turning formatting preferences into blocking errors. Upgrade to
+# `*/recommended` or `*/strict` when the workspace is ready to enforce policy.
+use = ["cargo/baseline", "npm/baseline", "dart/baseline", "changesets/recommended"]
+# include = ["crates/**", "packages/**"]
+# exclude = ["examples/**"]
+# disable_gitignore = false
+#
+# Fields:
+#   use               - preset ids enabled globally
+#   include           - optional glob patterns that opt specific manifest paths
+#                       into linting; when omitted, every non-gitignored
+#                       manifest is considered
+#   exclude           - glob patterns removed from linting after include/default
+#                       selection
+#   disable_gitignore - set true to lint gitignored manifests too; this is not
+#                       recommended for normal repositories
+#
+# [lints.rules]
+# "cargo/internal-dependency-workspace" = "error"
+# "changesets/summary" = { level = "error", required = true, heading_level = 1 }
+# "changesets/summary-description" = "error"
+# "npm/workspace-protocol" = "error"
+#
+# [[lints.scopes]]
+# name = "published cargo packages"
+# match = { ecosystems = ["cargo"], managed = true, publishable = true }
+# use = ["cargo/recommended"]
+# rules = { "cargo/required-package-fields" = "error" }
+#
+# Scope selector fields inside `match`:
+#   ecosystems  - ecosystem ids like cargo, npm, or dart
+#   paths       - glob patterns against manifest paths relative to the workspace root
+#   package_ids - configured package ids to target directly
+#   group_ids   - configured group ids to target via group membership
+#   managed     - include only managed/unmanaged packages when set
+#   private     - include only private/public packages when set
+#   publishable - include only publishable/non-publishable packages when set
+
+
+[ecosystems.cargo]
+enabled = true
+
+# [ecosystems.cargo.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [ecosystems.cargo.publish.trusted_publishing]
+# enabled = true
+# workflow = "publish.yml"
+# registry = "crates_io"
+
+
+# [ecosystems.npm]
+# enabled = true
+
+# [ecosystems.npm.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [ecosystems.npm.publish.trusted_publishing]
+# enabled = true
+# workflow = "publish.yml"
+# registry = "npm"
+
+
+# [ecosystems.deno]
+# enabled = true
+
+# [ecosystems.deno.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [ecosystems.deno.publish.trusted_publishing]
+# enabled = true
+# workflow = "publish.yml"
+# registry = "jsr"
+
+
+# [ecosystems.dart]
+# enabled = true
+
+# [ecosystems.dart.publish]
+# enabled = true
+# mode = "builtin"
+# trusted_publishing = true
+# [ecosystems.dart.publish.trusted_publishing]
+# enabled = true
+# workflow = "publish.yml"
+# registry = "pub_dev"
+
+
+# [ecosystems.python]
+# enabled = true
+
+
+# [ecosystems.go]
+# enabled = true
+
+
+# =============================================================================
+# [source] - source-control provider configuration
+# =============================================================================
+#
+# Configures the repository host for release automation: creating releases,
+# opening release pull requests, and evaluating changeset policy.
+#
+# Required fields:
+#   provider - "github", "gitlab", or "gitea"
+#   owner    - repository owner or organization
+#   repo     - repository name
+#
+# Optional fields:
+#   host    - custom host URL for self-hosted instances
+#   api_url - custom API URL (e.g. for GitHub Enterprise)
+
+#
+# [source]
+# provider = "github"
+# owner = "your-org"
+# repo = "your-repo"
+
+# [source.releases] - provider release settings and release branch policy
+#
+# Controls whether and how releases are created on the provider when the
+# PublishRelease CLI step runs. Release refs are verified by commit reachability.
+# Tags and publish steps are enforced by default; commit-release stays flexible
+# unless you opt in.
+#
+# Fields:
+#   enabled             - enable/disable release creation (default: true)
+#   draft               - create releases as drafts (default: false)
+#   prerelease          - mark releases as pre-releases (default: false)
+#   generate_notes      - ask the provider to auto-generate release notes (default: false)
+#   source              - release notes source: "monochange" (use monochange-rendered
+#                         notes) or "github_generated" (use provider-generated notes)
+#                         Default: "monochange"
+#   changelog_output    - named changelog output used as the provider release body
+#                         (default: "default")
+#   branches            - release branch names or globs, e.g. ["main", "release/*"]
+#   enforce_for_tags    - reject unsafe tag-release refs (default: true)
+#   enforce_for_publish - reject unsafe publish refs (default: true)
+#   enforce_for_commit  - reject unsafe commit-release refs (default: false)
+#   changeset_context_timeout_seconds - hosted-source enrichment timeout (default: 120)
+#
+# [source.releases]
+# enabled = true
+# draft = false
+# prerelease = false
+# source = "monochange"
+# changelog_output = "default"
+# branches = ["main"]
+# enforce_for_tags = true
+# enforce_for_publish = true
+# enforce_for_commit = false
+# changeset_context_timeout_seconds = 120
+
+# [source.pull_requests] - release pull request settings
+#
+# Controls the OpenReleaseRequest CLI step which creates or updates a release
+# PR with version bumps, changelog updates, and changeset cleanup.
+#
+# Fields:
+#   enabled        - enable/disable release PR creation (default: true)
+#   branch_prefix  - branch name prefix for release PRs (default: "monochange/release")
+#   base           - target branch for the release PR (default: "main")
+#   title          - PR title template (default: "chore(release): prepare release")
+#   commit_subject - override the release commit subject while keeping `title`
+#                    for the PR title; falls back to `title` when omitted
+#   labels         - labels applied to the release PR (default: ["release", "automated"]
+#   auto_merge     - enable auto-merge on the PR when supported (default: false)
+#   body_style     - notes rendered into the PR body: "full" inlines every
+#                    target's notes, "summary" renders only the header, target
+#                    list, and changelog paths (default: "full")
+#   max_body_chars - hard cap for the PR body in characters; defaults to the
+#                    provider's limit (65536 for GitHub). Notes that do not fit
+#                    are dropped from the end and replaced with a pointer to the
+#                    changelog files
+#
+# [source.pull_requests]
+# enabled = true
+# branch_prefix = "monochange/release"
+# base = "main"
+# title = "chore(release): prepare release"
+# commit_subject = "🔖 chore(release): prepare release"
+# labels = ["release", "automated"]
+# auto_merge = false
+# body_style = "full"
+# max_body_chars = 65536
+
+
+# =============================================================================
+# [changesets.affected] - changeset verification settings
+# =============================================================================
+#
+# Controls the `AffectedPackages` CLI step which checks whether pull requests
+# include changeset files that cover all changed packages.
+#
+# This section works independently of any source provider.
+
+[changesets.affected]
+# Whether changeset verification is enabled. When false, the AffectedPackages
+# step will refuse to run.
+# Default: true
+enabled = true
+
+# Whether a missing changeset is treated as a failure (true) or just a
+# warning (false).
+# Default: true
+required = true
+
+# Pull-request labels that skip verification entirely. When any label on the
+# PR matches an entry here, the verify step returns "skipped" instead of
+# evaluating coverage.
+# Default: []
+skip_labels = []
+
+# Whether to render a failure comment body in the evaluation output for
+# CI integrations to post back to the pull request.
+# Default: true
+comment_on_failure = true
+
+# Additional non-package root-level paths that should also trigger changeset
+# requirements when changed. Package directories are included automatically.
+# Default: []
+changed_paths = []
+
+# Files that should not trigger changeset requirements.
+# Default: []
+ignored_paths = []
+
+# =============================================================================
+# [changesets.classification] - change classification settings
+# =============================================================================
+#
+# Controls `monochange change classify`, which describes the compatibility
+# impact of pending work. A pull request that only bumps versions has no
+# pending work to classify, so it is skipped rather than reported as a large
+# set of unmodeled changes.
+#
+# This section works independently of any source provider.
+
+[changesets.classification]
+# Pull-request labels that skip classification entirely. When any label on the
+# pull request matches an entry here, the command reports a skipped result and
+# analyzes no packages.
+#
+# The release pull request monochange opens carries the "release" label, so the
+# default keeps classification off that pull request. Set this to [] to always
+# classify.
+# Default: ["release"]
+skip_labels = ["release"]
+
+# =============================================================================
+# [cli.*] - optional user-defined CLI commands
+# =============================================================================
+#
+# `monochange init` intentionally leaves the starter config without [cli.*] command
+# tables. Most built-in operations are available directly as immutable
+# `monochange step *` commands, so new projects do not need generated workflow aliases
+# just to validate, discover, release, publish, or inspect diagnostics.
+#
+# Add [cli.<name>] tables only for project-specific workflows that combine
+# multiple steps, add custom shell commands, or provide organization-specific
+# command names. Each table becomes a `monochange run <name>` workflow command.
+#
+# See the configuration guide for the full [cli.*] schema, input types, and
+# step definition examples.
+
+[source]
+provider = "github"
+owner = "ifiokjr"
+repo = "leptos_aria"
+
+[source.releases]
+enabled = true
+source = "monochange"
+branches = ["main"]
+enforce_for_tags = true
+enforce_for_publish = true
+enforce_for_commit = false
+
+[source.pull_requests]
+enabled = true
+branch_prefix = "monochange/release"
+base = "main"
+title = "chore(release): prepare release"
+labels = ["release", "automated"]
+auto_merge = false
