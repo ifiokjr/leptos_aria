@@ -41,7 +41,7 @@ jobs:
           set -euo pipefail
           asset="$(curl -fsSL https://api.github.com/repos/monochange/monochange/releases/latest \
             | jq -r '.assets[] | select(.name | test("monochange-x86_64-unknown-linux-musl-.*\\.tar\\.gz")) | .browser_download_url' | head -1)"
-          curl -fsSL "$asset" | tar -xz --strip-components=1 -C /usr/local/bin
+          curl -fsSL "$asset" | tar -xz -C /usr/local/bin
           chmod +x /usr/local/bin/monochange
           monochange --version
 
