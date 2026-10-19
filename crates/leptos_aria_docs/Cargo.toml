@@ -1,0 +1,20 @@
+[package]
+name = "leptos_aria_docs"
+version.workspace = true
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+homepage.workspace = true
+include = ["src/**/*.rs", "Cargo.toml", "readme.md"]
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The leptos_aria documentation website"
+
+[dependencies]
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
+
+[lints]
+workspace = true

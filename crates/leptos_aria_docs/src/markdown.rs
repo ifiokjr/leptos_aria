@@ -1,0 +1,254 @@
+//! Markdown with embedded component fences for the `leptos_aria` docs.
+//!
+//! Docs pages are plain markdown except for fenced code blocks whose info
+//! string starts with `component:`. The fence body carries `key: value`
+//! props and the page renders a live `leptos_aria` component in place of the
+//! block:
+//!
+//! `````markdown
+//! ```component:Button
+//! # Lines starting with `#` are comments.
+//! label: Delete everything
+//! variant: destructive
+//! ```
+//! `````
+//!
+//! The parser stays markup-agnostic: it yields markdown segments and
+//! component blocks, and the docs site decides how each one renders. The
+//! markdown segments convert to HTML with pulldown-cmark, with strikethrough
+//! and tables enabled.
+
+use pulldown_cmark::Options;
+use pulldown_cmark::Parser;
+use pulldown_cmark::html;
+
+/// Info-string marker that turns a code fence into a component block.
+pub const COMPONENT_PREFIX: &str = "component:";
+
+/// One contiguous run of a docs page.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum DocsSegment {
+	/// Markdown source, to be rendered as HTML.
+	Markdown(String),
+	/// A `component:` fence, to be rendered as a live component.
+	Component(ComponentBlock),
+}
+
+/// A parsed `component:` fence.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ComponentBlock {
+	/// Component name taken from the fence info string, for example `Button`.
+	pub name: String,
+	/// Ordered `key: value` props taken from the fence body.
+	pub props: Vec<ComponentProp>,
+}
+
+/// A single `key: value` line from a component fence body.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ComponentProp {
+	/// Prop name.
+	pub key: String,
+	/// Prop value with surrounding whitespace removed.
+	pub value: String,
+}
+
+impl ComponentBlock {
+	/// Look up a prop value by key.
+	pub fn prop(&self, key: &str) -> Option<&str> {
+		self.props
+			.iter()
+			.find(|prop| prop.key == key)
+			.map(|prop| prop.value.as_str())
+	}
+}
+
+/// Split a docs page into markdown and component-fence segments.
+///
+/// Empty runs (leading, trailing, or between fences) produce no segment. A
+/// component fence left open runs to the end of the input.
+pub fn parse_docs(markdown: &str) -> Vec<DocsSegment> {
+	let mut segments: Vec<DocsSegment> = Vec::new();
+	let mut text = String::new();
+	let mut fence: Option<ComponentBlock> = None;
+
+	for line in markdown.lines() {
+		if let Some(block) = fence.as_mut() {
+			if is_closing_fence(line) {
+				segments.push(DocsSegment::Component(fence.take().expect("block is set")));
+			} else if let Some(prop) = parse_prop(line) {
+				block.props.push(prop);
+			}
+
+			continue;
+		}
+
+		if let Some(name) = component_fence_name(line) {
+			push_markdown(&mut segments, &mut text);
+			fence = Some(ComponentBlock {
+				name: name.to_string(),
+				props: Vec::new(),
+			});
+		} else {
+			text.push_str(line);
+			text.push('\n');
+		}
+	}
+
+	if let Some(block) = fence {
+		segments.push(DocsSegment::Component(block));
+	}
+
+	push_markdown(&mut segments, &mut text);
+	segments
+}
+
+/// Convert a markdown segment to HTML with strikethrough and tables enabled.
+pub fn markdown_to_html(markdown: &str) -> String {
+	let mut options = Options::empty();
+	options.insert(Options::ENABLE_STRIKETHROUGH);
+	options.insert(Options::ENABLE_TABLES);
+
+	let parser = Parser::new_ext(markdown, options);
+	let mut output = String::new();
+	html::push_html(&mut output, parser);
+	output
+}
+
+/// Finish the current markdown run, if it has content.
+fn push_markdown(segments: &mut Vec<DocsSegment>, text: &mut String) {
+	if text.trim().is_empty() {
+		text.clear();
+
+		return;
+	}
+
+	segments.push(DocsSegment::Markdown(std::mem::take(text)));
+}
+
+/// Read the info string of an opening backtick fence, if the line is one.
+fn fence_info(line: &str) -> Option<&str> {
+	let trimmed = line.trim_start();
+	let backticks = trimmed.chars().take_while(|&char| char == '`').count();
+
+	if backticks < 3 {
+		return None;
+	}
+
+	Some(trimmed[backticks..].trim())
+}
+
+/// Detect a fence line that closes a component block.
+fn is_closing_fence(line: &str) -> bool {
+	line.trim().chars().all(|char| char == '`') && line.trim().len() >= 3
+}
+
+/// The component name when the line opens a `component:` fence.
+fn component_fence_name(line: &str) -> Option<&str> {
+	let info = fence_info(line)?;
+	info.strip_prefix(COMPONENT_PREFIX)
+		.map(str::trim)
+		.filter(|name| !name.is_empty())
+}
+
+/// Parse one `key: value` fence-body line, skipping blanks and comments.
+fn parse_prop(line: &str) -> Option<ComponentProp> {
+	let trimmed = line.trim();
+
+	if trimmed.is_empty() || trimmed.starts_with('#') {
+		return None;
+	}
+
+	let (key, value) = trimmed.split_once(':')?;
+
+	Some(ComponentProp {
+		key: key.trim().to_string(),
+		value: value.trim().to_string(),
+	})
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn splits_markdown_around_a_component_fence() {
+		let page =
+			"# Heading\n\nText before.\n\n```component:Button\nlabel: Go\n```\n\nText after.\n";
+		let segments = parse_docs(page);
+
+		assert_eq!(segments.len(), 3);
+		assert_eq!(
+			segments[0],
+			DocsSegment::Markdown("# Heading\n\nText before.\n\n".to_string())
+		);
+		assert_eq!(
+			segments[1],
+			DocsSegment::Component(ComponentBlock {
+				name: "Button".to_string(),
+				props: vec![ComponentProp {
+					key: "label".to_string(),
+					value: "Go".to_string(),
+				}],
+			})
+		);
+		assert_eq!(
+			segments[2],
+			DocsSegment::Markdown("\nText after.\n".to_string())
+		);
+	}
+
+	#[test]
+	fn parses_props_with_comments_blanks_and_extra_colons() {
+		let page =
+			"```component:Dialog\n# a comment\n\nsize : large\n\nlabel: Warning: high voltage\n```";
+		let segments = parse_docs(page);
+
+		let DocsSegment::Component(block) = &segments[0] else {
+			panic!("expected a component segment");
+		};
+
+		assert_eq!(block.name, "Dialog");
+		assert_eq!(block.prop("size"), Some("large"));
+		assert_eq!(block.prop("label"), Some("Warning: high voltage"));
+		assert_eq!(block.prop("missing"), None);
+	}
+
+	#[test]
+	fn keeps_plain_code_fences_as_markdown() {
+		let page = "Example:\n\n```rust\nlet x = 1;\n```\n";
+		let segments = parse_docs(page);
+
+		assert_eq!(segments.len(), 1);
+		assert!(matches!(segments[0], DocsSegment::Markdown(_)));
+	}
+
+	#[test]
+	fn runs_an_unclosed_fence_to_the_end_of_input() {
+		let page = "Intro.\n\n```component:Switch\nchecked: true";
+		let segments = parse_docs(page);
+
+		assert_eq!(segments.len(), 2);
+		let DocsSegment::Component(block) = &segments[1] else {
+			panic!("expected a component segment");
+		};
+
+		assert_eq!(block.prop("checked"), Some("true"));
+	}
+
+	#[test]
+	fn renders_markdown_to_html() {
+		let html = markdown_to_html("# Title\n\nSome ~~struck~~ **bold** text.\n");
+
+		assert!(html.contains("<h1>Title</h1>"));
+		assert!(html.contains("<del>struck</del>"));
+		assert!(html.contains("<strong>bold</strong>"));
+	}
+
+	#[test]
+	fn renders_tables() {
+		let html = markdown_to_html("| prop | type |\n| --- | --- |\n| label | string |\n");
+
+		assert!(html.contains("<table>"));
+		assert!(html.contains("<td>label</td>"));
+	}
+}

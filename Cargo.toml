@@ -9,6 +9,7 @@ version = "0.1.0"
 authors = ["Ifiok Jr. <ifiokotung@gmail.com>"]
 categories = ["wasm", "web-programming", "gui", "accessibility"]
 edition = "2024"
+homepage = "https://ifiokjr.github.io/leptos_aria/"
 keywords = ["leptos", "aria", "a11y", "ui"]
 license = "Unlicense"
 readme = "readme.md"
