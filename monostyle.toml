@@ -20,7 +20,18 @@ patterns = [
 # reference repository get the same relief.
 [[section]]
 path = "crates/leptos_aria_date/tests"
+
 reason = "tests assert on concrete calendar dates and month lengths, which read as magic numbers out of context"
+rules.report-magic-numbers = false
+max-nesting-depth = 8
+max-parameters-inline = 8
+max-unit-lines = 200
+fail-under = { readability = 60.0, complexity = 60.0 }
+
+[[section]]
+path = "crates/leptos_aria_date_picker/tests"
+
+reason = "range tests assert on concrete calendar dates, which read as magic numbers out of context"
 rules.report-magic-numbers = false
 max-nesting-depth = 8
 max-parameters-inline = 8
