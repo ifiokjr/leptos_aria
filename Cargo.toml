@@ -33,6 +33,7 @@ wasm-bindgen-test = "=0.3.79"
 web-sys = "=0.3.106"
 
 # internal
+leptos_aria_accordion = { path = "crates/leptos_aria_accordion", version = "0.0.0" }
 leptos_aria_breadcrumbs = { path = "crates/leptos_aria_breadcrumbs", version = "0.0.0" }
 leptos_aria_button = { path = "crates/leptos_aria_button", version = "0.0.0" }
 leptos_aria_calendar = { path = "crates/leptos_aria_calendar", version = "0.0.0" }
@@ -52,6 +53,7 @@ leptos_aria_list_box = { path = "crates/leptos_aria_list_box", version = "0.0.0"
 leptos_aria_menu = { path = "crates/leptos_aria_menu", version = "0.0.0" }
 leptos_aria_number_field = { path = "crates/leptos_aria_number_field", version = "0.0.0" }
 leptos_aria_overlay = { path = "crates/leptos_aria_overlay", version = "0.0.0" }
+leptos_aria_pagination = { path = "crates/leptos_aria_pagination", version = "0.0.0" }
 leptos_aria_primitives = { path = "crates/leptos_aria_primitives", version = "0.0.0" }
 leptos_aria_progress = { path = "crates/leptos_aria_progress", version = "0.0.0" }
 leptos_aria_radio = { path = "crates/leptos_aria_radio", version = "0.0.0" }

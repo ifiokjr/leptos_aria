@@ -5,6 +5,7 @@ use leptos_aria_button::BoxedPressEventCallback;
 use leptos_aria_button::Button;
 use leptos_aria_button::ButtonType;
 use leptos_aria_interactions::PressEvent;
+use wasm_bindgen::JsCast;
 
 /// A callback invoked when the selection state changes.
 pub type BoxedSelectionChangeCallback = Box<dyn Fn(bool) + Send + Sync>;
@@ -246,4 +247,158 @@ mod tests {
 			"a click toggles the pressed state"
 		);
 	}
+}
+
+/// A switch is a toggle with on/off semantics rather than pressed/unpressed.
+///
+/// The same state machine as [`ToggleButton`]; rendered as a checkbox input
+/// with `role="switch"` so the label toggles with it natively.
+#[component]
+pub fn Switch(
+	/// Whether the switch is checked (uncontrolled).
+	#[prop(optional, into)]
+	default_checked: Signal<bool>,
+	/// Whether the switch is checked (controlled).
+	#[prop(optional, into)]
+	is_checked: Option<Signal<bool>>,
+	/// Handler that is called when the checked state changes.
+	#[prop(optional)]
+	on_change: Option<BoxedSelectionChangeCallback>,
+	/// Whether the switch is disabled.
+	#[prop(optional, into)]
+	is_disabled: Signal<bool>,
+	children: Children,
+) -> impl IntoView {
+	let state = use_toggle_state(UseToggleStateProps {
+		default_selected: Some(default_checked.get_untracked()),
+		is_selected: is_checked,
+		on_change,
+		..Default::default()
+	});
+	let checked = state.selected_signal();
+
+	view! {
+		<label class="leptos-aria-switch" on:mousedown=|event: web_sys::MouseEvent| {
+			// Prevent the label from taking focus when pressed.
+			event.prevent_default();
+		}>
+			<input
+				type="checkbox"
+				role="switch"
+				class="leptos-aria-switch__input"
+				checked=move || checked.get()
+				disabled=move || is_disabled.get()
+				data-state=move || if checked.get() { "checked" } else { "unchecked" }
+				on:change=move |event: web_sys::Event| {
+					event.stop_propagation();
+
+					let checked = event
+						.target()
+						.and_then(|target| target.dyn_into::<web_sys::HtmlInputElement>().ok())
+						.is_some_and(|input| input.checked());
+
+					state.set_selected(checked);
+				}
+			/>
+			{children()}
+		</label>
+	}
+}
+
+/// The selected keys shared by a toggle group.
+type ToggleGroupKeys = Vec<String>;
+
+/// The state a toggle group shares with its buttons.
+#[derive(Clone)]
+pub struct ToggleGroupContext {
+	keys: RwSignal<ToggleGroupKeys>,
+	mode: AccordionModeAlias,
+}
+
+/// The selection mode of a toggle group, mirroring the accordion's.
+type AccordionModeAlias = leptos_aria_accordion_shim::Mode;
+
+/// A minimal mode alias so the toggle crate stays dependency-light.
+mod leptos_aria_accordion_shim {
+	#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+	pub enum Mode {
+		#[default]
+		Single,
+		Multiple,
+	}
+}
+
+/// A toggle group is a set of toggle buttons selecting one or many values.
+#[component]
+pub fn ToggleGroup(
+	/// Whether one or many buttons can be selected, single by default.
+	#[prop(optional, into)]
+	mode: Signal<AccordionModeAlias>,
+	/// The keys of the initially selected buttons.
+	#[prop(optional, into)]
+	default_value: Vec<String>,
+	children: Children,
+) -> impl IntoView {
+	let context = ToggleGroupContext {
+		keys: RwSignal::new(default_value),
+		mode: mode.get_untracked(),
+	};
+
+	provide_context(context.clone());
+
+	view! { <div class="leptos-aria-toggle-group" role="group">{children()}</div> }
+}
+
+/// One toggle button inside a [`ToggleGroup`].
+#[allow(clippy::needless_pass_by_value)]
+#[component]
+pub fn ToggleGroupItem(
+	/// The value reported in the group selection.
+	#[prop(into)]
+	value: String,
+	/// Whether this button is disabled.
+	#[prop(optional, into)]
+	is_disabled: Signal<bool>,
+	children: Children,
+) -> impl IntoView {
+	let context = expect_context::<ToggleGroupContext>();
+	let is_selected = Signal::derive({
+		let keys = context.keys;
+		let value = value.clone();
+
+		move || keys.get().contains(&value)
+	});
+	let click_value = value.clone();
+	let click_context = context.clone();
+
+	view! {
+		<button
+			type="button"
+			class="leptos-aria-toggle-group__item"
+			aria-pressed=move || is_selected.get().to_string()
+			data-state=move || if is_selected.get() { "on" } else { "off" }
+			disabled=move || is_disabled.get()
+			on:click=move |_| {
+				if !is_disabled.get_untracked() {
+					toggle_group_key(&click_context, &click_value);
+				}
+			}
+		>
+			{children()}
+		</button>
+	}
+}
+
+/// Toggle a key in its group according to the mode.
+fn toggle_group_key(context: &ToggleGroupContext, key: &str) {
+	context.keys.update(|keys| {
+		if keys.iter().any(|k| k == key) {
+			keys.retain(|k| k != key);
+		} else if context.mode == AccordionModeAlias::Single {
+			keys.clear();
+			keys.push(key.to_string());
+		} else {
+			keys.push(key.to_string());
+		}
+	});
 }

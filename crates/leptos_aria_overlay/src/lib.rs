@@ -373,3 +373,126 @@ mod tests {
 		assert!(!dialog.has_attribute("hidden"), "the modal opens on click");
 	}
 }
+
+/// An alert dialog interrupts the user for a confirmation.
+///
+/// A modal variant with `role="alertdialog"` and `aria-describedby`
+/// wiring; the focus trap and scroll lock come from [`Modal`].
+#[component]
+pub fn AlertDialog(
+	/// Whether the dialog is open.
+	is_open: RwSignal<bool>,
+	/// The dialog's accessible title.
+	#[prop(into)]
+	title: String,
+	/// The dialog's descriptive body, wired through `aria-describedby`.
+	#[prop(into)]
+	description: String,
+	/// The labels of the action buttons, cancel and confirm.
+	#[prop(optional, into)]
+	cancel_label: Option<String>,
+	#[prop(optional, into)] confirm_label: Option<String>,
+	/// Handler that is called when the confirm action fires.
+	#[prop(optional)]
+	on_confirm: Option<Arc<dyn Fn() + Send + Sync>>,
+) -> impl IntoView {
+	let overlay: NodeRef<leptos::html::Div> = NodeRef::new();
+
+	use_prevent_scroll(Signal::from(is_open));
+	use_modal(
+		overlay,
+		hooks::UseModalProps {
+			is_open: Signal::from(is_open),
+		},
+	);
+	use_overlay_dismiss(
+		overlay,
+		Signal::from(is_open),
+		Box::new(move || is_open.set(false)),
+	);
+
+	let title_id = leptos_aria_utils::use_id();
+	let description_id = leptos_aria_utils::use_id();
+
+	view! {
+		<div
+			class="leptos-aria-alert-dialog"
+			node_ref=overlay
+			role="alertdialog"
+			aria-modal="true"
+			aria-labelledby=title_id.clone()
+			aria-describedby=description_id.clone()
+			data-state=move || if is_open.get() { "open" } else { "closed" }
+			hidden=move || !is_open.get()
+			style="position: fixed; inset: 0; display: grid; place-items: center;"
+		>
+			<h2 id=title_id.clone()>{title.clone()}</h2>
+			<p id=description_id.clone()>{description.clone()}</p>
+			<div class="leptos-aria-alert-dialog__actions">
+				{cancel_label.map(|label| {
+					view! {
+						<button type="button" data-action="cancel" on:click=move |_| is_open.set(false)>
+							{label}
+						</button>
+					}
+				})}
+				{confirm_label.map(|label| {
+					let confirm = on_confirm.clone();
+
+					view! {
+						<button
+							type="button"
+							data-action="confirm"
+							on:click=move |_| {
+								if let Some(confirm) = confirm.as_ref() {
+									(*confirm)();
+								}
+
+								is_open.set(false);
+							}
+						>
+							{label}
+						</button>
+					}
+				})}
+			</div>
+		</div>
+	}
+}
+
+/// A hover card shows extra content when hovering or focusing its trigger.
+#[component]
+pub fn HoverCard(
+	/// The content to display as the card's accessible label.
+	#[prop(into)]
+	label: String,
+	children: Children,
+	content: Children,
+) -> impl IntoView {
+	let is_open = RwSignal::new(false);
+	let label_id = leptos_aria_utils::use_id();
+
+	view! {
+		<span
+			class="leptos-aria-hover-card__trigger"
+			aria-describedby=label_id.clone()
+			data-state=move || if is_open.get() { "open" } else { "closed" }
+			on:mouseenter=move |_| is_open.set(true)
+			on:mouseleave=move |_| is_open.set(false)
+			on:focusin=move |_| is_open.set(true)
+			on:focusout=move |_| is_open.set(false)
+		>
+			{children()}
+		</span>
+		<span
+			id=label_id.clone()
+			class="leptos-aria-hover-card"
+			role="tooltip"
+			data-state=move || if is_open.get() { "open" } else { "closed" }
+			hidden=move || !is_open.get()
+		>
+			{label.clone()}
+			{content()}
+		</span>
+	}
+}

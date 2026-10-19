@@ -180,3 +180,42 @@ mod trigger_tests {
 		);
 	}
 }
+
+/// A context menu opens its menu on right-click instead of a button press.
+#[component]
+pub fn ContextMenu(children: Children) -> impl IntoView {
+	let is_open = RwSignal::new(false);
+
+	view! {
+		<span
+			class="leptos-aria-context-menu__trigger"
+			data-state=move || if is_open.get() { "open" } else { "closed" }
+			on:contextmenu=move |event: web_sys::MouseEvent| {
+				event.prevent_default();
+				is_open.set(true);
+			}
+		>
+			{children()}
+			<Menu is_open=is_open label=String::new()>{|| ().into_view()}</Menu>
+		</span>
+	}
+}
+
+/// A menubar is a horizontal bar of menus, navigated left and right.
+#[component]
+pub fn Menubar(children: Children) -> impl IntoView {
+	view! {
+		<div
+			class="leptos-aria-menubar"
+			role="menubar"
+			aria-orientation="horizontal"
+			on:keydown=move |event: web_sys::KeyboardEvent| {
+				if event.key() == "Home" || event.key() == "End" {
+					event.prevent_default();
+				}
+			}
+		>
+			{children()}
+		</div>
+	}
+}

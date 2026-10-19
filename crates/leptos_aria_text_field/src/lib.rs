@@ -352,3 +352,6 @@ mod tests {
 		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
 	}
 }
+
+mod otp;
+pub use otp::OneTimePasswordField;

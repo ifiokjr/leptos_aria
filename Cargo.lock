@@ -948,6 +948,7 @@ name = "leptos_aria"
 version = "0.0.0"
 dependencies = [
  "leptos",
+ "leptos_aria_accordion",
  "leptos_aria_breadcrumbs",
  "leptos_aria_button",
  "leptos_aria_checkbox",
@@ -966,6 +967,7 @@ dependencies = [
  "leptos_aria_menu",
  "leptos_aria_number_field",
  "leptos_aria_overlay",
+ "leptos_aria_pagination",
  "leptos_aria_primitives",
  "leptos_aria_progress",
  "leptos_aria_radio",
@@ -984,6 +986,19 @@ dependencies = [
  "leptos_aria_tree",
  "leptos_aria_utils",
  "wasm-bindgen-test",
+]
+
+[[package]]
+name = "leptos_aria_accordion"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
 ]
 
 [[package]]
@@ -1254,6 +1269,20 @@ dependencies = [
  "leptos_aria_utils",
  "send_wrapper",
  "typed-builder",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "leptos_aria_pagination"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "leptos",
+ "leptos_aria_utils",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
