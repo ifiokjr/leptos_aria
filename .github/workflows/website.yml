@@ -32,10 +32,10 @@ jobs:
           cp registry/registry.json website/registry.json
 
       - name: upload pages artifact
-        uses: actions/upload-pages-artifact@2d86398f7d8e6dd3f34affc7f16d7d9d8a3ec93c # v3.0.0
+        uses: actions/upload-pages-artifact@0252fc4ba7626f0298f0cf00902a25c6afc77fa8 # v3.0.0
         with:
           path: website
 
       - name: deploy to github pages
         id: deployment
-        uses: actions/deploy-pages@87e8a1f18d4b3123d9f0fee9e4c0e1c8a29c9b1d # v4.0.5
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
