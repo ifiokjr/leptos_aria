@@ -1,0 +1,272 @@
+# leptos_aria
+
+> Headless accessible components for Leptos, ported from React Aria with the Radix/shadcn primitive surface completed. No styles ship; state is exposed as `data-*` attributes for Tailwind v4. A shadcn-style CLI copies styled wrapper components into your project.
+
+Install the library, install the CLI, add components:
+
+```
+cargo add leptos_aria
+cargo install leptos_aria_cli --path crates/leptos_aria_cli
+leptos-aria add button
+```
+
+## Docs
+
+- [Tailwind v4 guide](docs/tailwind.md): styling states with `data-[state=open]` variants and `@custom-variant` blocks, plus the full data-attribute contract
+- [Registry](registry/registry.json): the shadcn-schema component manifest the CLI reads
+- [Porting roadmap](PORTING.md): every upstream hook, utility, and component with its crate
+- [API docs](https://docs.rs/leptos_aria): the facade crate on docs.rs
+
+## The data-attribute contract
+
+Every interactive component exposes its state so styling stays external:
+
+- `data-state`: `open`/`closed` (Modal, Popover, Tooltip, AlertDialog, HoverCard, ContextMenu, Accordion), `checked`/`unchecked` (Switch), `on`/`off` (ToggleGroup), `selected` (Calendar, Tabs, ListBox), `loaded`/`fallback` (Avatar)
+- `data-disabled`, `data-dragging`, `data-is-dragging`, `data-current`, `data-orientation`, `data-action`, `data-focused`, `data-expanded`
+
+Tailwind v4's built-in `data-[...]` and `aria-*` variants target these directly with no plugin.
+
+## Component surface
+
+Interactions: usePress, useFocus, useFocusWithin, useHover, useFocusable, useFocusRing, useKeyboard, useLongPress, useMove, useDrag/useDrop, useScroll, useDismiss, useModal, FocusManager, useAutofocus.
+
+Components: Button, AnchorButton, CustomButton, ToggleButton, ToggleGroup, Switch, Form, TextField, TextArea, SearchField, NumberField, OneTimePasswordField, Checkbox, CheckboxGroup, RadioGroup, Slider, ComboBox, SelectBox, ListBox, Menu, MenuTrigger, ContextMenu, Menubar, Tabs, TagGroup, Toolbar, Tooltip, Popover, Modal, AlertDialog, Dialog, HoverCard, Calendar, DatePicker, DateField, DateRangePicker, TimeField, FileTrigger, Grid, Table, Tree, Meter, ProgressBar, Toast, DropZone, DraggableItem, Link, Breadcrumb, Heading, Text, VisuallyHidden, Disclosure, Accordion, Pagination, ScrollArea, Separator, AspectRatio, Avatar, ColorField, ColorArea, ColorSlider, ColorWheel, ColorSwatch.
+
+## Registry CLI
+
+`leptos-aria init` writes the config; `leptos-aria add <name>` copies styled wrappers (your files, Tailwind classes) that depend on the headless crates; `leptos-aria list` names the registry.
+
+
+---
+
+# Full documentation
+
+## readme
+
+# leptos_aria
+
+> A port of the `react-aria` ecosystem for the leptos framework.
+
+## Motivation
+
+[`leptos`](https://github.com/leptos-rs/leptos) is an amazing rust web framework. It is still in its infancy and needs to better accessibility support.
+
+This is an attempt to provide a port of the `react-aria` ecosystem to `leptos`.
+
+## Contributing
+
+[`devenv`](https://devenv.sh/) is used to provide a reproducible development environment for this project. Follow the [getting started instructions](https://devenv.sh/getting-started/).
+
+To automatically load the environment you should [install direnv](https://devenv.sh/automatic-shell-activation/) and then load the `direnv`.
+
+```bash
+# The security mechanism didn't allow to load the `.envrc`.
+# Since we trust it, let's allow it execution.
+direnv allow .
+```
+
+At this point you should see the `nix` commands available in your terminal.
+
+To setup recommended configuration for your favourite editor run the following commands.
+
+```bash
+setup:vscode # Setup vscode
+setup:helix  # Setup helix configuration
+```
+
+## Development
+
+The following scripts are available inside the devenv shell.
+
+```bash
+build:all   # build every crate for the wasm32 target
+fix:all     # run dprint fmt and cargo clippy --fix
+lint:all    # run dprint check and cargo clippy
+test:all    # run the native and wasm32 browser test suites
+test:wasm   # run the browser test suite only
+```
+
+The browser tests run through `wasm-bindgen-test-runner` with a local Chrome driven by `chromedriver`; both come from the devenv shell. The `wasm-bindgen` dependency is pinned to the `wasm-bindgen-cli` version in the devenv lock so the runner and the crate always match.
+
+
+## Tailwind v4 guide
+
+# Tailwind CSS v4
+
+Every component is headless: no styles ship, and state is exposed as `data-*` attributes so Tailwind's arbitrary variants style it directly. No plugin, no configuration, no dependency — add the crate, style with the classes you already write.
+
+## Style with arbitrary variants
+
+Tailwind v4 supports `data-[...]` variants out of the box:
+
+```rust
+use leptos_aria::Accordion;
+
+view! {
+	<Accordion>
+		<AccordionItem key="one".to_string()>
+			<AccordionTrigger class="data-[state=open]:bg-slate-100 font-medium">
+				"Section"
+			</AccordionTrigger>
+			<AccordionPanel class="data-[state=open]:animate-in">
+				"Content"
+			</AccordionPanel>
+		</AccordionItem>
+	</Accordion>
+}
+```
+
+## Or name the variants once
+
+A short `@custom-variant` block in your CSS turns every state into a one-word variant:
+
+```css
+@import "tailwindcss";
+
+@custom-variant open (&:where([data-state="open"], [data-state="checked"], [data-state="on"]));
+@custom-variant closed (&:where([data-state="closed"], [data-state="unchecked"], [data-state="off"]));
+@custom-variant disabled- (*:disabled, &:where([data-disabled="true"]));
+```
+
+```html
+<button class="open:bg-slate-100 closed:bg-white disabled-:opacity-50" />
+```
+
+## The attribute contract
+
+| Attribute          | Values                    | Where                                                                                      |
+| ------------------ | ------------------------- | ------------------------------------------------------------------------------------------ |
+| `data-state`       | `open` / `closed`         | Modal, Popover, Tooltip, AlertDialog, HoverCard, ContextMenu, Accordion item/trigger/panel |
+| `data-state`       | `checked` / `unchecked`   | Switch                                                                                     |
+| `data-state`       | `on` / `off`              | ToggleGroupItem                                                                            |
+| `data-state`       | `selected`                | Calendar cells, Tabs, ListBox options                                                      |
+| `data-state`       | `loaded` / `fallback`     | Avatar                                                                                     |
+| `data-disabled`    | `true` / `false`          | Accordion item, overlay triggers                                                           |
+| `data-dragging`    | `true` / `false`          | DropZone                                                                                   |
+| `data-is-dragging` | `true` / `false`          | DraggableItem                                                                              |
+| `data-current`     | `true`                    | Pagination page buttons                                                                    |
+| `data-orientation` | `horizontal` / `vertical` | Separator, Toolbar                                                                         |
+| `data-action`      | `cancel` / `confirm`      | AlertDialog buttons                                                                        |
+| `data-focused`     | `true` / `false`          | ListBox options, Tabs                                                                      |
+| `data-expanded`    | `true` / `false`          | ComboBox                                                                                   |
+
+Alongside the ARIA attributes (`aria-expanded`, `aria-pressed`, `aria-selected`, ...), Tailwind v4's built-in `aria-*` variants cover the rest: `aria-pressed:bg-blue-500` needs no extra code.
+
+
+## Porting roadmap
+
+# Porting roadmap
+
+A direct port of the [`react-aria`](https://react-spectrum.adobe.com/react-aria/) ecosystem to [`leptos`](https://leptos.dev), one interaction and one component at a time. Each entry links to the upstream source it mirrors; the crate column names where the port lives.
+
+Status legend: **done** (ported and tested), **planned** (not started).
+
+## Interactions
+
+| Hook                  | Status | Crate                                        |
+| --------------------- | ------ | -------------------------------------------- |
+| `usePress`            | done   | `leptos_aria_interactions::use_press`        |
+| `useFocus`            | done   | `leptos_aria_interactions::use_focus`        |
+| `useFocusWithin`      | done   | `leptos_aria_interactions::use_focus_within` |
+| `useHover`            | done   | `leptos_aria_interactions::use_hover`        |
+| `useFocusable`        | done   | `leptos_aria_interactions::use_focusable`    |
+| `useFocusRing`        | done   | `leptos_aria_interactions::use_focus_ring`   |
+| `useKeyboard`         | done   | `leptos_aria_interactions::use_keyboard`     |
+| `useLongPress`        | done   | `leptos_aria_interactions::use_long_press`   |
+| `useScroll`           | done   | `leptos_aria_interactions::use_scroll`       |
+| `useDrag` / `useDrop` | done   | `leptos_aria_interactions`                   |
+| `useMove`             | done   | `leptos_aria_interactions::use_move`         |
+| `useDismiss`          | done   | `leptos_aria_overlay::use_overlay_dismiss`   |
+| `useModal`            | done   | `leptos_aria_overlay::use_modal`             |
+
+## Utilities
+
+| Utility                                    | Status     | Crate                                        |
+| ------------------------------------------ | ---------- | -------------------------------------------- |
+| `focusWithoutScrolling`                    | done       | `leptos_aria_utils::focus_without_scrolling` |
+| `runAfterTransition`                       | done       | `leptos_aria_utils::run_after_transition`    |
+| `isVirtualClick` / `isVirtualPointerEvent` | done       | `leptos_aria_utils`                          |
+| `useGlobalListeners`                       | done       | `leptos_aria_utils::GlobalListeners`         |
+| `platform` detection                       | done       | `leptos_aria_utils`                          |
+| interaction modality                       | done       | `leptos_aria_utils::interaction_modality`    |
+| `focusSafely`                              | done       | `leptos_aria_utils::focus_safely`            |
+| `isFocusable` / `isTabbable`               | done       | `leptos_aria_utils`                          |
+| `useId`                                    | done       | `leptos_aria_utils::use_id`                  |
+| `useLabel` / `useLabels`                   | done       | `leptos_aria_utils`                          |
+| `getSyntheticLinkProps` / `openLink`       | done       | `leptos_aria_utils::open_link`               |
+| `usePreventScroll`                         | done       | `leptos_aria_overlay::use_prevent_scroll`    |
+| `useFormReset`                             | done       | `leptos_aria_form::use_form_reset`           |
+| `useDeepMemo` equivalent                   | not needed | idiomatic leptos signals memoize             |
+
+## Focus
+
+| Feature                               | Status | Crate                                |
+| ------------------------------------- | ------ | ------------------------------------ |
+| focus containment (scope equivalent)  | done   | `leptos_aria_overlay::use_modal`     |
+| `useFocusManagement` programmatic API | done   | `leptos_aria_overlay::FocusManager`  |
+| `useAutofocus`                        | done   | `leptos_aria_overlay::use_autofocus` |
+
+## Selection
+
+| Feature                     | Status | Crate                                                              |
+| --------------------------- | ------ | ------------------------------------------------------------------ |
+| `useTypeSelect`             | done   | `leptos_aria_selection` (type-ahead in `CollectionKeys` + ListBox) |
+| `SelectionManager`          | done   | `leptos_aria_selection` (`SelectionState`)                         |
+| `useMultipleSelectionState` | done   | `leptos_aria_selection` (`use_selection_state`)                    |
+
+## Components
+
+| Component                                         | Status  | Crate                                                |
+| ------------------------------------------------- | ------- | ---------------------------------------------------- |
+| `Button` (native element)                         | done    | `leptos_aria_button::Button`                         |
+| `Button` (custom element types)                   | done    | `leptos_aria_button::AnchorButton / CustomButton`    |
+| `ToggleButton` / `useToggle`                      | done    | `leptos_aria_toggle`                                 |
+| `Switch` (deprecated upstream for `ToggleButton`) | skipped | —                                                    |
+| `Form`                                            | done    | `leptos_aria_form::Form`                             |
+| `TextField`                                       | done    | `leptos_aria_text_field::TextField`                  |
+| `TextArea`                                        | done    | `leptos_aria_text_field::TextArea`                   |
+| `SearchField`                                     | done    | `leptos_aria_search_field::SearchField`              |
+| `NumberField`                                     | done    | `leptos_aria_number_field::NumberField`              |
+| `Checkbox` / `useCheckbox`                        | done    | `leptos_aria_checkbox::Checkbox`                     |
+| `CheckboxGroup`                                   | done    | `leptos_aria_checkbox::CheckboxGroup`                |
+| `RadioGroup`                                      | done    | `leptos_aria_radio::RadioGroup`                      |
+| `Slider`                                          | done    | `leptos_aria_slider::Slider`                         |
+| `ComboBox`                                        | done    | `leptos_aria_combo_box::ComboBox`                    |
+| `SelectBox`                                       | done    | `leptos_aria_select_box::SelectBox`                  |
+| `ListBox`                                         | done    | `leptos_aria_list_box::ListBox`                      |
+| `Menu`                                            | done    | `leptos_aria_menu::Menu` + `MenuTrigger`             |
+| `Tabs`                                            | done    | `leptos_aria_tabs::Tabs`                             |
+| `TagGroup`                                        | done    | `leptos_aria_tag::TagGroup`                          |
+| `Toolbar`                                         | done    | `leptos_aria_toolbar::Toolbar`                       |
+| `Tooltip`                                         | done    | `leptos_aria_overlay::Tooltip`                       |
+| `Popover`                                         | done    | `leptos_aria_overlay::Popover` (flip/shift included) |
+| `Modal` / `ModalOverlay`                          | done    | `leptos_aria_overlay::Modal`                         |
+| `Dialog`                                          | done    | `leptos_aria_overlay::Dialog`                        |
+| `Calendar`                                        | done    | `leptos_aria_calendar::Calendar`                     |
+| `DatePicker` / `DateField`                        | done    | `leptos_aria_date_picker`                            |
+| `DateRangePicker`                                 | done    | `leptos_aria_date_picker`                            |
+| `TimeField`                                       | done    | `leptos_aria_time_field::TimeField`                  |
+| `FileTrigger`                                     | done    | `leptos_aria_file_trigger::FileTrigger`              |
+| `Grid`                                            | done    | `leptos_aria_grid::Grid`                             |
+| `Table`                                           | done    | `leptos_aria_table::Table`                           |
+| `Tree`                                            | done    | `leptos_aria_tree::Tree`                             |
+| `Meter`                                           | done    | `leptos_aria_progress::Meter`                        |
+| `ProgressBar`                                     | done    | `leptos_aria_progress::ProgressBar`                  |
+| `Toast`                                           | done    | `leptos_aria_toast`                                  |
+| `DropZone`                                        | done    | `leptos_aria_drop_zone::DropZone`                    |
+| `DragAndDrop` (newer draggable-item API)          | done    | `leptos_aria_drop_zone::DraggableItem`               |
+| `Link`                                            | done    | `leptos_aria_link::Link`                             |
+| `Breadcrumb`                                      | done    | `leptos_aria_breadcrumbs`                            |
+| `Heading` / `Text` / `VisuallyHidden`             | done    | `leptos_aria_primitives`                             |
+| `Disclosure`                                      | done    | `leptos_aria_disclosure::Disclosure`                 |
+| `Color` / `ColorField` / `ColorSwatch`            | done    | `leptos_aria_color` (incl. area/slider/wheel)        |
+| `DateValue` / `DateDuration`                      | done    | `leptos_aria_date`                                   |
+
+## Porting conventions
+
+- One crate per component family, matching the workspace layout, with a single `leptos_aria` facade crate re-exporting everything; crate names use underscores (`leptos_aria_name`).
+- Hooks take a `...Props` builder struct and return a `...Result` carrying the props to spread onto the target element, mirroring the upstream `useX(props) -> {xProps}` shape.
+- Upstream refs become `Rc`/`Arc`-shared state structs whose handler methods are wrapped as cloneable callbacks.
+- Upstream module-level singletons (`textSelection`, transition tracking, interaction modality) become thread-local state.
+- Callbacks are boxed `dyn Fn` in props and `Rc`/`Arc`-wrapped internally; event payloads that upstream wraps (press, hover, focus) become small owned structs carrying the resolved target.
+- React-specific polyfills (synthetic blur via `MutationObserver`, the React 16 `PointerEvent` fallbacks) are adapted or noted in code comments where the platform no longer needs them.

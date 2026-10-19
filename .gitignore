@@ -16,3 +16,4 @@ devenv.local.nix
 /.helix
 /.vscode
 .video_agent/
+target/
