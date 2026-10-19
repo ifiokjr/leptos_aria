@@ -12,6 +12,7 @@ readme.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 description = "The leptos_aria documentation website"
+publish = false
 
 [dependencies]
 pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
