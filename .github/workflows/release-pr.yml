@@ -36,12 +36,15 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # Pin the exact release: the workflow drives the `step prepare-release`
+      # / `step commit-release` surface that this version ships, and the
+      # release tarball carries the binary at its root (no directory layer).
       - name: install monochange
         run: |
           set -euo pipefail
-          asset="$(curl -fsSL https://api.github.com/repos/monochange/monochange/releases/latest \
-            | jq -r '.assets[] | select(.name | test("monochange-x86_64-unknown-linux-musl-.*\\.tar\\.gz")) | .browser_download_url' | head -1)"
-          curl -fsSL "$asset" | tar -xz -C /usr/local/bin
+          curl -fsSL \
+            "https://github.com/monochange/monochange/releases/download/v0.16.0/monochange-x86_64-unknown-linux-musl-v0.16.0.tar.gz" \
+            | tar -xz -C /usr/local/bin
           chmod +x /usr/local/bin/monochange
           monochange --version
 
@@ -72,15 +75,16 @@ jobs:
           fi
           echo "is_release_commit=false" >> "$GITHUB_OUTPUT"
 
-      # A HEAD that is a release record means the release PR merged: the
-      # publish workflow runs against the merged tree, and the release PR
-      # must not be refreshed on top of it.
-      - name: dispatch publish
+      # A HEAD that is a release record means the release PR merged: tag the
+      # record (publish.yml resolves and checks out this tag), then dispatch
+      # the publish workflow against the merged tree.
+      - name: tag and dispatch publish
         if: steps.release_record.outputs.is_release_commit == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          monochange step tag-release --from HEAD --push
           tag="$(monochange step release-record --from HEAD --format json \
             | jq -r '[.record.release_targets[] | select(.tag == true)] | first | .tag_name // empty')"
           if [ -z "$tag" ]; then
@@ -97,18 +101,21 @@ jobs:
         run: echo "HEAD is a merged release commit; publish dispatched."
 
       - name: prepare release
+        id: prepare
         if: steps.release_record.outputs.is_release_commit != 'true'
         run: |
           set -euo pipefail
-          if ! output="$(monochange run release --create-pr=false 2>&1)"; then
-            if printf '%s\n' "$output" | grep -q 'no releaseable packages were found in discovered changesets'; then
-              echo "No releaseable packages in current changesets; nothing to release."
-              exit 0
-            fi
-            printf '%s\n' "$output" >&2
-            exit 1
+          if ! find .changeset -type f -name '*.md' -print -quit | grep -q .; then
+            echo "No pending changesets; nothing to release."
+            echo "has_changesets=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
-          printf '%s\n' "$output"
+          # Branch first so the release commit lands on the release branch,
+          # never on main itself.
+          git switch -c monochange/release/release
+          monochange step prepare-release
+          monochange step commit-release --no-verify
+          echo "has_changesets=true" >> "$GITHUB_OUTPUT"
 
       - name: open or refresh release pull request
         if: steps.release_record.outputs.is_release_commit != 'true'
@@ -117,8 +124,12 @@ jobs:
         run: |
           set -euo pipefail
           branch="monochange/release/release"
-          if ! git ls-remote --heads origin "$branch" | grep -q .; then
-            echo "No release branch was created; nothing to publish as a pull request."
+          if [ "${{ steps.prepare.outputs.has_changesets }}" != "true" ]; then
+            # No pending changes: retire a stale release branch and PR instead
+            # of refreshing outdated content.
+            if pr_number="$(gh pr list --head "$branch" --json number --jq '.[0].number // empty')"; then
+              [ -n "$pr_number" ] && gh pr close "$pr_number" --delete-branch || true
+            fi
             exit 0
           fi
           git push --force origin "HEAD:refs/heads/$branch"

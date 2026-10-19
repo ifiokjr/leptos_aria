@@ -77,9 +77,9 @@ jobs:
       - name: install monochange
         run: |
           set -euo pipefail
-          asset="$(curl -fsSL https://api.github.com/repos/monochange/monochange/releases/latest \
-            | jq -r '.assets[] | select(.name | test("monochange-x86_64-unknown-linux-musl-.*\\.tar\\.gz")) | .browser_download_url' | head -1)"
-          curl -fsSL "$asset" | tar -xz -C /usr/local/bin
+          curl -fsSL \
+            "https://github.com/monochange/monochange/releases/download/v0.16.0/monochange-x86_64-unknown-linux-musl-v0.16.0.tar.gz" \
+            | tar -xz -C /usr/local/bin
           chmod +x /usr/local/bin/monochange
           monochange --version
 
@@ -95,10 +95,9 @@ jobs:
       - name: publish release packages
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-oidc.outputs.token }}
-          RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
-          monochange publish packages --from "$RELEASE_TAG"
+          monochange publish packages --all --stream-output
 
       - name: publish the github release
         env:
@@ -129,12 +128,13 @@ jobs:
       - name: install monochange
         run: |
           set -euo pipefail
-          asset="$(curl -fsSL https://api.github.com/repos/monochange/monochange/releases/latest \
-            | jq -r '.assets[] | select(.name | test("monochange-x86_64-unknown-linux-musl-.*\\.tar\\.gz")) | .browser_download_url' | head -1)"
-          curl -fsSL "$asset" | tar -xz -C /usr/local/bin
+          curl -fsSL \
+            "https://github.com/monochange/monochange/releases/download/v0.16.0/monochange-x86_64-unknown-linux-musl-v0.16.0.tar.gz" \
+            | tar -xz -C /usr/local/bin
           chmod +x /usr/local/bin/monochange
+          monochange --version
 
       - name: simulate the publish
-        env:
-          RELEASE_TAG: ${{ inputs.tag }}
-        run: monochange publish packages --from "$RELEASE_TAG" --dry-run
+        run: |
+          set -euo pipefail
+          monochange publish packages --all --stream-output --dry-run
