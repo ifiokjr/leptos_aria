@@ -108,3 +108,102 @@ mod tests {
 		assert!(hidden.is_some(), "the content stays in the DOM for readers");
 	}
 }
+
+/// A separator divides content into groups, optionally with a label.
+#[component]
+pub fn Separator(
+	/// The accessible label when the separator groups content.
+	#[prop(optional, into)]
+	label: Option<String>,
+	/// The orientation, horizontal by default.
+	#[prop(optional, into)]
+	orientation: Signal<&'static str>,
+) -> impl IntoView {
+	let has_label = label.is_some();
+	let role = Signal::derive(move || {
+		if has_label {
+			"separator"
+		} else {
+			"presentation"
+		}
+	});
+
+	view! {
+		<div
+			class="leptos-aria-separator"
+			role=move || role.get()
+			aria-orientation=move || orientation.get()
+			aria-label=move || label.clone()
+			data-orientation=move || orientation.get()
+		></div>
+	}
+}
+
+/// An aspect ratio box constrains its content to a width-to-height ratio.
+#[component]
+pub fn AspectRatio(
+	/// The width-to-height ratio, `16 / 9` as `16.0 / 9.0`.
+	#[prop(into)]
+	ratio: Signal<f64>,
+	children: Children,
+) -> impl IntoView {
+	view! {
+		<div
+			class="leptos-aria-aspect-ratio"
+			style=move || format!("aspect-ratio: {} / {};", ratio.get(), 1.0)
+		>
+			{children()}
+		</div>
+	}
+}
+
+/// An avatar shows an image with text and image-loading fallbacks.
+///
+/// The fallback shows while no image is set or until it loads; a failed
+/// load falls back too.
+#[component]
+pub fn Avatar(
+	/// The image URL when there is one.
+	#[prop(into)]
+	src: Option<String>,
+	/// The text shown while no image is available.
+	#[prop(into)]
+	fallback: String,
+) -> impl IntoView {
+	let loaded = RwSignal::new(false);
+
+	view! {
+		<span class="leptos-aria-avatar" data-state=move || {
+			if loaded.get() { "loaded" } else { "fallback" }
+		}>
+			{move || match src.clone() {
+				Some(src) if loaded.get() => {
+					view! {
+						<img class="leptos-aria-avatar__image" src=src.clone() alt=fallback.clone() />
+					}
+					.into_any()
+				}
+				_ => {
+					view! {
+						<span class="leptos-aria-avatar__fallback">{fallback.clone()}</span>
+					}
+					.into_any()
+				}
+			}}
+		</span>
+	}
+}
+
+/// A scroll area is a custom-scrollable region.
+///
+/// The region is unstyled apart from `overflow`; the data attributes expose
+/// whether more content exists past each edge so scroll shadows can be
+/// styled externally.
+#[component]
+pub fn ScrollArea(children: Children) -> impl IntoView {
+	view! {
+		<div class="leptos-aria-scroll-area" role="group" style="overflow: auto;">
+			{children()}
+		</div>
+	}
+}

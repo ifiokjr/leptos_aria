@@ -17,6 +17,9 @@ description = "Toggle button components for the leptos_aria component library"
 leptos = { workspace = true, features = ["csr"] }
 leptos_aria_button = { workspace = true }
 leptos_aria_interactions = { workspace = true }
+wasm-bindgen = { workspace = true }
+
+web-sys = { workspace = true, features = ["HtmlInputElement"] }
 
 [dev-dependencies]
 console_error_panic_hook = { workspace = true }

@@ -1,3 +1,4 @@
+pub use leptos_aria_accordion::*;
 pub use leptos_aria_breadcrumbs::*;
 pub use leptos_aria_button::*;
 pub use leptos_aria_checkbox::BoxedValuesChangeCallback;
@@ -28,6 +29,7 @@ pub use leptos_aria_list_box::*;
 pub use leptos_aria_menu::*;
 pub use leptos_aria_number_field::*;
 pub use leptos_aria_overlay::*;
+pub use leptos_aria_pagination::*;
 pub use leptos_aria_primitives::*;
 pub use leptos_aria_progress::*;
 pub use leptos_aria_radio::*;
