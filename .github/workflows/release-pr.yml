@@ -132,7 +132,9 @@ jobs:
             fi
             exit 0
           fi
-          git push --force origin "HEAD:refs/heads/$branch"
+          git push --force \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:refs/heads/$branch"
           body="$(git log --format='-%h %s' main..HEAD | head -40)"
           if ! pr_number="$(gh pr list --head "$branch" --json number --jq '.[0].number // empty')"; then
             echo "Failed to list existing pull requests." >&2
