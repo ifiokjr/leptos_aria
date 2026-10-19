@@ -145,5 +145,5 @@ jobs:
           else
             gh pr create --head "$branch" --base main \
               --title "chore(release): prepare release" \
-              --body "$body" --label release --label automated
+              --body "$body" --label release --label automated || gh pr create --head "$branch" --base main --title "chore(release): prepare release" --body "$body"
           fi
