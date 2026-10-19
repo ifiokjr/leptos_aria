@@ -11,7 +11,7 @@ license.workspace = true
 readme.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Interaction hooks for the leptos_aria component library"
+description = "Press, hover, focus, keyboard, move, drag, and scroll interaction hooks for Leptos"
 
 [dependencies]
 js-sys = { workspace = true }

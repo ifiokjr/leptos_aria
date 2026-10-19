@@ -11,7 +11,7 @@ license.workspace = true
 readme.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Overlay components for the leptos_aria component library"
+description = "Accessible modal, dialog, alert dialog, popover, tooltip, and hover card for Leptos"
 
 [dependencies]
 js-sys = { workspace = true }

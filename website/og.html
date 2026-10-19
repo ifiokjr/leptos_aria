@@ -1,0 +1,51 @@
+<!doctype html>
+<!--
+	Source for public/og.png, the 1200×630 social card. Re-render after changing it:
+
+	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
+		--hide-scrollbars --window-size=1200,630 --virtual-time-budget=5000 \
+		--screenshot=website/public/og.png website/og.html
+-->
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Fragment+Mono&display=block"
+		/>
+		<style>
+			html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+			body {
+				display: grid;
+				grid-template-columns: 1fr auto;
+				align-items: center;
+				gap: 64px;
+				box-sizing: border-box;
+				padding: 0 96px;
+				background:
+					radial-gradient(circle at 1px 1px, rgb(23 20 15 / 0.08) 1px, transparent 0) 0 0 / 20px 20px,
+					#f6f2ea;
+				color: #17140f;
+				font-family: "Bricolage Grotesque", sans-serif;
+			}
+			p { margin: 0 0 28px; color: #b72a07; font: 22px "Fragment Mono", monospace; letter-spacing: 0.02em; }
+			h1 { margin: 0; font-size: 92px; font-weight: 800; letter-spacing: -0.045em; line-height: 0.98; }
+			em { color: #ff4a1c; font-style: normal; font-weight: 400; }
+			code { display: block; margin-top: 40px; font: 30px "Fragment Mono", monospace; color: #5f584d; }
+			svg { width: 300px; height: 300px; }
+		</style>
+	</head>
+	<body>
+		<div>
+			<p>leptos_aria</p>
+			<h1>Accessible by default.<br /><em>Styled by you.</em></h1>
+			<code>$ cargo add leptos_aria</code>
+		</div>
+		<svg viewBox="0 0 64 64" aria-hidden="true">
+			<rect x="3" y="3" width="58" height="58" rx="18" fill="none" stroke="#ff4a1c" stroke-width="3.5" />
+			<rect x="12" y="12" width="40" height="40" rx="10" fill="#ff4a1c" />
+			<circle cx="31" cy="34" r="7.25" fill="none" stroke="#fffaf2" stroke-width="4.5" />
+			<path d="M40 25.5V42" stroke="#fffaf2" stroke-width="4.5" stroke-linecap="round" />
+		</svg>
+	</body>
+</html>

@@ -1,3 +1,5 @@
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
 #![allow(clippy::needless_pass_by_value)]
 
 mod color;

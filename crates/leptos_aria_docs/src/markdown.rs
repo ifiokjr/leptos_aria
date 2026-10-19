@@ -16,10 +16,17 @@
 //! The parser stays markup-agnostic: it yields markdown segments and
 //! component blocks, and the docs site decides how each one renders. The
 //! markdown segments convert to HTML with pulldown-cmark, with strikethrough
-//! and tables enabled.
+//! and tables enabled, and every heading gets a slug `id` so sections can be
+//! linked to directly.
 
+use std::collections::HashMap;
+
+use pulldown_cmark::CowStr;
+use pulldown_cmark::Event;
 use pulldown_cmark::Options;
 use pulldown_cmark::Parser;
+use pulldown_cmark::Tag;
+use pulldown_cmark::TagEnd;
 use pulldown_cmark::html;
 
 /// Info-string marker that turns a code fence into a component block.
@@ -103,15 +110,83 @@ pub fn parse_docs(markdown: &str) -> Vec<DocsSegment> {
 }
 
 /// Convert a markdown segment to HTML with strikethrough and tables enabled.
+///
+/// Headings without an explicit id get a slug of their text, deduplicated
+/// with a numeric suffix (`usage`, `usage-1`), so every section is linkable.
 pub fn markdown_to_html(markdown: &str) -> String {
 	let mut options = Options::empty();
 	options.insert(Options::ENABLE_STRIKETHROUGH);
 	options.insert(Options::ENABLE_TABLES);
 
-	let parser = Parser::new_ext(markdown, options);
-	let mut output = String::new();
-	html::push_html(&mut output, parser);
+	let mut events: Vec<Event<'_>> = Parser::new_ext(markdown, options).collect();
+	assign_heading_ids(&mut events);
+
+	let mut output = String::with_capacity(markdown.len() * 3 / 2);
+	html::push_html(&mut output, events.into_iter());
 	output
+}
+
+/// Give every heading that lacks an id a unique slug of its text.
+fn assign_heading_ids(events: &mut [Event<'_>]) {
+	let mut seen: HashMap<String, usize> = HashMap::new();
+
+	for index in 0..events.len() {
+		let Some(Event::Start(Tag::Heading { id: None, .. })) = events.get(index) else {
+			continue;
+		};
+
+		let text = heading_text(events.get(index + 1..).unwrap_or_default());
+		let base = slugify(&text);
+		let count = seen.entry(base.clone()).or_insert(0);
+		let slug = if *count == 0 {
+			base
+		} else {
+			format!("{base}-{count}")
+		};
+		*count += 1;
+
+		if let Some(Event::Start(Tag::Heading { id, .. })) = events.get_mut(index) {
+			*id = Some(CowStr::from(slug));
+		}
+	}
+}
+
+/// The plain text of a heading, read from the events that follow its start.
+fn heading_text(events: &[Event<'_>]) -> String {
+	events
+		.iter()
+		.take_while(|event| !matches!(event, Event::End(TagEnd::Heading(_))))
+		.filter_map(|event| {
+			match event {
+				Event::Text(text) | Event::Code(text) => Some(text.as_ref()),
+				_ => None,
+			}
+		})
+		.collect()
+}
+
+/// Lowercase alphanumerics joined by single dashes: `Or name the variants`
+/// becomes `or-name-the-variants`.
+fn slugify(text: &str) -> String {
+	let mut slug = String::with_capacity(text.len());
+
+	for char in text.chars().flat_map(char::to_lowercase) {
+		if char.is_alphanumeric() {
+			slug.push(char);
+		} else if !slug.is_empty() && !slug.ends_with('-') {
+			slug.push('-');
+		}
+	}
+
+	if slug.ends_with('-') {
+		slug.pop();
+	}
+
+	if slug.is_empty() {
+		slug.push_str("section");
+	}
+
+	slug
 }
 
 /// Finish the current markdown run, if it has content.
@@ -239,7 +314,7 @@ mod tests {
 	fn renders_markdown_to_html() {
 		let html = markdown_to_html("# Title\n\nSome ~~struck~~ **bold** text.\n");
 
-		assert!(html.contains("<h1>Title</h1>"));
+		assert!(html.contains("<h1 id=\"title\">Title</h1>"));
 		assert!(html.contains("<del>struck</del>"));
 		assert!(html.contains("<strong>bold</strong>"));
 	}
@@ -250,5 +325,27 @@ mod tests {
 
 		assert!(html.contains("<table>"));
 		assert!(html.contains("<td>label</td>"));
+	}
+
+	#[test]
+	fn slugs_headings_with_code_and_punctuation() {
+		let html = markdown_to_html("## The `data-state` attribute — v4!\n");
+
+		assert!(html.contains("<h2 id=\"the-data-state-attribute-v4\">"));
+	}
+
+	#[test]
+	fn deduplicates_repeated_heading_slugs() {
+		let html = markdown_to_html("## Usage\n\n## Usage\n\n## Usage\n");
+
+		assert!(html.contains("id=\"usage\""));
+		assert!(html.contains("id=\"usage-1\""));
+		assert!(html.contains("id=\"usage-2\""));
+	}
+
+	#[test]
+	fn slugify_trims_and_falls_back_for_symbol_only_text() {
+		assert_eq!(slugify("—"), "section");
+		assert_eq!(slugify("  Hello,  World  "), "hello-world");
 	}
 }

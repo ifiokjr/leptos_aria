@@ -1,3 +1,5 @@
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
 #![allow(clippy::needless_pass_by_value)]
 
 use std::sync::Arc;
@@ -31,12 +33,14 @@ impl TreeContext {
 	///
 	/// Reactive: reading inside an effect or view tracks the expansion.
 	pub fn is_expanded(&self, key: &str) -> bool {
-		self.expanded_keys.get().iter().any(|k| k == key)
+		self.expanded_keys
+			.with(|keys| keys.iter().any(|k| k == key))
 	}
 
 	/// Whether a tree item is expanded, without tracking.
 	pub fn is_expanded_untracked(&self, key: &str) -> bool {
-		self.expanded_keys.get_untracked().iter().any(|k| k == key)
+		self.expanded_keys
+			.with_untracked(|keys| keys.iter().any(|k| k == key))
 	}
 }
 

@@ -11,7 +11,7 @@ license.workspace = true
 readme.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Shared utilities for the leptos_aria component library"
+description = "Focus, platform, link, and id utilities shared by leptos_aria"
 
 [dependencies]
 js-sys = { workspace = true }

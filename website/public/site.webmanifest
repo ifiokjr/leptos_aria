@@ -1,0 +1,14 @@
+{
+	"name": "leptos_aria",
+	"short_name": "leptos_aria",
+	"description": "Headless, accessible Leptos components ported from React Aria.",
+	"start_url": "./",
+	"display": "standalone",
+	"background_color": "#f6f2ea",
+	"theme_color": "#ff4a1c",
+	"icons": [
+		{ "src": "logo.svg", "type": "image/svg+xml", "sizes": "any" },
+		{ "src": "icon-192.png", "type": "image/png", "sizes": "192x192" },
+		{ "src": "icon-512.png", "type": "image/png", "sizes": "512x512" }
+	]
+}

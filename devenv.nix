@@ -53,6 +53,9 @@
   scripts."test:wasm".exec = ''
     cargo test --target wasm32-unknown-unknown
   '';
+  scripts."site:build".exec = ''
+    cargo run -p leptos_aria_docs --bin site
+  '';
   scripts."setup:helix".exec = ''
     rm -rf .helix
     cp -r setup/editors/helix .helix

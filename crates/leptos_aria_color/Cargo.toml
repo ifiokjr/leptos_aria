@@ -11,7 +11,7 @@ license.workspace = true
 readme.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Components for the leptos_aria component library"
+description = "Colour values plus accessible colour field, area, slider, wheel, and swatch for Leptos"
 
 [dependencies]
 leptos = { workspace = true, features = ["csr"] }

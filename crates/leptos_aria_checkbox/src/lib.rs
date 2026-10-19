@@ -1,3 +1,5 @@
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
 #![allow(clippy::needless_pass_by_value)]
 #![allow(clippy::derived_hash_with_manual_eq)]
 
@@ -110,7 +112,12 @@ impl CheckboxGroupState {
 
 	/// Replace the selected values.
 	pub fn set_value(&self, values: SelectedValues) {
-		if self.is_disabled || self.is_read_only || self.value() == values {
+		if self.is_disabled
+			|| self.is_read_only
+			|| self
+				.values_signal()
+				.with_untracked(|current| *current == values)
+		{
 			return;
 		}
 
@@ -283,7 +290,7 @@ pub fn CheckboxGroup(
 			})}
 			{children()}
 			<span class="leptos-aria-checkbox-group__values" aria-live="polite">
-				{move || values.get().len().to_string() + " selected" }
+				{move || values.with(HashSet::len).to_string() + " selected" }
 			</span>
 		</div>
 	}
@@ -303,7 +310,11 @@ fn toggle_state(
 	if let (Some(group), Some(value)) = (group, value) {
 		let group_state = group.state.clone();
 		let value = value.to_string();
-		let selected = Signal::derive(move || group_state.value().contains(&value));
+		let selected = Signal::derive(move || {
+			group_state
+				.values_signal()
+				.with(|values| values.contains(&value))
+		});
 
 		return leptos_aria_toggle::use_toggle_state(leptos_aria_toggle::UseToggleStateProps {
 			is_selected: Some(selected),
@@ -334,7 +345,11 @@ fn group_props(
 				let group_state = group_state.clone();
 				let value = value.clone();
 
-				Signal::derive(move || group_state.value().contains(&value))
+				Signal::derive(move || {
+					group_state
+						.values_signal()
+						.with(|values| values.contains(&value))
+				})
 			};
 
 			(Some(value), checked)

@@ -1,3 +1,14 @@
+//! Headless, accessible Leptos components ported from React Aria.
+//!
+//! This facade crate re-exports every `leptos_aria_*` crate. Components ship
+//! without styles and expose their state as `data-*` and `aria-*` attributes,
+//! so Tailwind v4 variants style them directly. See the
+//! [website](https://ifiokjr.github.io/leptos_aria/) for the Tailwind guide
+//! and the porting roadmap.
+
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
+
 pub use leptos_aria_accordion::*;
 pub use leptos_aria_breadcrumbs::*;
 pub use leptos_aria_button::*;
