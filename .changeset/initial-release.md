@@ -40,4 +40,6 @@ leptos_aria_tree: major
 leptos_aria_utils: major
 ---
 
+# Initial release
+
 Initial release of the headless React Aria port: every interaction hook, utility, and component ported with the Radix/shadcn primitive surface completed, the Tailwind v4 data-attribute contract, and the shadcn-style registry CLI.

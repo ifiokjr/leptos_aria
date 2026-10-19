@@ -4,6 +4,7 @@ version = "0.0.0"
 edition = "2024"
 license = "Unlicense"
 readme = "readme.md"
+repository = "https://github.com/ifiokjr/leptos_aria"
 description = "The leptos_aria component registry CLI"
 
 [[bin]]
