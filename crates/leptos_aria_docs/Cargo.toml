@@ -8,11 +8,11 @@ homepage.workspace = true
 include = ["src/**/*.rs", "Cargo.toml", "readme.md"]
 keywords.workspace = true
 license.workspace = true
+publish = false
 readme.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 description = "The leptos_aria documentation website"
-publish = false
 
 [dependencies]
 pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
