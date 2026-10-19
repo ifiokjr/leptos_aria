@@ -1,0 +1,37 @@
+# leptos_aria
+
+> Headless accessible components for Leptos, ported from React Aria with the Radix/shadcn primitive surface completed. No styles ship; state is exposed as `data-*` attributes for Tailwind v4. A shadcn-style CLI copies styled wrapper components into your project.
+
+Install the library, install the CLI, add components:
+
+```
+cargo add leptos_aria
+cargo install leptos_aria_cli --path crates/leptos_aria_cli
+leptos-aria add button
+```
+
+## Docs
+
+- [Tailwind v4 guide](docs/tailwind.md): styling states with `data-[state=open]` variants and `@custom-variant` blocks, plus the full data-attribute contract
+- [Registry](registry/registry.json): the shadcn-schema component manifest the CLI reads
+- [Porting roadmap](PORTING.md): every upstream hook, utility, and component with its crate
+- [API docs](https://docs.rs/leptos_aria): the facade crate on docs.rs
+
+## The data-attribute contract
+
+Every interactive component exposes its state so styling stays external:
+
+- `data-state`: `open`/`closed` (Modal, Popover, Tooltip, AlertDialog, HoverCard, ContextMenu, Accordion), `checked`/`unchecked` (Switch), `on`/`off` (ToggleGroup), `selected` (Calendar, Tabs, ListBox), `loaded`/`fallback` (Avatar)
+- `data-disabled`, `data-dragging`, `data-is-dragging`, `data-current`, `data-orientation`, `data-action`, `data-focused`, `data-expanded`
+
+Tailwind v4's built-in `data-[...]` and `aria-*` variants target these directly with no plugin.
+
+## Component surface
+
+Interactions: usePress, useFocus, useFocusWithin, useHover, useFocusable, useFocusRing, useKeyboard, useLongPress, useMove, useDrag/useDrop, useScroll, useDismiss, useModal, FocusManager, useAutofocus.
+
+Components: Button, AnchorButton, CustomButton, ToggleButton, ToggleGroup, Switch, Form, TextField, TextArea, SearchField, NumberField, OneTimePasswordField, Checkbox, CheckboxGroup, RadioGroup, Slider, ComboBox, SelectBox, ListBox, Menu, MenuTrigger, ContextMenu, Menubar, Tabs, TagGroup, Toolbar, Tooltip, Popover, Modal, AlertDialog, Dialog, HoverCard, Calendar, DatePicker, DateField, DateRangePicker, TimeField, FileTrigger, Grid, Table, Tree, Meter, ProgressBar, Toast, DropZone, DraggableItem, Link, Breadcrumb, Heading, Text, VisuallyHidden, Disclosure, Accordion, Pagination, ScrollArea, Separator, AspectRatio, Avatar, ColorField, ColorArea, ColorSlider, ColorWheel, ColorSwatch.
+
+## Registry CLI
+
+`leptos-aria init` writes the config; `leptos-aria add <name>` copies styled wrappers (your files, Tailwind classes) that depend on the headless crates; `leptos-aria list` names the registry.

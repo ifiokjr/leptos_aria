@@ -42,3 +42,18 @@ test:wasm   # run the browser test suite only
 ```
 
 The browser tests run through `wasm-bindgen-test-runner` with a local Chrome driven by `chromedriver`; both come from the devenv shell. The `wasm-bindgen` dependency is pinned to the `wasm-bindgen-cli` version in the devenv lock so the runner and the crate always match.
+
+## Tailwind CSS v4
+
+Every component is headless — no styles ship, state is exposed as `data-*` attributes, and Tailwind v4's built-in `data-[...]`/`aria-*` variants style it with zero configuration. See [docs/tailwind.md](docs/tailwind.md) for the attribute contract and `@custom-variant` recipes.
+
+## shadcn-style CLI
+
+```
+cargo install leptos_aria_cli
+leptos-aria init          # write leptos-aria.json
+leptos-aria add button    # copy a styled wrapper into src/aria
+leptos-aria list          # name the registry
+```
+
+Copied components are yours: Tailwind classes in, headless crates underneath, exactly the shadcn workflow.

@@ -1,0 +1,41 @@
+name: website
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: copy registry payload
+        run: |
+          cp registry/registry.json website/registry.json
+
+      - name: upload pages artifact
+        uses: actions/upload-pages-artifact@2d86398f7d8e6dd3f34affc7f16d7d9d8a3ec93c # v3.0.0
+        with:
+          path: website
+
+      - name: deploy to github pages
+        id: deployment
+        uses: actions/deploy-pages@87e8a1f18d4b3123d9f0fee9e4c0e1c8a29c9b1d # v4.0.5

@@ -1,5 +1,6 @@
 [workspace]
 members = ["crates/*"]
+exclude = ["crates/leptos_aria_cli"]
 default-members = ["crates/*"]
 resolver = "2"
 

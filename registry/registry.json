@@ -1,0 +1,37 @@
+{
+	"$schema": "https://ui.shadcn.com/schema/registry.json",
+	"name": "leptos-aria",
+	"homepage": "https://ifiokjr.github.io/leptos_aria/",
+	"items": [
+		{
+			"name": "button",
+			"type": "registry:component",
+			"title": "Button",
+			"description": "Accessible button with press, focus, and form wiring",
+			"dependencies": ["leptos", "leptos_aria"],
+			"files": [
+				{ "path": "src/aria/button.rs", "target": "src/aria/button.rs" }
+			]
+		},
+		{
+			"name": "dialog",
+			"type": "registry:component",
+			"title": "Dialog",
+			"description": "Modal dialog with focus trap, scroll lock, and dismissal",
+			"dependencies": ["leptos", "leptos_aria"],
+			"files": [
+				{ "path": "src/aria/dialog.rs", "target": "src/aria/dialog.rs" }
+			]
+		},
+		{
+			"name": "switch",
+			"type": "registry:component",
+			"title": "Switch",
+			"description": "On/off toggle with switch role",
+			"dependencies": ["leptos", "leptos_aria"],
+			"files": [
+				{ "path": "src/aria/switch.rs", "target": "src/aria/switch.rs" }
+			]
+		}
+	]
+}
