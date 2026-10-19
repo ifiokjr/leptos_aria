@@ -1,4 +1,4 @@
-#:schema https://monochange.github.io/monochange/schemas/monochange.schema.json
+# :schema https://monochange.github.io/monochange/schemas/monochange.schema.json
 # =============================================================================
 # monochange.toml - repository configuration for monochange
 # =============================================================================
@@ -172,17 +172,16 @@ warn_on_group_mismatch = true
 # path = "{{ path }}/release-notes/{{ version }}.json"
 # targets = ["app"]
 
-
 # Version schemes render "vanity" display labels from calendar parts, release
 # ordinals, and declared release values. Reference one from a package with
 # `display_version = "<scheme id>"`.
 #
 # Available variables:
-#   Identity:      
-#              
-#   Calendar:     
-#                 
-#   Ordinals:    
+#   Identity:
+#
+#   Calendar:
+#
+#   Ordinals:
 #   Declared:  every `[package.<id>.values.<value id>]` id, plus ``
 #              for the package's own rendered label.
 #
@@ -234,7 +233,6 @@ warn_on_group_mismatch = true
 # type = "dart"
 # value_template = "+"
 
-
 # Default empty_update_message applied when a package is bumped but has no
 # direct changeset entries (e.g. transitive dependency bumps or group
 # synchronization). Template placeholders are interpolated at render time
@@ -254,7 +252,6 @@ warn_on_group_mismatch = true
 #
 # empty_update_message = "No direct changes; {{ package }} updated to {{ version }}."
 
-
 # Default release_title applied when creating provider releases.
 # This is a plain-text title used for GitHub, GitLab, and Gitea releases.
 #
@@ -267,7 +264,6 @@ warn_on_group_mismatch = true
 #   Namespaced versioning: "  ()"
 #
 # release_title = "{{ version }} ({{ date }})"
-
 
 # Default changelog_version_title controls how changelog version headings render.
 # This is markdown-capable and supports links.
@@ -282,7 +278,6 @@ warn_on_group_mismatch = true
 #   changelog_version_title = "{{ version }}"
 #
 # changelog_version_title = "[{{ version }}]({{ tag_url }}) ({{ date }})"
-
 
 # =============================================================================
 # [changelog] - workspace-wide changelog configuration
@@ -319,7 +314,6 @@ warn_on_group_mismatch = true
 #   "#### {{ summary }}\n\n{{ details }}",
 #   "- {{ summary }}",
 # ]
-
 
 # =============================================================================
 # [package.*] - declare each release-managed package explicitly
@@ -404,7 +398,6 @@ warn_on_group_mismatch = true
 #                             "primary" (just "v1.0.0"); only one package/group
 #                             may use "primary"
 
-
 [package.leptos_aria]
 path = "crates/leptos_aria"
 type = "cargo"
@@ -423,7 +416,6 @@ type = "cargo"
 # [package.leptos_aria.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria-placeholder.md"
-
 
 [package.leptos_aria_accordion]
 path = "crates/leptos_aria_accordion"
@@ -444,7 +436,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_accordion-placeholder.md"
 
-
 [package.leptos_aria_breadcrumbs]
 path = "crates/leptos_aria_breadcrumbs"
 type = "cargo"
@@ -463,7 +454,6 @@ type = "cargo"
 # [package.leptos_aria_breadcrumbs.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_breadcrumbs-placeholder.md"
-
 
 [package.leptos_aria_button]
 path = "crates/leptos_aria_button"
@@ -484,7 +474,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_button-placeholder.md"
 
-
 [package.leptos_aria_calendar]
 path = "crates/leptos_aria_calendar"
 type = "cargo"
@@ -503,7 +492,6 @@ type = "cargo"
 # [package.leptos_aria_calendar.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_calendar-placeholder.md"
-
 
 [package.leptos_aria_checkbox]
 path = "crates/leptos_aria_checkbox"
@@ -524,7 +512,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_checkbox-placeholder.md"
 
-
 [package.leptos_aria_cli]
 path = "crates/leptos_aria_cli"
 type = "cargo"
@@ -543,7 +530,6 @@ type = "cargo"
 # [package.leptos_aria_cli.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_cli-placeholder.md"
-
 
 [package.leptos_aria_color]
 path = "crates/leptos_aria_color"
@@ -564,7 +550,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_color-placeholder.md"
 
-
 [package.leptos_aria_combo_box]
 path = "crates/leptos_aria_combo_box"
 type = "cargo"
@@ -583,7 +568,6 @@ type = "cargo"
 # [package.leptos_aria_combo_box.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_combo_box-placeholder.md"
-
 
 [package.leptos_aria_date]
 path = "crates/leptos_aria_date"
@@ -604,7 +588,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_date-placeholder.md"
 
-
 [package.leptos_aria_date_picker]
 path = "crates/leptos_aria_date_picker"
 type = "cargo"
@@ -623,7 +606,6 @@ type = "cargo"
 # [package.leptos_aria_date_picker.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_date_picker-placeholder.md"
-
 
 [package.leptos_aria_disclosure]
 path = "crates/leptos_aria_disclosure"
@@ -644,7 +626,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_disclosure-placeholder.md"
 
-
 [package.leptos_aria_drop_zone]
 path = "crates/leptos_aria_drop_zone"
 type = "cargo"
@@ -663,7 +644,6 @@ type = "cargo"
 # [package.leptos_aria_drop_zone.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_drop_zone-placeholder.md"
-
 
 [package.leptos_aria_file_trigger]
 path = "crates/leptos_aria_file_trigger"
@@ -684,7 +664,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_file_trigger-placeholder.md"
 
-
 [package.leptos_aria_form]
 path = "crates/leptos_aria_form"
 type = "cargo"
@@ -703,7 +682,6 @@ type = "cargo"
 # [package.leptos_aria_form.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_form-placeholder.md"
-
 
 [package.leptos_aria_grid]
 path = "crates/leptos_aria_grid"
@@ -724,7 +702,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_grid-placeholder.md"
 
-
 [package.leptos_aria_interactions]
 path = "crates/leptos_aria_interactions"
 type = "cargo"
@@ -743,7 +720,6 @@ type = "cargo"
 # [package.leptos_aria_interactions.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_interactions-placeholder.md"
-
 
 [package.leptos_aria_link]
 path = "crates/leptos_aria_link"
@@ -764,7 +740,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_link-placeholder.md"
 
-
 [package.leptos_aria_list_box]
 path = "crates/leptos_aria_list_box"
 type = "cargo"
@@ -783,7 +758,6 @@ type = "cargo"
 # [package.leptos_aria_list_box.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_list_box-placeholder.md"
-
 
 [package.leptos_aria_menu]
 path = "crates/leptos_aria_menu"
@@ -804,7 +778,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_menu-placeholder.md"
 
-
 [package.leptos_aria_number_field]
 path = "crates/leptos_aria_number_field"
 type = "cargo"
@@ -823,7 +796,6 @@ type = "cargo"
 # [package.leptos_aria_number_field.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_number_field-placeholder.md"
-
 
 [package.leptos_aria_overlay]
 path = "crates/leptos_aria_overlay"
@@ -844,7 +816,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_overlay-placeholder.md"
 
-
 [package.leptos_aria_pagination]
 path = "crates/leptos_aria_pagination"
 type = "cargo"
@@ -863,7 +834,6 @@ type = "cargo"
 # [package.leptos_aria_pagination.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_pagination-placeholder.md"
-
 
 [package.leptos_aria_primitives]
 path = "crates/leptos_aria_primitives"
@@ -884,7 +854,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_primitives-placeholder.md"
 
-
 [package.leptos_aria_progress]
 path = "crates/leptos_aria_progress"
 type = "cargo"
@@ -903,7 +872,6 @@ type = "cargo"
 # [package.leptos_aria_progress.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_progress-placeholder.md"
-
 
 [package.leptos_aria_radio]
 path = "crates/leptos_aria_radio"
@@ -924,7 +892,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_radio-placeholder.md"
 
-
 [package.leptos_aria_search_field]
 path = "crates/leptos_aria_search_field"
 type = "cargo"
@@ -943,7 +910,6 @@ type = "cargo"
 # [package.leptos_aria_search_field.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_search_field-placeholder.md"
-
 
 [package.leptos_aria_select_box]
 path = "crates/leptos_aria_select_box"
@@ -964,7 +930,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_select_box-placeholder.md"
 
-
 [package.leptos_aria_selection]
 path = "crates/leptos_aria_selection"
 type = "cargo"
@@ -983,7 +948,6 @@ type = "cargo"
 # [package.leptos_aria_selection.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_selection-placeholder.md"
-
 
 [package.leptos_aria_slider]
 path = "crates/leptos_aria_slider"
@@ -1004,7 +968,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_slider-placeholder.md"
 
-
 [package.leptos_aria_table]
 path = "crates/leptos_aria_table"
 type = "cargo"
@@ -1023,7 +986,6 @@ type = "cargo"
 # [package.leptos_aria_table.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_table-placeholder.md"
-
 
 [package.leptos_aria_tabs]
 path = "crates/leptos_aria_tabs"
@@ -1044,7 +1006,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_tabs-placeholder.md"
 
-
 [package.leptos_aria_tag]
 path = "crates/leptos_aria_tag"
 type = "cargo"
@@ -1063,7 +1024,6 @@ type = "cargo"
 # [package.leptos_aria_tag.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_tag-placeholder.md"
-
 
 [package.leptos_aria_text_field]
 path = "crates/leptos_aria_text_field"
@@ -1084,7 +1044,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_text_field-placeholder.md"
 
-
 [package.leptos_aria_time_field]
 path = "crates/leptos_aria_time_field"
 type = "cargo"
@@ -1103,7 +1062,6 @@ type = "cargo"
 # [package.leptos_aria_time_field.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_time_field-placeholder.md"
-
 
 [package.leptos_aria_toast]
 path = "crates/leptos_aria_toast"
@@ -1124,7 +1082,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_toast-placeholder.md"
 
-
 [package.leptos_aria_toggle]
 path = "crates/leptos_aria_toggle"
 type = "cargo"
@@ -1143,7 +1100,6 @@ type = "cargo"
 # [package.leptos_aria_toggle.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_toggle-placeholder.md"
-
 
 [package.leptos_aria_toolbar]
 path = "crates/leptos_aria_toolbar"
@@ -1164,7 +1120,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_toolbar-placeholder.md"
 
-
 [package.leptos_aria_tree]
 path = "crates/leptos_aria_tree"
 type = "cargo"
@@ -1184,7 +1139,6 @@ type = "cargo"
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_tree-placeholder.md"
 
-
 [package.leptos_aria_utils]
 path = "crates/leptos_aria_utils"
 type = "cargo"
@@ -1203,7 +1157,6 @@ type = "cargo"
 # [package.leptos_aria_utils.publish.placeholder]
 # readme = "This package is a placeholder published by monochange until the first real release."
 # readme_file = "docs/leptos_aria_utils-placeholder.md"
-
 
 # =============================================================================
 # [group.*] - version groups that share a single release identity
@@ -1246,16 +1199,55 @@ type = "cargo"
 #     grouped members propagate automatically, so group ids are best for
 #     intentionally group-owned releases
 
-
 [group.main]
-packages = ["leptos_aria", "leptos_aria_accordion", "leptos_aria_breadcrumbs", "leptos_aria_button", "leptos_aria_calendar", "leptos_aria_checkbox", "leptos_aria_cli", "leptos_aria_color", "leptos_aria_combo_box", "leptos_aria_date", "leptos_aria_date_picker", "leptos_aria_disclosure", "leptos_aria_drop_zone", "leptos_aria_file_trigger", "leptos_aria_form", "leptos_aria_grid", "leptos_aria_interactions", "leptos_aria_link", "leptos_aria_list_box", "leptos_aria_menu", "leptos_aria_number_field", "leptos_aria_overlay", "leptos_aria_pagination", "leptos_aria_primitives", "leptos_aria_progress", "leptos_aria_radio", "leptos_aria_search_field", "leptos_aria_select_box", "leptos_aria_selection", "leptos_aria_slider", "leptos_aria_table", "leptos_aria_tabs", "leptos_aria_tag", "leptos_aria_text_field", "leptos_aria_time_field", "leptos_aria_toast", "leptos_aria_toggle", "leptos_aria_toolbar", "leptos_aria_tree", "leptos_aria_utils"]
+packages = [
+	"leptos_aria",
+	"leptos_aria_accordion",
+	"leptos_aria_breadcrumbs",
+	"leptos_aria_button",
+	"leptos_aria_calendar",
+	"leptos_aria_checkbox",
+	"leptos_aria_cli",
+	"leptos_aria_color",
+	"leptos_aria_combo_box",
+	"leptos_aria_date",
+	"leptos_aria_date_picker",
+	"leptos_aria_disclosure",
+	"leptos_aria_drop_zone",
+	"leptos_aria_file_trigger",
+	"leptos_aria_form",
+	"leptos_aria_grid",
+	"leptos_aria_interactions",
+	"leptos_aria_link",
+	"leptos_aria_list_box",
+	"leptos_aria_menu",
+	"leptos_aria_number_field",
+	"leptos_aria_overlay",
+	"leptos_aria_pagination",
+	"leptos_aria_primitives",
+	"leptos_aria_progress",
+	"leptos_aria_radio",
+	"leptos_aria_search_field",
+	"leptos_aria_select_box",
+	"leptos_aria_selection",
+	"leptos_aria_slider",
+	"leptos_aria_table",
+	"leptos_aria_tabs",
+	"leptos_aria_tag",
+	"leptos_aria_text_field",
+	"leptos_aria_time_field",
+	"leptos_aria_toast",
+	"leptos_aria_toggle",
+	"leptos_aria_toolbar",
+	"leptos_aria_tree",
+	"leptos_aria_utils",
+]
 tag = true
 release = true
 version_format = "primary"
 # [group.main.changelog]
 # path = "changelog.md"
 # include = ["package-id"]
-
 
 # =============================================================================
 # [[deployments]] - deployment intent definitions
@@ -1393,7 +1385,6 @@ use = ["cargo/baseline", "npm/baseline", "dart/baseline", "changesets/recommende
 #   private     - include only private/public packages when set
 #   publishable - include only publishable/non-publishable packages when set
 
-
 [ecosystems.cargo]
 enabled = true
 
@@ -1405,7 +1396,6 @@ enabled = true
 # enabled = true
 # workflow = "publish.yml"
 # registry = "crates_io"
-
 
 # [ecosystems.npm]
 # enabled = true
@@ -1419,7 +1409,6 @@ enabled = true
 # workflow = "publish.yml"
 # registry = "npm"
 
-
 # [ecosystems.deno]
 # enabled = true
 
@@ -1431,7 +1420,6 @@ enabled = true
 # enabled = true
 # workflow = "publish.yml"
 # registry = "jsr"
-
 
 # [ecosystems.dart]
 # enabled = true
@@ -1445,14 +1433,11 @@ enabled = true
 # workflow = "publish.yml"
 # registry = "pub_dev"
 
-
 # [ecosystems.python]
 # enabled = true
 
-
 # [ecosystems.go]
 # enabled = true
-
 
 # =============================================================================
 # [source] - source-control provider configuration
@@ -1543,7 +1528,6 @@ enabled = true
 # auto_merge = false
 # body_style = "full"
 # max_body_chars = 65536
-
 
 # =============================================================================
 # [changesets.affected] - changeset verification settings
