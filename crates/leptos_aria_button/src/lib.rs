@@ -154,3 +154,86 @@ mod tests {
 		);
 	}
 }
+
+/// An anchor styled and behaving as a button.
+///
+/// The custom-element path of the upstream `useButton`: the link keeps its
+/// href semantics when enabled, becomes `aria-disabled` without a href when
+/// disabled, and carries the press interaction wiring.
+#[component]
+pub fn AnchorButton(
+	/// The URL to navigate to.
+	#[prop(into)]
+	href: String,
+	/// Whether the button is disabled: the href drops out and
+	/// `aria-disabled` takes over.
+	#[prop(optional, into)]
+	is_disabled: Signal<bool>,
+	/// Handler that is called when the press is released over the target.
+	#[prop(optional)]
+	on_press: Option<BoxedPressEventCallback>,
+	children: Children,
+) -> impl IntoView {
+	let press = use_press(UsePressProps {
+		on_press,
+		is_disabled: Some(is_disabled),
+		..Default::default()
+	});
+
+	view! {
+		<a
+			role="button"
+			tabindex="0"
+			href=move || if is_disabled.get() { String::new() } else { href.clone() }
+			aria-disabled=move || is_disabled.get().to_string()
+			on:click=move |event| (press.on_click)(event)
+			on:dragstart=move |event| (press.on_drag_start)(event)
+			on:keydown=move |event| (press.on_key_down)(event)
+			on:keyup=move |event| (press.on_key_up)(event)
+			on:mousedown=move |event| (press.on_mouse_down)(event)
+			on:pointerdown=move |event| (press.on_pointer_down)(event)
+			on:pointerup=move |event| (press.on_pointer_up)(event)
+		>
+			{children()}
+		</a>
+	}
+}
+
+/// A generic element behaving as a button when no native control fits.
+///
+/// The custom-element path of the upstream `useButton`: a `role="button"`
+/// div with the press wiring and the disabled state expressed through
+/// `aria-disabled` and the tab order.
+#[component]
+pub fn CustomButton(
+	/// Whether the button is disabled.
+	#[prop(optional, into)]
+	is_disabled: Signal<bool>,
+	/// Handler that is called when the press is released over the target.
+	#[prop(optional)]
+	on_press: Option<BoxedPressEventCallback>,
+	children: Children,
+) -> impl IntoView {
+	let press = use_press(UsePressProps {
+		on_press,
+		is_disabled: Some(is_disabled),
+		..Default::default()
+	});
+
+	view! {
+		<div
+			role="button"
+			tabindex=move || if is_disabled.get() { -1 } else { 0 }
+			aria-disabled=move || is_disabled.get().to_string()
+			on:click=move |event| (press.on_click)(event)
+			on:dragstart=move |event| (press.on_drag_start)(event)
+			on:keydown=move |event| (press.on_key_down)(event)
+			on:keyup=move |event| (press.on_key_up)(event)
+			on:mousedown=move |event| (press.on_mouse_down)(event)
+			on:pointerdown=move |event| (press.on_pointer_down)(event)
+			on:pointerup=move |event| (press.on_pointer_up)(event)
+		>
+			{children()}
+		</div>
+	}
+}
