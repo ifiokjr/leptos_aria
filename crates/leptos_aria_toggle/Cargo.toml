@@ -11,7 +11,7 @@ license.workspace = true
 readme.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Toggle button components for the leptos_aria component library"
+description = "Accessible toggle button, switch, and toggle group for Leptos"
 
 [dependencies]
 leptos = { workspace = true, features = ["csr"] }

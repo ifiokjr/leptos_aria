@@ -1,3 +1,5 @@
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
 #![allow(clippy::needless_pass_by_value)]
 
 use leptos::prelude::*;
@@ -43,7 +45,10 @@ impl TabsContext {
 
 	/// Select the tab with this key.
 	pub fn select(&self, key: &str) {
-		if self.keys.get_untracked().iter().any(|k| k == key) {
+		if self
+			.keys
+			.with_untracked(|keys| keys.iter().any(|k| k == key))
+		{
 			self.selected_key.set(Some(key.to_string()));
 		}
 	}
@@ -156,7 +161,7 @@ pub fn Tab(
 		let selected = context.selected_key;
 		let key = key.clone();
 
-		move || selected.get().as_deref() == Some(key.as_str())
+		move || selected.with(|selected| selected.as_deref() == Some(key.as_str()))
 	});
 	let tab_key = key.clone();
 	let tabindex_context = context.clone();
@@ -201,7 +206,7 @@ pub fn TabPanel(
 		let selected = context.selected_key;
 		let key = key.clone();
 
-		move || selected.get().as_deref() == Some(key.as_str())
+		move || selected.with(|selected| selected.as_deref() == Some(key.as_str()))
 	});
 	let labelledby = aria_labelledby.unwrap_or_else(|| format!("leptos-aria-tab-{key}"));
 

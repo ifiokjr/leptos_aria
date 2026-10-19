@@ -1,0 +1,186 @@
+<section class="hero">
+	<div class="hero-copy">
+		<p class="eyebrow">React Aria, ported to Leptos</p>
+		<h1>Accessible by default.<br /><em>Styled by you.</em></h1>
+		<p class="lede">
+			<strong>leptos_aria</strong> brings React Aria's keyboard, focus, and screen-reader
+			behaviour to Leptos and ships <strong>zero CSS</strong>. Every state is a
+			<code>data-*</code> attribute, so Tailwind v4 styles it with the classes you already write.
+		</p>
+		<div class="install">
+			<code><span class="prompt" aria-hidden="true">$</span> cargo add leptos_aria</code>
+			<button class="copy" type="button" data-copy="cargo add leptos_aria">Copy</button>
+		</div>
+		<p class="actions">
+			<a class="button primary" href="tailwind.html">Read the guide</a>
+			<a class="button" href="https://github.com/ifiokjr/leptos_aria">View on GitHub</a>
+		</p>
+	</div>
+
+	<figure class="specimen">
+		<p class="specimen-tag" aria-hidden="true">specimen.html</p>
+		<div class="specimen-stage">
+			<button class="demo-switch" type="button" role="switch" aria-checked="false" data-state="unchecked">
+				<span class="demo-track" aria-hidden="true"><span class="demo-thumb"></span></span>
+				<span>Airplane mode</span>
+			</button>
+		</div>
+		<pre class="inspector" aria-label="The switch's attributes"><code><span class="tok-p">&lt;</span><span class="tok-k">button</span>
+  <span class="tok-a">role</span>=<span class="tok-s">"switch"</span>
+  <span class="tok-a">aria-checked</span>=<span class="tok-s">"<span data-mirror="aria-checked">false</span>"</span>
+  <span class="tok-a">data-state</span>=<span class="tok-s">"<span data-mirror="data-state">unchecked</span>"</span><span class="tok-p">&gt;</span></code></pre>
+		<figcaption>
+			The page has no idea how a switch should look; it only reads the state. Click it, or press
+			<kbd>Tab</kbd> then <kbd>Space</kbd>.
+		</figcaption>
+	</figure>
+</section>
+
+<section class="section" aria-labelledby="how-heading">
+	<p class="section-index" aria-hidden="true">01</p>
+	<h2 id="how-heading">Three moves, no stylesheet to fight</h2>
+	<ol class="steps">
+		<li>
+			<h3>Add the crate</h3>
+			<p>One facade crate re-exports every component, hook, and utility.</p>
+			<pre><code><span class="tok-p">$</span> cargo add leptos_aria</code></pre>
+		</li>
+		<li>
+			<h3>Compose the parts</h3>
+			<p>Components handle roles, keyboard, and focus. You write markup and classes.</p>
+			<pre><code><span class="tok-k">view!</span> {
+  <span class="tok-p">&lt;</span><span class="tok-k">AccordionItem</span> <span class="tok-a">key</span>=<span class="tok-s">"faq"</span>.to_string()<span class="tok-p">&gt;</span>
+    <span class="tok-p">&lt;</span><span class="tok-k">AccordionTrigger</span>
+      <span class="tok-a">attr:class</span>=<span class="tok-s">"data-[state=open]:font-bold"</span><span class="tok-p">&gt;</span>
+      <span class="tok-s">"Is it accessible?"</span>
+    <span class="tok-p">&lt;/</span><span class="tok-k">AccordionTrigger</span><span class="tok-p">&gt;</span>
+    <span class="tok-p">&lt;</span><span class="tok-k">AccordionPanel</span><span class="tok-p">&gt;</span><span class="tok-s">"By default."</span><span class="tok-p">&lt;/</span><span class="tok-k">AccordionPanel</span><span class="tok-p">&gt;</span>
+  <span class="tok-p">&lt;/</span><span class="tok-k">AccordionItem</span><span class="tok-p">&gt;</span>
+}</code></pre>
+		</li>
+		<li>
+			<h3>Style the state</h3>
+			<p>Name the states once and every component speaks the same variants.</p>
+			<pre><code><span class="tok-k">@custom-variant</span> open
+  (&amp;:where([<span class="tok-a">data-state</span>=<span class="tok-s">"open"</span>]));
+
+<span class="tok-p">&lt;</span><span class="tok-k">button</span> <span class="tok-a">class</span>=<span class="tok-s">"open:bg-orange-500"</span><span class="tok-p">&gt;</span></code></pre>
+		</li>
+	</ol>
+</section>
+
+<section class="section" aria-labelledby="behaviour-heading">
+	<p class="section-index" aria-hidden="true">02</p>
+	<h2 id="behaviour-heading">The hard parts, already written</h2>
+	<ul class="features">
+		<li>
+			<h3>Press, hover, and focus that agree</h3>
+			<p>Mouse, touch, pen, keyboard, and screen-reader virtual clicks all arrive as one normalised press event.</p>
+		</li>
+		<li>
+			<h3>Focus goes where it should</h3>
+			<p>Containment inside modals, restoration on close, autofocus, and a programmatic <code>FocusManager</code>.</p>
+		</li>
+		<li>
+			<h3>Overlays that close properly</h3>
+			<p>Escape and outside-press dismissal, scroll locking, and popovers that flip and shift to stay on screen.</p>
+		</li>
+		<li>
+			<h3>Collections you can drive by keyboard</h3>
+			<p>Arrow keys, Home and End, and type-ahead across list boxes, menus, grids, tables, and trees.</p>
+		</li>
+		<li>
+			<h3>Calendar and colour maths</h3>
+			<p>Date arithmetic, ranges, and time fields, plus colour areas, sliders, and wheels that read correctly aloud.</p>
+		</li>
+		<li>
+			<h3>Copy, don't install</h3>
+			<p>A shadcn-style CLI drops styled wrappers into your crate. The files are yours to edit.</p>
+		</li>
+	</ul>
+</section>
+
+<section class="section" aria-labelledby="catalogue-heading">
+	<p class="section-index" aria-hidden="true">03</p>
+	<h2 id="catalogue-heading">63 components, 15 interaction hooks</h2>
+	<p class="section-lede">
+		Every one tracked against its React Aria original on the
+		<a href="roadmap.html">porting roadmap</a>.
+	</p>
+	<dl class="catalogue">
+		<div>
+			<dt>Buttons &amp; toggles</dt>
+			<dd>Button · AnchorButton · CustomButton · ToggleButton · ToggleGroup · Switch</dd>
+		</div>
+		<div>
+			<dt>Forms &amp; fields</dt>
+			<dd>Form · TextField · TextArea · SearchField · NumberField · OneTimePasswordField · Checkbox · CheckboxGroup · RadioGroup · Slider</dd>
+		</div>
+		<div>
+			<dt>Collections &amp; menus</dt>
+			<dd>ComboBox · SelectBox · ListBox · Menu · MenuTrigger · ContextMenu · Menubar · Tabs · TagGroup · Toolbar · Grid · Table · Tree</dd>
+		</div>
+		<div>
+			<dt>Overlays</dt>
+			<dd>Tooltip · Popover · Modal · Dialog · AlertDialog · HoverCard · Toast</dd>
+		</div>
+		<div>
+			<dt>Date &amp; time</dt>
+			<dd>Calendar · DatePicker · DateField · DateRangePicker · TimeField</dd>
+		</div>
+		<div>
+			<dt>Colour</dt>
+			<dd>ColorField · ColorArea · ColorSlider · ColorWheel · ColorSwatch</dd>
+		</div>
+		<div>
+			<dt>Navigation &amp; layout</dt>
+			<dd>Link · Breadcrumb · Pagination · Disclosure · Accordion · ScrollArea · Separator · AspectRatio</dd>
+		</div>
+		<div>
+			<dt>Feedback &amp; files</dt>
+			<dd>Meter · ProgressBar · Avatar · DropZone · DraggableItem · FileTrigger</dd>
+		</div>
+		<div>
+			<dt>Text</dt>
+			<dd>Heading · Text · VisuallyHidden</dd>
+		</div>
+		<div>
+			<dt>Interaction hooks</dt>
+			<dd>use_press · use_focus · use_focus_within · use_hover · use_focusable · use_focus_ring · use_keyboard · use_long_press · use_move · use_drag · use_drop · use_scroll · use_overlay_dismiss · use_modal · use_autofocus · FocusManager</dd>
+		</div>
+	</dl>
+</section>
+
+<section class="section split" aria-labelledby="cli-heading">
+	<div>
+		<p class="section-index" aria-hidden="true">04</p>
+		<h2 id="cli-heading">Own the styled layer</h2>
+		<p class="section-lede">
+			The CLI copies Tailwind-styled wrappers into <code>src/aria</code>. The headless crates stay
+			underneath; the classes are yours to change.
+		</p>
+	</div>
+	<pre class="terminal"><code><span class="tok-c"># once</span>
+<span class="tok-p">$</span> cargo install leptos_aria_cli
+<span class="tok-p">$</span> leptos-aria init
+
+<span class="tok-c"># per component</span>
+<span class="tok-p">$</span> leptos-aria add button dialog switch
+<span class="tok-p">$</span> leptos-aria list</code></pre>
+</section>
+
+<section class="section" aria-labelledby="agents-heading">
+	<p class="section-index" aria-hidden="true">05</p>
+	<h2 id="agents-heading">Readable by agents, too</h2>
+	<ul class="cards">
+		<li>
+			<a href="llms.txt"><strong>llms.txt</strong><span>The index: what exists and where to look.</span></a>
+		</li>
+		<li>
+			<a href="llms-full.txt"><strong>llms-full.txt</strong><span>Every doc in one file, generated from the repository.</span></a>
+		</li>
+		<li>
+			<a href="registry.json"><strong>registry.json</strong><span>The shadcn-schema component manifest the CLI reads.</span></a>
+		</li>
+	</ul>
+</section>

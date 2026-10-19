@@ -1,3 +1,5 @@
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
 #![allow(clippy::needless_pass_by_value)]
 
 use std::sync::Arc;
@@ -70,7 +72,7 @@ fn filter_options(
 	let options = Arc::clone(options);
 
 	Memo::new(move |_| {
-		let query = value.get().to_lowercase();
+		let query = value.with(|value| value.to_lowercase());
 
 		options
 			.iter()
@@ -88,15 +90,17 @@ fn resolve_selected_label(
 	let options = Arc::clone(options);
 
 	Memo::new(move |_| {
-		match selection.get() {
-			Selection::Keys(keys) => {
-				keys.iter()
-					.next()
-					.and_then(|key| options.iter().find(|item| &item.value == key))
-					.map(|item| item.label.clone())
+		selection.with(|selection| {
+			match selection {
+				Selection::Keys(keys) => {
+					keys.iter()
+						.next()
+						.and_then(|key| options.iter().find(|item| &item.value == key))
+						.map(|item| item.label.clone())
+				}
+				_ => None,
 			}
-			_ => None,
-		}
+		})
 	})
 }
 
@@ -168,7 +172,7 @@ fn render_options(state: &SharedComboBoxState) -> Vec<AnyView> {
 		.into_iter()
 		.map(|item| {
 			view! {
-				<ListBoxOption value=item.value.clone()>{item.label.clone()}</ListBoxOption>
+				<ListBoxOption value=item.value>{item.label}</ListBoxOption>
 			}
 			.into_any()
 		})

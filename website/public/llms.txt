@@ -6,16 +6,17 @@ Install the library, install the CLI, add components:
 
 ```
 cargo add leptos_aria
-cargo install leptos_aria_cli --path crates/leptos_aria_cli
+cargo install leptos_aria_cli
 leptos-aria add button
 ```
 
 ## Docs
 
-- [Tailwind v4 guide](docs/tailwind.md): styling states with `data-[state=open]` variants and `@custom-variant` blocks, plus the full data-attribute contract
-- [Registry](registry/registry.json): the shadcn-schema component manifest the CLI reads
-- [Porting roadmap](PORTING.md): every upstream hook, utility, and component with its crate
+- [Tailwind v4 guide](https://ifiokjr.github.io/leptos_aria/tailwind.html): styling states with `data-[state=open]` variants and `@custom-variant` blocks, plus the full data-attribute contract
+- [Registry](https://ifiokjr.github.io/leptos_aria/registry.json): the shadcn-schema component manifest the CLI reads
+- [Porting roadmap](https://ifiokjr.github.io/leptos_aria/roadmap.html): every upstream hook, utility, and component with its crate
 - [API docs](https://docs.rs/leptos_aria): the facade crate on docs.rs
+- [Full documentation](https://ifiokjr.github.io/leptos_aria/llms-full.txt): every document above in one file
 
 ## The data-attribute contract
 

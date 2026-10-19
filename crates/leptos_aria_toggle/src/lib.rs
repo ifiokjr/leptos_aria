@@ -1,3 +1,6 @@
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
+
 use std::sync::Arc;
 
 use leptos::prelude::*;
@@ -366,7 +369,7 @@ pub fn ToggleGroupItem(
 		let keys = context.keys;
 		let value = value.clone();
 
-		move || keys.get().contains(&value)
+		move || keys.with(|keys| keys.contains(&value))
 	});
 	let click_value = value.clone();
 	let click_context = context.clone();

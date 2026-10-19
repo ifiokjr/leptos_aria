@@ -1,3 +1,6 @@
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
+
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -50,14 +53,14 @@ pub enum SelectionMode {
 /// A callback invoked when the selection changes.
 pub type BoxedSelectionCallback = Box<dyn Fn(&Selection) + Send + Sync + 'static>;
 
+/// The change callback storage of the selection state.
+type SelectionChangeCallback = Arc<dyn Fn(&Selection) + Send + Sync>;
+
 /// State management for collection selection.
 ///
 /// The same shape as the upstream `SelectionManager` over
 /// `useMultipleSelectionState`: single selection replaces, multiple selection
 /// toggles, and disabled selection is a no-op.
-/// The change callback storage of the selection state.
-type SelectionChangeCallback = Arc<dyn Fn(&Selection) + Send + Sync>;
-
 #[derive(Clone)]
 pub struct SelectionState {
 	selection: SelectionValue,
@@ -155,13 +158,18 @@ impl SelectionState {
 
 	/// Whether the key is selected.
 	pub fn is_selected(&self, key: &str) -> bool {
-		self.selection_untracked().contains(key)
+		self.selection_signal()
+			.with_untracked(|selection| selection.contains(key))
 	}
 
 	/// Replace the whole selection.
 	#[allow(clippy::needless_pass_by_value)]
 	pub fn set_selection(&self, selection: Selection) {
-		if self.is_disabled || self.selection_untracked() == selection {
+		if self.is_disabled
+			|| self
+				.selection_signal()
+				.with_untracked(|current| *current == selection)
+		{
 			return;
 		}
 

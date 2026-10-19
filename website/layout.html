@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{{title}}</title>
+		<meta name="description" content="{{description}}" />
+		<link rel="canonical" href="{{url}}" />
+		<meta name="theme-color" content="#f6f2ea" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)" />
+		<meta name="color-scheme" content="light dark" />
+
+		<link rel="icon" href="favicon.ico" sizes="32x32" />
+		<link rel="icon" href="logo.svg" type="image/svg+xml" />
+		<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+		<link rel="manifest" href="site.webmanifest" />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="leptos_aria" />
+		<meta property="og:title" content="{{title}}" />
+		<meta property="og:description" content="{{description}}" />
+		<meta property="og:url" content="{{url}}" />
+		<meta property="og:image" content="https://ifiokjr.github.io/leptos_aria/og.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content="The leptos_aria logo: a lowercase a inside a component wrapped in a focus ring." />
+		<meta name="twitter:card" content="summary_large_image" />
+
+		<!-- Fonts load without blocking first paint; the system stack renders until they arrive. -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Fragment+Mono&display=swap"
+			media="print"
+			onload="this.media='all'"
+		/>
+		<link rel="stylesheet" href="site.css" />
+		<script src="site.js" defer></script>
+	</head>
+	<body data-page="{{slug}}">
+		<a class="skip-link" href="#main">Skip to content</a>
+
+		<header class="site-header">
+			<a class="brand" href="./" aria-label="leptos_aria home">
+				<svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+					<rect x="3" y="3" width="58" height="58" rx="18" fill="none" stroke="currentColor" stroke-width="3.5" />
+					<rect x="12" y="12" width="40" height="40" rx="10" fill="currentColor" />
+					<circle cx="31" cy="34" r="7.25" fill="none" stroke="#fffaf2" stroke-width="4.5" />
+					<path d="M40 25.5V42" stroke="#fffaf2" stroke-width="4.5" stroke-linecap="round" />
+				</svg>
+				<span>leptos<span class="brand-underscore">_</span>aria</span>
+			</a>
+			<nav class="site-nav" aria-label="Primary">
+				<a href="tailwind.html" data-nav="tailwind">Guide</a>
+				<a href="roadmap.html" data-nav="roadmap">Roadmap</a>
+				<a href="https://docs.rs/leptos_aria">API</a>
+				<a href="https://github.com/ifiokjr/leptos_aria">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="main" tabindex="-1">
+{{content}}
+		</main>
+
+		<footer class="site-footer">
+			<p>
+				<strong>leptos_aria</strong> is released into the public domain under the
+				<a href="https://github.com/ifiokjr/leptos_aria/blob/main/license">Unlicense</a>.
+			</p>
+			<p class="footer-links">
+				<a href="https://crates.io/crates/leptos_aria">crates.io</a>
+				<a href="https://docs.rs/leptos_aria">docs.rs</a>
+				<a href="llms.txt">llms.txt</a>
+				<a href="https://github.com/ifiokjr/leptos_aria">GitHub</a>
+			</p>
+		</footer>
+	</body>
+</html>

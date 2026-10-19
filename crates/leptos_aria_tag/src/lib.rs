@@ -1,3 +1,5 @@
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
 #![allow(clippy::needless_pass_by_value)]
 
 use leptos::prelude::*;
@@ -71,7 +73,7 @@ pub fn Tag(
 		let selection = context.state.selection_signal();
 		let value = value.clone();
 
-		move || selection.get().contains(&value)
+		move || selection.with(|selection| selection.contains(&value))
 	});
 	let tag_value = value.clone();
 

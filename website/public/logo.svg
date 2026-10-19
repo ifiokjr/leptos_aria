@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="leptos_aria">
+	<rect x="3" y="3" width="58" height="58" rx="18" fill="none" stroke="#ff4a1c" stroke-width="3.5"/>
+	<rect x="12" y="12" width="40" height="40" rx="10" fill="#ff4a1c"/>
+	<circle cx="31" cy="34" r="7.25" fill="none" stroke="#fffaf2" stroke-width="4.5"/>
+	<path d="M40 25.5V42" stroke="#fffaf2" stroke-width="4.5" stroke-linecap="round"/>
+</svg>

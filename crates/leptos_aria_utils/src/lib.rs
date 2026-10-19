@@ -1,3 +1,6 @@
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
+
 pub use focus_safely::focus_safely;
 pub use focus_without_scrolling::*;
 pub use global_listeners::*;

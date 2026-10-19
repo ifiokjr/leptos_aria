@@ -1,3 +1,5 @@
+#![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
+#![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
 #![allow(clippy::needless_pass_by_value)]
 
 use leptos::prelude::*;
@@ -29,49 +31,57 @@ impl ListBoxContext {
 
 	/// Move focus to the option after the currently focused one.
 	pub fn focus_next(&self) {
-		let keys = self.keys.get_untracked();
 		let current = self.focused_key.get_untracked();
-
-		let next = match current.as_deref().and_then(|key| keys.key_after(key)) {
-			Some(next) => Some(next.to_string()),
-			None => keys.first_key().map(str::to_string),
-		};
+		let next = self.keys.with_untracked(|keys| {
+			current
+				.as_deref()
+				.and_then(|key| keys.key_after(key))
+				.or_else(|| keys.first_key())
+				.map(str::to_string)
+		});
 
 		self.focused_key.set(next);
 	}
 
 	/// Move focus to the option before the currently focused one.
 	pub fn focus_previous(&self) {
-		let keys = self.keys.get_untracked();
 		let current = self.focused_key.get_untracked();
-
-		let previous = match current.as_deref().and_then(|key| keys.key_before(key)) {
-			Some(previous) => Some(previous.to_string()),
-			None => keys.last_key().map(str::to_string),
-		};
+		let previous = self.keys.with_untracked(|keys| {
+			current
+				.as_deref()
+				.and_then(|key| keys.key_before(key))
+				.or_else(|| keys.last_key())
+				.map(str::to_string)
+		});
 
 		self.focused_key.set(previous);
 	}
 
 	/// Move focus to the first option.
 	pub fn focus_first(&self) {
-		let first = self.keys.get_untracked().first_key().map(str::to_string);
+		let first = self
+			.keys
+			.with_untracked(|keys| keys.first_key().map(str::to_string));
 		self.focused_key.set(first);
 	}
 
 	/// Move focus to the last option.
 	pub fn focus_last(&self) {
-		let last = self.keys.get_untracked().last_key().map(str::to_string);
+		let last = self
+			.keys
+			.with_untracked(|keys| keys.last_key().map(str::to_string));
 		self.focused_key.set(last);
 	}
 
-	/// Select the option matching a typed prefix.
+	/// Move focus to the option matching a typed prefix.
 	pub fn search_keys(&self, prefix: &str) {
-		let keys = self.keys.get_untracked();
 		let from = self.focused_key.get_untracked().unwrap_or_default();
+		let found = self
+			.keys
+			.with_untracked(|keys| keys.key_for_search(prefix, &from).map(str::to_string));
 
-		if let Some(found) = keys.key_for_search(prefix, &from) {
-			self.focused_key.set(Some(found.to_string()));
+		if found.is_some() {
+			self.focused_key.set(found);
 		}
 	}
 
@@ -118,14 +128,11 @@ pub fn ListBox(
 	let state = use_selection_state(UseSelectionStateProps {
 		default_selection,
 		selection,
-		mode: Signal::derive(move || {
-			if is_multiple.get() {
-				SelectionMode::Multiple
-			} else {
-				SelectionMode::Single
-			}
-		})
-		.get_untracked(),
+		mode: if is_multiple.get_untracked() {
+			SelectionMode::Multiple
+		} else {
+			SelectionMode::Single
+		},
 		is_disabled: is_disabled.get_untracked(),
 		on_change,
 	});
@@ -164,7 +171,7 @@ fn handle_key_down(context: &ListBoxContext, event: &web_sys::KeyboardEvent) {
 		"Home" => context.focus_first(),
 		"End" => context.focus_last(),
 		"Enter" | " " => context.select(None),
-		key if key.chars().count() == 1 => context.search_keys(&event.key()),
+		key if key.chars().count() == 1 => context.search_keys(key),
 		_ => return,
 	}
 
@@ -190,13 +197,13 @@ pub fn ListBoxOption(
 		let focused = context.focused_key;
 		let value = value.clone();
 
-		move || focused.get().as_deref() == Some(value.as_str())
+		move || focused.with(|focused| focused.as_deref() == Some(value.as_str()))
 	});
 	let is_selected = Signal::derive({
 		let selection = context.state.selection_signal();
 		let value = value.clone();
 
-		move || selection.get().contains(&value)
+		move || selection.with(|selection| selection.contains(&value))
 	});
 	let option_value = value.clone();
 
