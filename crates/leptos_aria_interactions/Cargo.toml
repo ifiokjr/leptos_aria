@@ -16,6 +16,7 @@ description = "Interaction hooks for the leptos_aria component library"
 [dependencies]
 js-sys = { workspace = true }
 leptos = { workspace = true, features = ["csr"] }
+leptos-use = { workspace = true }
 leptos_aria_utils = { workspace = true }
 typed-builder = { workspace = true }
 wasm-bindgen = { workspace = true }
