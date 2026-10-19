@@ -1,5 +1,13 @@
 #![allow(clippy::needless_pass_by_value)]
 
+pub use range::DateRange;
+pub use range::DateRangeField;
+pub use range::DateRangePicker;
+pub use range::DateRangeState;
+pub use range::RangeCalendar;
+
+mod range;
+
 use leptos::prelude::*;
 use leptos_aria_calendar::Calendar;
 use leptos_aria_date::DateValue;
