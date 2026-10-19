@@ -141,9 +141,15 @@ jobs:
             exit 1
           fi
           if [ -n "$pr_number" ]; then
-            gh pr edit "$pr_number" --title "chore(release): prepare release" --body "$body"
+            gh pr edit "$pr_number" --title "chore(release): prepare release" --body "$body" || true
           else
-            gh pr create --head "$branch" --base main \
+            # Creating a pull request from Actions needs the repository
+            # setting "Allow GitHub Actions to create and approve pull
+            # requests"; when it is off, leave the branch to open manually.
+            if ! gh pr create --head "$branch" --base main \
               --title "chore(release): prepare release" \
-              --body "$body" --label release --label automated || gh pr create --head "$branch" --base main --title "chore(release): prepare release" --body "$body"
+              --body "$body" --label release --label automated; then
+              echo "::warning::Could not create the release pull request (Actions PR creation disabled). Open it manually:"
+              echo "https://github.com/$GITHUB_REPOSITORY/compare/main...$branch"
+            fi
           fi
