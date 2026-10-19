@@ -1,6 +1,6 @@
 [package]
 name = "leptos_aria_link"
-version.workspace = true
+version = "0.1.0"
 authors.workspace = true
 categories.workspace = true
 documentation = "https://docs.rs/leptos_aria_link"
