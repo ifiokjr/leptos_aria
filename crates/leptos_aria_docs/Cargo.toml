@@ -14,13 +14,7 @@ rust-version.workspace = true
 description = "The leptos_aria documentation website"
 
 [dependencies]
-leptos = { workspace = true, features = ["csr"] }
-leptos_aria = { workspace = true }
-pulldown-cmark = { version = "0.13", default-features = false }
-web-sys = { workspace = true, features = ["Document", "Element", "HtmlElement"] }
-
-[dev-dependencies]
-wasm-bindgen-test = { workspace = true }
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
 
 [lints]
 workspace = true
