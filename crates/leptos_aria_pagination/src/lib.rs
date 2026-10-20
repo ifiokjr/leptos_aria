@@ -95,23 +95,26 @@ impl PaginationState {
 }
 
 /// The numbered page buttons.
+///
+/// The set re-renders when the count changes; each button tracks the page on
+/// its own so moving between pages only updates the markers.
 fn render_pages(state: &Arc<PaginationState>) -> Vec<AnyView> {
-	let current = state.page.get_untracked();
-	let count = state.count.get_untracked();
+	let count = state.count.get();
 	let click_state = Arc::clone(state);
+	let page = state.page;
 
 	(1..=count)
 		.map(|number| {
 			let click_state = Arc::clone(&click_state);
-			let is_current = number == current;
+			let is_current = move || page.get() == number;
 
 			view! {
 				<button
 					type="button"
 					class="leptos-aria-pagination__page"
-					aria-current=is_current.then_some("page")
+					aria-current=move || is_current().then_some("page")
 					aria-label=format!("Page {number}")
-					data-current=is_current.then_some("true")
+					data-current=move || is_current().then_some("true")
 					on:click=move |_| click_state.go_to(number)
 				>
 					{number.to_string()}
@@ -163,7 +166,7 @@ mod tests {
 		});
 
 		let nav = document()
-			.query_selector(".leptos-aria-pagination")
+			.query_selector(".custom-pagination")
 			.unwrap()
 			.unwrap();
 		assert_eq!(
@@ -171,12 +174,69 @@ mod tests {
 			Some("leptos-aria-pagination custom-pagination")
 		);
 
-		button(".leptos-aria-pagination__next").click();
+		button(".custom-pagination .leptos-aria-pagination__next").click();
 		tick().await;
 		assert_eq!(page.get_untracked(), 3, "next moves forward");
 
-		button(".leptos-aria-pagination__previous").click();
+		button(".custom-pagination .leptos-aria-pagination__previous").click();
 		tick().await;
 		assert_eq!(page.get_untracked(), 2, "previous moves back");
+	}
+
+	#[wasm_bindgen_test]
+	async fn the_current_page_marker_follows_the_page() {
+		console_error_panic_hook::set_once();
+
+		let page = RwSignal::new(1_usize);
+		let count = RwSignal::new(3_usize);
+
+		mount_to_body(move || {
+			view! {
+				<Pagination
+					page=page
+					count=count
+					on_change=Box::new(move |next| page.set(next))
+					class="pagination-test-current"
+				/>
+			}
+		});
+
+		let current = || {
+			document()
+				.query_selector(".pagination-test-current [aria-current='page']")
+				.unwrap()
+				.and_then(|button| button.text_content())
+		};
+
+		button(".pagination-test-current [aria-label='Page 3']").click();
+		tick().await;
+
+		assert_eq!(page.get_untracked(), 3);
+		assert_eq!(
+			current().as_deref(),
+			Some("3"),
+			"the clicked page is current"
+		);
+		assert_eq!(
+			document()
+				.query_selector_all(".pagination-test-current [data-current]")
+				.unwrap()
+				.length(),
+			1,
+			"only one page is marked"
+		);
+
+		count.set(4);
+		tick().await;
+
+		assert_eq!(
+			document()
+				.query_selector_all(".pagination-test-current .leptos-aria-pagination__page")
+				.unwrap()
+				.length(),
+			4,
+			"a new count renders a new set of pages"
+		);
+		assert_eq!(current().as_deref(), Some("3"));
 	}
 }

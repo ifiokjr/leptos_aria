@@ -24,6 +24,7 @@ console_error_panic_hook = { workspace = true }
 js-sys = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 wasm-bindgen-test = { workspace = true }
+web-sys = { workspace = true, features = ["HtmlImageElement"] }
 
 [lints]
 workspace = true
