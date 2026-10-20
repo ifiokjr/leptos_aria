@@ -24,40 +24,23 @@ pub struct MenuTriggerContext {
 	pub is_open: RwSignal<bool>,
 }
 
-/// What a menu knows about one of its items.
+/// The actions of one menu's items, by value, so the menu can run the
+/// chosen one. The list box never reports a disabled item as chosen.
 #[derive(Clone, Copy)]
-struct MenuItemEntry {
-	is_disabled: Signal<bool>,
-	on_action: Option<Callback<()>>,
-}
-
-/// The items of one menu, by value, so the menu can run the chosen one.
-#[derive(Clone, Copy)]
-struct MenuItems(StoredValue<HashMap<String, MenuItemEntry>>);
+struct MenuItems(StoredValue<HashMap<String, Callback<()>>>);
 
 impl MenuItems {
-	fn register(self, value: String, entry: MenuItemEntry) {
+	fn register(self, value: String, on_action: Callback<()>) {
 		self.0.update_value(|items| {
-			items.insert(value, entry);
+			items.insert(value, on_action);
 		});
 	}
 
-	/// Run the item's action. Returns `false` for a disabled item, which
-	/// cannot be chosen.
-	fn activate(self, value: &str) -> bool {
-		let Some(entry) = self.0.with_value(|items| items.get(value).copied()) else {
-			return true;
-		};
-
-		if entry.is_disabled.get_untracked() {
-			return false;
-		}
-
-		if let Some(on_action) = entry.on_action {
+	/// Run the item's action, if it has one.
+	fn activate(self, value: &str) {
+		if let Some(on_action) = self.0.with_value(|items| items.get(value).copied()) {
 			on_action.run(());
 		}
-
-		true
 	}
 }
 
@@ -110,9 +93,7 @@ pub fn Menu(
 			return;
 		};
 
-		if !items.activate(value) {
-			return;
-		}
+		items.activate(value);
 
 		if let Some(on_action) = &on_action {
 			on_action(value.clone());
@@ -160,14 +141,8 @@ pub fn MenuItem(
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	if let Some(items) = use_context::<MenuItems>() {
-		items.register(
-			value.clone(),
-			MenuItemEntry {
-				is_disabled,
-				on_action,
-			},
-		);
+	if let (Some(items), Some(on_action)) = (use_context::<MenuItems>(), on_action) {
+		items.register(value.clone(), on_action);
 	}
 
 	view! {
@@ -343,6 +318,8 @@ mod tests {
 
 		let is_open = RwSignal::new(true);
 		let chosen = RwSignal::new(Vec::<String>::new());
+		let deletes = Arc::new(AtomicUsize::new(0));
+		let item_deletes = Arc::clone(&deletes);
 
 		mount_to_body(move || {
 			view! {
@@ -351,7 +328,15 @@ mod tests {
 					on_action=Box::new(move |value| chosen.update(|chosen| chosen.push(value)))
 					class="menu-test-disabled"
 				>
-					<MenuItem value="delete" is_disabled=true>"Delete"</MenuItem>
+					<MenuItem
+						value="delete"
+						is_disabled=true
+						on_action=move || {
+							item_deletes.fetch_add(1, Ordering::Relaxed);
+						}
+					>
+						"Delete"
+					</MenuItem>
 				</Menu>
 			}
 		});
@@ -360,6 +345,11 @@ mod tests {
 		tick().await;
 
 		assert_eq!(chosen.get_untracked(), Vec::<String>::new());
+		assert_eq!(
+			deletes.load(Ordering::Relaxed),
+			0,
+			"the item's action does not run"
+		);
 		assert!(is_open.get_untracked(), "the menu stays open");
 	}
 }
