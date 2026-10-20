@@ -56,6 +56,10 @@ jobs:
         run: cargo clippy --all-targets --locked -- -D warnings
         shell: devenv shell -- bash -e {0}
 
+      - name: clippy (cli)
+        run: cargo clippy --manifest-path crates/leptos_aria_cli/Cargo.toml --all-targets --locked -- -D warnings
+        shell: devenv shell -- bash -e {0}
+
   build:
     timeout-minutes: 60
     runs-on: ubuntu-latest
@@ -78,6 +82,10 @@ jobs:
         run: cargo run --locked -p leptos_aria_docs --bin site
         shell: devenv shell -- bash -e {0}
 
+      - name: build registry
+        run: cargo run --locked --manifest-path crates/leptos_aria_cli/Cargo.toml -- build registry/registry.json --output target/site/r --strict
+        shell: devenv shell -- bash -e {0}
+
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
@@ -94,6 +102,10 @@ jobs:
 
       - name: rust tests (native)
         run: cargo test --locked
+        shell: devenv shell -- bash -e {0}
+
+      - name: cli tests
+        run: cargo test --manifest-path crates/leptos_aria_cli/Cargo.toml --locked
         shell: devenv shell -- bash -e {0}
 
       # The ubuntu runner image ships a ChromeDriver matched to its Chrome,

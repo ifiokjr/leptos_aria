@@ -10,10 +10,10 @@
 		<meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)" />
 		<meta name="color-scheme" content="light dark" />
 
-		<link rel="icon" href="favicon.ico" sizes="32x32" />
-		<link rel="icon" href="logo.svg" type="image/svg+xml" />
-		<link rel="apple-touch-icon" href="apple-touch-icon.png" />
-		<link rel="manifest" href="site.webmanifest" />
+		<link rel="icon" href="{{root}}favicon.ico" sizes="32x32" />
+		<link rel="icon" href="{{root}}logo.svg" type="image/svg+xml" />
+		<link rel="apple-touch-icon" href="{{root}}apple-touch-icon.png" />
+		<link rel="manifest" href="{{root}}site.webmanifest" />
 
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content="leptos_aria" />
@@ -35,14 +35,14 @@
 			media="print"
 			onload="this.media='all'"
 		/>
-		<link rel="stylesheet" href="site.css" />
-		<script src="site.js" defer></script>
+		<link rel="stylesheet" href="{{root}}site.css" />
+		<script src="{{root}}site.js" defer></script>
 	</head>
 	<body data-page="{{slug}}">
 		<a class="skip-link" href="#main">Skip to content</a>
 
 		<header class="site-header">
-			<a class="brand" href="./" aria-label="leptos_aria home">
+			<a class="brand" href="{{root}}./" aria-label="leptos_aria home">
 				<svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
 					<rect x="3" y="3" width="58" height="58" rx="18" fill="none" stroke="currentColor" stroke-width="3.5" />
 					<rect x="12" y="12" width="40" height="40" rx="10" fill="currentColor" />
@@ -52,8 +52,9 @@
 				<span>leptos<span class="brand-underscore">_</span>aria</span>
 			</a>
 			<nav class="site-nav" aria-label="Primary">
-				<a href="tailwind.html" data-nav="tailwind">Guide</a>
-				<a href="roadmap.html" data-nav="roadmap">Roadmap</a>
+				<a href="{{root}}tailwind.html" data-nav="tailwind">Guide</a>
+				<a href="{{root}}components.html" data-nav="components">Components</a>
+				<a href="{{root}}cli.html" data-nav="cli">CLI</a>
 				<a href="https://docs.rs/leptos_aria">API</a>
 				<a href="https://github.com/ifiokjr/leptos_aria">GitHub</a>
 			</nav>
@@ -71,7 +72,7 @@
 			<p class="footer-links">
 				<a href="https://crates.io/crates/leptos_aria">crates.io</a>
 				<a href="https://docs.rs/leptos_aria">docs.rs</a>
-				<a href="llms.txt">llms.txt</a>
+				<a href="{{root}}llms.txt">llms.txt</a>
 				<a href="https://github.com/ifiokjr/leptos_aria">GitHub</a>
 			</p>
 		</footer>
