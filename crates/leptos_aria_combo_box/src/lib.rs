@@ -12,6 +12,7 @@ use leptos_aria_selection::SelectionMode;
 use leptos_aria_selection::SelectionState;
 use leptos_aria_selection::UseSelectionStateProps;
 use leptos_aria_selection::use_selection_state;
+use leptos_aria_utils::merge_class;
 use wasm_bindgen::JsCast;
 
 /// One option of a combo box: a value with its text.
@@ -23,9 +24,6 @@ pub struct ComboBoxItem {
 
 /// A selection signal, the reactive read of the shared selection state.
 pub type SelectionSignal = Signal<Selection>;
-
-/// The class always present on the combo box root element.
-const BASE_CLASS: &str = "leptos-aria-combo-box";
 
 /// A callback invoked when the combo box value changes.
 pub type BoxedComboChangeCallback = Box<dyn Fn(&str) + Send + Sync>;
@@ -291,20 +289,8 @@ pub fn ComboBox(
 	let input_state = Arc::clone(&state);
 	let key_state = state;
 
-	let root_class = move || {
-		class.with(|class| {
-			let class = class.trim();
-
-			if class.is_empty() {
-				BASE_CLASS.to_string()
-			} else {
-				format!("{BASE_CLASS} {class}")
-			}
-		})
-	};
-
 	view! {
-		<div class=root_class>
+		<div class=merge_class("leptos-aria-combo-box", class)>
 			<input
 				type="text"
 				role="combobox"
