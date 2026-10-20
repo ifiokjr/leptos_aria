@@ -726,6 +726,60 @@ main {
 	font-size: 0.82rem;
 }
 
+/* Live previews: the usage example running in a frame of its own, with the
+ * code it runs one tab away. The frame isolates the registry's Tailwind theme
+ * from this stylesheet; site.js sizes it to the example's height. */
+
+.preview {
+	margin: 0 0 1.5rem;
+	overflow: hidden;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--bg-raised);
+}
+
+.preview-tabs {
+	display: flex;
+	gap: 0.25rem;
+	padding: 0.45rem;
+	border-bottom: 1px solid var(--line);
+}
+
+.preview-tabs [role="tab"] {
+	padding: 0.3rem 0.9rem;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: var(--muted);
+	font: inherit;
+	font-size: 0.875rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.preview-tabs [role="tab"]:hover {
+	color: var(--ink);
+}
+
+.preview-tabs [role="tab"][aria-selected="true"] {
+	background: var(--ink);
+	color: var(--bg);
+}
+
+.preview-stage iframe {
+	display: block;
+	width: 100%;
+	height: 18rem;
+	border: 0;
+	color-scheme: light dark;
+}
+
+.prose .preview-code pre {
+	margin: 0;
+	border: 0;
+	border-radius: 0;
+}
+
 .component-grid {
 	grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
 	margin-top: 1rem;

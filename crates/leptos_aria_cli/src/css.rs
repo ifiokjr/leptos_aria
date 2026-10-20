@@ -205,4 +205,28 @@ mod tests {
 		);
 		assert_eq!(upsert_block(&second, "default", ".dark {}\n"), second);
 	}
+
+	/// The website's preview page is styled as a project after `init`: its
+	/// stylesheet must carry the `default` style block exactly as `init` would
+	/// write it from the registry, so the previews never drift from what users
+	/// install.
+	#[test]
+	fn the_preview_stylesheet_carries_the_default_style() {
+		let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+		let read = |path: &str| std::fs::read_to_string(root.join(path)).unwrap();
+		let registry: crate::registry::Registry =
+			serde_json::from_str(&read("registry/registry.json")).unwrap();
+		let style = registry
+			.items
+			.iter()
+			.find(|item| item.name == "default")
+			.unwrap();
+		let stylesheet = read("crates/leptos_aria_preview/style.css");
+
+		assert_eq!(
+			upsert_block(&stylesheet, "default", &render_item_css(style).unwrap()),
+			stylesheet,
+			"update the `default` block in crates/leptos_aria_preview/style.css"
+		);
+	}
 }

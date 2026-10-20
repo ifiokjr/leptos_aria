@@ -1,0 +1,10 @@
+# Build the preview page into the website: `site:build` runs
+# `trunk build --release --config crates/leptos_aria_preview/Trunk.toml`
+# after the static site, writing into its `preview/` directory.
+
+[build]
+target = "index.html"
+dist = "../../target/site/preview"
+# Component pages frame `../preview/index.html`, so every asset resolves
+# relative to the page instead of a fixed site root.
+public_url = "./"

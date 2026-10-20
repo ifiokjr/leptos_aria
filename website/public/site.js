@@ -1,6 +1,7 @@
 // Progressive enhancements for the leptos_aria website. Every page works
 // without this file; it only marks the current nav link, wires the copy
-// buttons, and drives the landing-page switch specimen.
+// buttons, drives the landing-page switch specimen, and switches and sizes
+// the component pages' live previews.
 
 const page = document.body.dataset.page;
 
@@ -50,3 +51,54 @@ if (demo) {
 		}
 	});
 }
+
+// Component previews: Preview and Code tabs over one framed example. The tabs
+// follow the ARIA tabs pattern, with arrow keys, Home, and End moving between
+// them and selecting as they go.
+for (const preview of document.querySelectorAll("[data-preview]")) {
+	const tabs = [...preview.querySelectorAll('[role="tab"]')];
+
+	const select = (selected) => {
+		for (const tab of tabs) {
+			const isSelected = tab === selected;
+			tab.setAttribute("aria-selected", String(isSelected));
+			tab.tabIndex = isSelected ? 0 : -1;
+			document.getElementById(tab.getAttribute("aria-controls")).hidden = !isSelected;
+		}
+	};
+
+	for (const [index, tab] of tabs.entries()) {
+		tab.addEventListener("click", () => select(tab));
+		tab.addEventListener("keydown", (event) => {
+			const next = {
+				ArrowLeft: tabs.at(index - 1),
+				ArrowRight: tabs[(index + 1) % tabs.length],
+				Home: tabs[0],
+				End: tabs.at(-1),
+			}[event.key];
+
+			if (next) {
+				event.preventDefault();
+				select(next);
+				next.focus();
+			}
+		});
+	}
+}
+
+// The preview page reports its example's height; grow or shrink its frame to
+// match, so nothing scrolls inside it. Only same-origin preview frames count,
+// and a frame hidden behind the Code tab reports zero, which is ignored.
+addEventListener("message", (event) => {
+	const { type, height } = event.data ?? {};
+
+	if (event.origin !== location.origin || type !== "leptos-aria-preview:height" || !(height > 0)) {
+		return;
+	}
+
+	for (const frame of document.querySelectorAll(".preview-stage iframe")) {
+		if (frame.contentWindow === event.source) {
+			frame.style.height = `${height}px`;
+		}
+	}
+});

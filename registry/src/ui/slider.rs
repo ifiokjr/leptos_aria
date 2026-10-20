@@ -8,7 +8,7 @@
 //!         label="Volume"
 //!         default_value=40.0
 //!         step=5.0
-//!         on_change=Box::new(|volume| logging::log!("{volume}"))
+//!         on_change=Box::new(|volume| leptos::logging::log!("{volume}"))
 //!         class="w-60"
 //!     />
 //! }

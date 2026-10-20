@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex" />
+		<meta name="color-scheme" content="light dark" />
+		<title>leptos_aria preview</title>
+		<link data-trunk rel="tailwind-css" href="style.css" />
+		<link data-trunk rel="rust" data-bin="leptos-aria-preview" data-cargo-profile="preview" data-wasm-opt="z" />
+		<script>
+			// The registry's dark theme follows a `dark` class on <html>; here it
+			// tracks the visitor's colour scheme, as the website around it does.
+			const scheme = matchMedia("(prefers-color-scheme: dark)");
+			const applyScheme = () => document.documentElement.classList.toggle("dark", scheme.matches);
+			applyScheme();
+			scheme.addEventListener("change", applyScheme);
+
+			// Example links point at made-up pages; keep the frame where it is.
+			document.addEventListener("click", (event) => {
+				if (event.target.closest("a[href]")) {
+					event.preventDefault();
+				}
+			});
+
+			// Tell the component page how tall the example is, so its iframe fits.
+			if (window.parent !== window) {
+				addEventListener("DOMContentLoaded", () => {
+					const root = document.getElementById("preview");
+					const post = () =>
+						window.parent.postMessage(
+							{ type: "leptos-aria-preview:height", height: Math.ceil(root.getBoundingClientRect().height) },
+							location.origin,
+						);
+					new ResizeObserver(post).observe(root);
+				});
+			}
+		</script>
+	</head>
+	<body>
+		<main id="preview"></main>
+	</body>
+</html>
