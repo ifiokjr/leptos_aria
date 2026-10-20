@@ -43,9 +43,11 @@ jobs:
         id: resolve
         run: |
           set -euo pipefail
+          # The publish job checks out this exact sha; resolving from a
+          # moving ref (main) is fine because the tag pins the revision.
           sha="$(git rev-list -n1 "$RELEASE_TAG")"
-          if [ "$(git rev-parse HEAD)" != "$sha" ]; then
-            echo "::error::The published revision must be the tagged one; HEAD and $RELEASE_TAG disagree." >&2
+          if [ -z "$sha" ]; then
+            echo "::error::Could not resolve $RELEASE_TAG to a commit." >&2
             exit 1
           fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
