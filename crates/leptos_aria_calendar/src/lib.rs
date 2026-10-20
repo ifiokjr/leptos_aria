@@ -210,30 +210,37 @@ fn MonthGrid(
 	let weeks = Signal::derive(move || month_weeks(month.get()));
 
 	view! {
-		<div class="leptos_aria-calendar__grid" role="rowgroup">
+		<div class="leptos-aria-calendar__grid" role="rowgroup">
 			{move || {
 				weeks
 					.get()
 					.into_iter()
-					.map(|week| {
-						view! {
-							<div class="leptos-aria-calendar__week" role="row">
-								{week
-									.into_iter()
-									.map(|date| {
-										let is_focused = focused.get_untracked() == date;
-										let is_selected = selected.get_untracked() == date;
-
-										view! {
-											<CalendarCell date=date is_focused=is_focused is_selected=is_selected />
-										}
-									})
-									.collect::<Vec<_>>()}
-							</div>
-						}
-					})
+					.map(|week| week_row(week, focused, selected))
 					.collect::<Vec<_>>()
 			}}
+		</div>
+	}
+}
+
+/// One `role="row"` week of date cells.
+fn week_row(
+	week: Vec<DateValue>,
+	focused: RwSignal<DateValue>,
+	selected: RwSignal<DateValue>,
+) -> impl IntoView {
+	let cells = week
+		.into_iter()
+		.map(|date| {
+			let is_focused = focused.get_untracked() == date;
+			let is_selected = selected.get_untracked() == date;
+
+			view! { <CalendarCell date=date is_focused=is_focused is_selected=is_selected /> }
+		})
+		.collect::<Vec<_>>();
+
+	view! {
+		<div class="leptos-aria-calendar__week" role="row">
+			{cells}
 		</div>
 	}
 }
@@ -241,17 +248,15 @@ fn MonthGrid(
 /// One date cell of the calendar.
 #[component]
 fn CalendarCell(date: DateValue, is_focused: bool, is_selected: bool) -> impl IntoView {
+	let current = if is_focused { "date" } else { "false" };
+	let class = if is_selected {
+		"leptos-aria-calendar__cell leptos-aria-calendar__cell--selected"
+	} else {
+		"leptos-aria-calendar__cell"
+	};
+
 	view! {
-		<span
-			role="gridcell"
-			aria-selected=is_selected.to_string()
-			aria-current=if is_focused { "date" } else { "false" }
-			class=if is_selected {
-				"leptos-aria-calendar__cell leptos-aria-calendar__cell--selected"
-			} else {
-				"leptos-aria-calendar__cell"
-			}
-		>
+		<span role="gridcell" aria-selected=is_selected.to_string() aria-current=current class=class>
 			{date.day.to_string()}
 		</span>
 	}
