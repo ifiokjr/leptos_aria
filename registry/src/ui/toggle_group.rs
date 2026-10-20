@@ -1,4 +1,5 @@
-//! A row of toggles joined into one control, one pressed at a time.
+//! A row of toggles joined into one control. One is pressed at a time unless
+//! `mode` is `ToggleGroupMode::Multiple`.
 //!
 //! ```rust ignore
 //! use crate::components::ui::toggle::ToggleVariant;
@@ -15,8 +16,10 @@
 //! ```
 
 use leptos::prelude::*;
+use leptos_aria::BoxedToggleGroupChangeCallback;
 use leptos_aria::ToggleGroup as AriaToggleGroup;
 use leptos_aria::ToggleGroupItem as AriaToggleGroupItem;
+use leptos_aria::ToggleGroupMode;
 
 use super::toggle::TOGGLE_BASE;
 use super::toggle::ToggleSize;
@@ -43,9 +46,18 @@ pub fn ToggleGroup(
 	/// The size of every item.
 	#[prop(optional, into)]
 	size: Signal<ToggleSize>,
-	/// The values of the items pressed at first.
+	/// Whether one or many items can be pressed, one by default.
+	#[prop(optional, into)]
+	mode: Signal<ToggleGroupMode>,
+	/// The values of the items pressed at first (uncontrolled).
 	#[prop(optional, into)]
 	default_value: Vec<String>,
+	/// The values of the pressed items (controlled).
+	#[prop(optional, into)]
+	value: Option<Signal<Vec<String>>>,
+	/// Called with every pressed value when one changes.
+	#[prop(optional)]
+	on_change: Option<BoxedToggleGroupChangeCallback>,
 	/// Classes merged over the defaults; yours win conflicts.
 	#[prop(optional, into)]
 	class: Signal<String>,
@@ -69,7 +81,14 @@ pub fn ToggleGroup(
 	};
 
 	view! {
-		<AriaToggleGroup default_value=default_value class=class attr:data-slot="toggle-group">
+		<AriaToggleGroup
+			mode=mode
+			default_value=default_value
+			nostrip:value=value
+			nostrip:on_change=on_change
+			class=class
+			attr:data-slot="toggle-group"
+		>
 			{children()}
 		</AriaToggleGroup>
 	}

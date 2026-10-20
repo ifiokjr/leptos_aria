@@ -216,7 +216,7 @@ mod tests {
 	#[component]
 	fn Example() -> impl IntoView {
 		view! {
-			<ToggleButton default_selected=Signal::from(false)>
+			<ToggleButton default_selected=Signal::from(false) class="toggle-test-pressed">
 				"Pin"
 			</ToggleButton>
 		}
@@ -235,7 +235,7 @@ mod tests {
 		));
 
 		let button = document()
-			.query_selector("button")
+			.query_selector("button.toggle-test-pressed")
 			.unwrap()
 			.unwrap()
 			.unchecked_into::<web_sys::HtmlButtonElement>();
@@ -352,49 +352,100 @@ pub fn Switch(
 	}
 }
 
-/// The selected keys shared by a toggle group.
-type ToggleGroupKeys = Vec<String>;
+/// A callback invoked with every pressed value when a toggle group changes.
+pub type BoxedToggleGroupChangeCallback = Box<dyn Fn(Vec<String>) + Send + Sync>;
+
+/// Whether a toggle group keeps one or many buttons pressed.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub enum ToggleGroupMode {
+	/// Pressing a button releases the others.
+	#[default]
+	Single,
+	/// Every button toggles on its own.
+	Multiple,
+}
+
+/// The pressed values of a toggle group, owned by the caller or the group.
+#[derive(Clone, Copy)]
+enum GroupValue {
+	Controlled(Signal<Vec<String>>),
+	Uncontrolled(RwSignal<Vec<String>>),
+}
 
 /// The state a toggle group shares with its buttons.
 #[derive(Clone)]
 pub struct ToggleGroupContext {
-	keys: RwSignal<ToggleGroupKeys>,
-	mode: AccordionModeAlias,
+	value: GroupValue,
+	mode: Signal<ToggleGroupMode>,
+	on_change: Option<Arc<dyn Fn(Vec<String>) + Send + Sync>>,
 }
 
-/// The selection mode of a toggle group, mirroring the accordion's.
-type AccordionModeAlias = leptos_aria_accordion_shim::Mode;
+impl ToggleGroupContext {
+	/// The signal holding the pressed values, for reactive bindings.
+	pub fn value_signal(&self) -> Signal<Vec<String>> {
+		match self.value {
+			GroupValue::Controlled(signal) => signal,
+			GroupValue::Uncontrolled(signal) => signal.into(),
+		}
+	}
 
-/// A minimal mode alias so the toggle crate stays dependency-light.
-mod leptos_aria_accordion_shim {
-	#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-	pub enum Mode {
-		#[default]
-		Single,
-		Multiple,
+	/// Press or release `key` according to the group's mode.
+	///
+	/// A controlled group reports the new values and lets the owner decide;
+	/// an uncontrolled one updates itself.
+	pub fn toggle(&self, key: &str) {
+		let mut keys = self.value_signal().get_untracked();
+
+		if keys.iter().any(|k| k == key) {
+			keys.retain(|k| k != key);
+		} else {
+			if self.mode.get_untracked() == ToggleGroupMode::Single {
+				keys.clear();
+			}
+
+			keys.push(key.to_string());
+		}
+
+		if let GroupValue::Uncontrolled(signal) = self.value {
+			signal.set(keys.clone());
+		}
+
+		if let Some(on_change) = &self.on_change {
+			on_change(keys);
+		}
 	}
 }
 
 /// A toggle group is a set of toggle buttons selecting one or many values.
 #[component]
 pub fn ToggleGroup(
-	/// Whether one or many buttons can be selected, single by default.
+	/// Whether one or many buttons can be pressed, single by default.
 	#[prop(optional, into)]
-	mode: Signal<AccordionModeAlias>,
-	/// The keys of the initially selected buttons.
+	mode: Signal<ToggleGroupMode>,
+	/// The values of the initially pressed buttons (uncontrolled).
 	#[prop(optional, into)]
 	default_value: Vec<String>,
+	/// The values of the pressed buttons (controlled).
+	#[prop(optional, into)]
+	value: Option<Signal<Vec<String>>>,
+	/// Handler that is called with every pressed value when one changes.
+	#[prop(optional)]
+	on_change: Option<BoxedToggleGroupChangeCallback>,
 	/// Classes added after the built-in `leptos-aria-toggle-group` class.
 	#[prop(optional, into)]
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	let context = ToggleGroupContext {
-		keys: RwSignal::new(default_value),
-		mode: mode.get_untracked(),
+	let value = match value {
+		Some(controlled) => GroupValue::Controlled(controlled),
+		None => GroupValue::Uncontrolled(RwSignal::new(default_value)),
 	};
 
-	provide_context(context.clone());
+	provide_context(ToggleGroupContext {
+		value,
+		mode,
+		on_change: on_change.map(Arc::from),
+	});
 
 	view! { <div class=merge_class("leptos-aria-toggle-group", class) role="group">{children()}</div> }
 }
@@ -416,13 +467,11 @@ pub fn ToggleGroupItem(
 ) -> impl IntoView {
 	let context = expect_context::<ToggleGroupContext>();
 	let is_selected = Signal::derive({
-		let keys = context.keys;
+		let keys = context.value_signal();
 		let value = value.clone();
 
 		move || keys.with(|keys| keys.contains(&value))
 	});
-	let click_value = value.clone();
-	let click_context = context.clone();
 
 	view! {
 		<button
@@ -433,7 +482,7 @@ pub fn ToggleGroupItem(
 			disabled=move || is_disabled.get()
 			on:click=move |_| {
 				if !is_disabled.get_untracked() {
-					toggle_group_key(&click_context, &click_value);
+					context.toggle(&value);
 				}
 			}
 		>
@@ -442,16 +491,100 @@ pub fn ToggleGroupItem(
 	}
 }
 
-/// Toggle a key in its group according to the mode.
-fn toggle_group_key(context: &ToggleGroupContext, key: &str) {
-	context.keys.update(|keys| {
-		if keys.iter().any(|k| k == key) {
-			keys.retain(|k| k != key);
-		} else if context.mode == AccordionModeAlias::Single {
-			keys.clear();
-			keys.push(key.to_string());
-		} else {
-			keys.push(key.to_string());
-		}
-	});
+#[cfg(all(test, target_arch = "wasm32"))]
+mod group_tests {
+	use leptos::mount::mount_to_body;
+	use wasm_bindgen::JsCast;
+	use wasm_bindgen_test::*;
+
+	use super::*;
+
+	wasm_bindgen_test_configure!(run_in_browser);
+
+	fn item(selector: &str) -> web_sys::HtmlButtonElement {
+		document()
+			.query_selector(selector)
+			.unwrap()
+			.unwrap()
+			.unchecked_into::<web_sys::HtmlButtonElement>()
+	}
+
+	fn pressed(selector: &str) -> Option<String> {
+		item(selector).get_attribute("aria-pressed")
+	}
+
+	async fn tick() {
+		let promise = js_sys::Promise::resolve(&wasm_bindgen::JsValue::NULL);
+		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+	}
+
+	#[wasm_bindgen_test]
+	async fn multiple_mode_presses_buttons_independently() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<ToggleGroup mode=ToggleGroupMode::Multiple class="group-test-multiple">
+					<ToggleGroupItem value="bold" class="bold">"B"</ToggleGroupItem>
+					<ToggleGroupItem value="italic" class="italic">"I"</ToggleGroupItem>
+				</ToggleGroup>
+			}
+		});
+
+		item(".group-test-multiple .bold").click();
+		item(".group-test-multiple .italic").click();
+		tick().await;
+
+		assert_eq!(
+			pressed(".group-test-multiple .bold").as_deref(),
+			Some("true")
+		);
+		assert_eq!(
+			pressed(".group-test-multiple .italic").as_deref(),
+			Some("true")
+		);
+	}
+
+	#[wasm_bindgen_test]
+	async fn a_controlled_group_reports_changes_and_follows_its_value() {
+		console_error_panic_hook::set_once();
+
+		let value = RwSignal::new(vec!["left".to_string()]);
+		let reported = RwSignal::new(Vec::<String>::new());
+
+		mount_to_body(move || {
+			view! {
+				<ToggleGroup
+					value=value
+					on_change=Box::new(move |keys| reported.set(keys))
+					class="group-test-controlled"
+				>
+					<ToggleGroupItem value="left" class="left">"L"</ToggleGroupItem>
+					<ToggleGroupItem value="right" class="right">"R"</ToggleGroupItem>
+				</ToggleGroup>
+			}
+		});
+
+		item(".group-test-controlled .right").click();
+		tick().await;
+
+		assert_eq!(reported.get_untracked(), vec!["right".to_string()]);
+		assert_eq!(
+			pressed(".group-test-controlled .right").as_deref(),
+			Some("false"),
+			"the owner has not accepted the change yet"
+		);
+
+		value.set(vec!["right".to_string()]);
+		tick().await;
+
+		assert_eq!(
+			pressed(".group-test-controlled .left").as_deref(),
+			Some("false")
+		);
+		assert_eq!(
+			pressed(".group-test-controlled .right").as_deref(),
+			Some("true")
+		);
+	}
 }

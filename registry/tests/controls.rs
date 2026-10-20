@@ -7,6 +7,7 @@ use leptos::mount::mount_to;
 use leptos::prelude::*;
 use leptos::tachys::view::Mountable;
 use leptos_aria::PressEvent;
+use leptos_aria::ToggleGroupMode;
 use leptos_aria_registry::ui::avatar::Avatar;
 use leptos_aria_registry::ui::button::Button;
 use leptos_aria_registry::ui::button::ButtonSize;
@@ -445,5 +446,29 @@ async fn avatar_swaps_the_fallback_for_its_image_once_loaded() {
 		avatar.text_content().as_deref(),
 		Some(""),
 		"the fallback is gone"
+	);
+}
+
+#[wasm_bindgen_test]
+async fn toggle_group_in_multiple_mode_presses_many_items() {
+	let fixture = mount(|| {
+		view! {
+			<ToggleGroup mode=ToggleGroupMode::Multiple>
+				<ToggleGroupItem value="bold">"B"</ToggleGroupItem>
+				<ToggleGroupItem value="italic">"I"</ToggleGroupItem>
+			</ToggleGroup>
+		}
+	});
+	let bold = fixture.find("[data-slot=toggle-group-item]:first-child");
+	let italic = fixture.find("[data-slot=toggle-group-item]:last-child");
+
+	bold.click();
+	italic.click();
+	flush_microtasks().await;
+
+	assert_eq!(bold.get_attribute("aria-pressed").as_deref(), Some("true"));
+	assert_eq!(
+		italic.get_attribute("aria-pressed").as_deref(),
+		Some("true")
 	);
 }
