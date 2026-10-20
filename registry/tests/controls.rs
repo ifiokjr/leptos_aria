@@ -21,6 +21,7 @@ use leptos_aria_registry::ui::separator::Separator;
 use leptos_aria_registry::ui::separator::SeparatorOrientation;
 use leptos_aria_registry::ui::slider::Slider;
 use leptos_aria_registry::ui::switch::Switch;
+use leptos_aria_registry::ui::textarea::Textarea;
 use leptos_aria_registry::ui::toggle::Toggle;
 use leptos_aria_registry::ui::toggle::ToggleVariant;
 use leptos_aria_registry::ui::toggle_group::ToggleGroup;
@@ -389,6 +390,47 @@ fn input_merges_classes_and_binds_its_value() {
 	let input = fixture.input("input[data-slot=input]");
 	assert_eq!(input.value(), "Ada");
 	assert!(has_classes(&input, &["h-12"], &["h-9"]));
+}
+
+/// The tag names of the root's element children, in DOM order.
+fn child_tags<M: Mountable>(fixture: &Fixture<M>) -> Vec<String> {
+	let children = fixture.root.children();
+
+	(0..children.length())
+		.filter_map(|index| children.item(index))
+		.map(|child| child.tag_name().to_lowercase())
+		.collect()
+}
+
+#[wasm_bindgen_test]
+fn input_renders_its_label_first_and_styles_only_the_field() {
+	let fixture = mount(|| view! { <Input label="Email" class="h-12" /> });
+	let label = fixture.find("label");
+	let input = fixture.input("input");
+
+	assert_eq!(child_tags(&fixture), ["label", "input"]);
+	assert_eq!(label.text_content().as_deref(), Some("Email"));
+	assert_eq!(input.get_attribute("data-slot").as_deref(), Some("input"));
+	assert!(has_classes(&input, &["h-12"], &["h-9"]));
+	assert_eq!(label.get_attribute("data-slot"), None);
+	assert_eq!(label.get_attribute("class"), None);
+}
+
+#[wasm_bindgen_test]
+fn textarea_renders_its_label_first_and_styles_only_the_field() {
+	let fixture = mount(|| view! { <Textarea label="Message" class="min-h-24" /> });
+	let label = fixture.find("label");
+	let textarea = fixture.find("textarea");
+
+	assert_eq!(child_tags(&fixture), ["label", "textarea"]);
+	assert_eq!(label.text_content().as_deref(), Some("Message"));
+	assert_eq!(
+		textarea.get_attribute("data-slot").as_deref(),
+		Some("textarea")
+	);
+	assert!(has_classes(&textarea, &["min-h-24"], &["min-h-16"]));
+	assert_eq!(label.get_attribute("data-slot"), None);
+	assert_eq!(label.get_attribute("class"), None);
 }
 
 #[wasm_bindgen_test]

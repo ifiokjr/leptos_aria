@@ -20,7 +20,7 @@ js-sys = { workspace = true }
 wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 wasm-bindgen-test = { workspace = true }
-web-sys = { workspace = true, features = ["Document", "Element", "HtmlElement", "Window"] }
+web-sys = { workspace = true, features = ["Document", "Element", "HtmlCollection", "HtmlElement", "Window"] }
 
 [lints]
 workspace = true

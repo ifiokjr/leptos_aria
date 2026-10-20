@@ -10,6 +10,8 @@ use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_labels;
 use wasm_bindgen::JsCast;
 
+use crate::labelled::LabelledField;
+
 /// A callback invoked when the value changes.
 pub type BoxedTextChangeCallback = Box<dyn Fn(&str)>;
 
@@ -204,8 +206,9 @@ pub fn TextField(
 	let aria = field_aria(label.as_deref(), aria_label.as_deref());
 	let field_id = id.unwrap_or(aria.field_id);
 	let input_type = input_type.unwrap_or_else(|| "text".to_string());
+	let label = field_label(label, aria.label_id.clone(), field_id.clone());
 
-	view! {
+	let field = view! {
 		<input
 			id=field_id.clone()
 			class=merge_class("", class)
@@ -233,16 +236,9 @@ pub fn TextField(
 				}
 			}
 		/>
-		{label
-			.filter(|label| !label.is_empty())
-			.map(|label| {
-				view! {
-					<Label id=aria.label_id r#for=field_id>
-						{label}
-					</Label>
-				}
-			})}
-	}
+	};
+
+	LabelledField { label, field }
 }
 
 /// A text area allows a user to enter multiple lines of text.
@@ -290,8 +286,9 @@ pub fn TextArea(
 
 	let field_value = state.value_signal();
 	let aria = field_aria(label.as_deref(), None);
+	let label = field_label(label, aria.label_id.clone(), aria.field_id.clone());
 
-	view! {
+	let field = view! {
 		<textarea
 			id=aria.field_id.clone()
 			class=merge_class("", class)
@@ -314,33 +311,22 @@ pub fn TextArea(
 				}
 			}
 		></textarea>
-		{label
-			.clone()
-			.filter(|label: &String| !label.is_empty())
-			.map(|label| {
-				view! {
-					<Label id=aria.label_id.clone() r#for=aria.field_id.clone()>
-						{label}
-					</Label>
-				}
-			})}
-	}
+	};
+
+	LabelledField { label, field }
 }
 
-/// The visible label element for a field.
-#[component]
-fn Label(
-	/// The id to set on the label element.
-	id: String,
-	/// The `for` attribute pointing at the field.
-	r#for: String,
-	children: Children,
-) -> impl IntoView {
-	view! { <label id=id.clone() for=r#for.clone()>{children()}</label> }
+/// The visible label of a field, pointing at `field_id`, or nothing when there
+/// is no label text.
+fn field_label(label: Option<String>, label_id: String, field_id: String) -> impl IntoView + use<> {
+	label
+		.filter(|label| !label.is_empty())
+		.map(|label| view! { <label id=label_id for=field_id>{label}</label> })
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
 mod tests {
+	use leptos::mount::mount_to;
 	use leptos::mount::mount_to_body;
 	use wasm_bindgen_test::*;
 
@@ -435,6 +421,90 @@ mod tests {
 		assert_eq!(input.value(), "reset", "the owner's value wins");
 	}
 
+	#[wasm_bindgen_test]
+	fn text_field_renders_its_label_first_and_spreads_onto_the_input() {
+		let root = mount_in_container(|| {
+			view! { <TextField label="Email".to_string() class="field" attr:data-slot="input" /> }
+		});
+		let label = root.query_selector("label").unwrap().unwrap();
+		let input = root.query_selector("input").unwrap().unwrap();
+
+		assert_eq!(child_tags(&root), ["label", "input"]);
+		assert_eq!(input.get_attribute("data-slot").as_deref(), Some("input"));
+		assert_eq!(input.get_attribute("class").as_deref(), Some("field"));
+		assert_eq!(label.get_attribute("data-slot"), None);
+		assert_eq!(label.get_attribute("class"), None);
+		assert_eq!(
+			label.get_attribute("for").as_deref(),
+			input.get_attribute("id").as_deref(),
+			"the label points at the input"
+		);
+	}
+
+	#[wasm_bindgen_test]
+	fn text_area_renders_its_label_first_and_spreads_onto_the_field() {
+		let root = mount_in_container(|| {
+			view! { <TextArea label="Message".to_string() class="field" attr:data-slot="textarea" /> }
+		});
+		let label = root.query_selector("label").unwrap().unwrap();
+		let textarea = root.query_selector("textarea").unwrap().unwrap();
+
+		assert_eq!(child_tags(&root), ["label", "textarea"]);
+		assert_eq!(
+			textarea.get_attribute("data-slot").as_deref(),
+			Some("textarea")
+		);
+		assert_eq!(textarea.get_attribute("class").as_deref(), Some("field"));
+		assert_eq!(label.get_attribute("data-slot"), None);
+		assert_eq!(label.get_attribute("class"), None);
+	}
+
+	#[wasm_bindgen_test]
+	fn text_field_without_a_label_renders_only_the_input() {
+		let root = mount_in_container(|| view! { <TextField attr:data-slot="input" /> });
+
+		assert_eq!(child_tags(&root), ["input"]);
+	}
+
+	/// A container in the body, removed again when dropped, even when a test
+	/// panics, so other tests' document-wide queries never see its elements.
+	struct Container(web_sys::Element);
+
+	impl std::ops::Deref for Container {
+		type Target = web_sys::Element;
+
+		fn deref(&self) -> &Self::Target {
+			&self.0
+		}
+	}
+
+	impl Drop for Container {
+		fn drop(&mut self) {
+			self.0.remove();
+		}
+	}
+
+	/// Mount a view into a fresh container appended to the body.
+	fn mount_in_container<N: IntoView + 'static>(view: impl FnOnce() -> N + 'static) -> Container {
+		console_error_panic_hook::set_once();
+
+		let root = document().create_element("div").unwrap();
+		document().body().unwrap().append_child(&root).unwrap();
+		mount_to(root.clone().unchecked_into(), view).forget();
+
+		Container(root)
+	}
+
+	/// The tag names of the element children of `root`, in DOM order.
+	fn child_tags(root: &web_sys::Element) -> Vec<String> {
+		let children = root.children();
+
+		(0..children.length())
+			.filter_map(|index| children.item(index))
+			.map(|child| child.tag_name().to_lowercase())
+			.collect()
+	}
+
 	/// Wait for queued reactive updates to apply.
 	async fn flush_microtasks() {
 		let promise = js_sys::Promise::resolve(&wasm_bindgen::JsValue::NULL);
@@ -443,5 +513,7 @@ mod tests {
 	}
 }
 
+mod labelled;
 mod otp;
+
 pub use otp::OneTimePasswordField;
