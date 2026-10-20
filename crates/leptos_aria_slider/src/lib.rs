@@ -111,6 +111,7 @@ pub fn Slider(
 	}
 
 	let input_state = Arc::clone(&state);
+	let value_state = Arc::clone(&state);
 
 	let percentage = Signal::derive({
 		let state = Arc::clone(&state);
@@ -128,7 +129,10 @@ pub fn Slider(
 				step=state.step.to_string()
 				disabled=move || is_disabled.get()
 				aria-label=label.clone().unwrap_or_default()
+				// The attribute renders the first value; the property follows later
+				// changes, which the attribute no longer controls once the input moved.
 				value=state.value.get_untracked().to_string()
+				prop:value=move || value_state.value.get().to_string()
 				on:change=move |event: web_sys::Event| {
 					let parsed = event
 						.target()
@@ -190,12 +194,13 @@ mod tests {
 					max=100.0
 					step=5.0
 					label="Volume".to_string()
+					class="slider-test-semantics"
 				/>
 			}
 		});
 
 		let input = document()
-			.query_selector("input[type='range']")
+			.query_selector(".slider-test-semantics input[type='range']")
 			.unwrap()
 			.unwrap()
 			.unchecked_into::<web_sys::HtmlInputElement>();
@@ -205,13 +210,39 @@ mod tests {
 		assert_eq!(input.get_attribute("step").as_deref(), Some("5"));
 
 		let track = document()
-			.query_selector(".leptos-aria-slider__track")
+			.query_selector(".slider-test-semantics .leptos-aria-slider__track")
 			.unwrap()
 			.unwrap();
 
 		assert_eq!(
 			track.get_attribute("data-percentage").as_deref(),
 			Some("40.0")
+		);
+	}
+
+	#[wasm_bindgen_test]
+	async fn a_controlled_value_moves_the_native_input() {
+		console_error_panic_hook::set_once();
+
+		let value = RwSignal::new(20.0);
+
+		mount_to_body(move || view! { <Slider value=value class="slider-test-controlled" /> });
+
+		let input = document()
+			.query_selector(".slider-test-controlled input")
+			.unwrap()
+			.unwrap()
+			.unchecked_into::<web_sys::HtmlInputElement>();
+
+		value.set(70.0);
+
+		let promise = js_sys::Promise::resolve(&wasm_bindgen::JsValue::NULL);
+		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+
+		assert_eq!(
+			input.value(),
+			"70",
+			"the input follows the controlled value"
 		);
 	}
 }
