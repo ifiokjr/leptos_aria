@@ -4,6 +4,9 @@
 //! Everything comes from `registry/registry.json` and the component files
 //! themselves. A component's usage section is its `//!` module doc, so the
 //! example a user reads on the site is the one copied into their project.
+//! That example is also what the page previews live: `leptos_aria_preview`
+//! compiles each one with [`usage_example`] and the page frames it in an
+//! iframe next to its code.
 
 use std::fmt::Write;
 
@@ -52,6 +55,46 @@ pub fn module_docs(source: &str) -> String {
 	markdown
 }
 
+/// Split module-doc markdown around its usage example, the first `rust`
+/// fence: the prose before it, the example code, and the prose after it.
+/// `None` when there is no complete `rust` fence.
+pub fn split_usage_example(markdown: &str) -> Option<(&str, &str, &str)> {
+	let (fence_start, code_start) = find_line(markdown, 0, "```rust")?;
+	let (code_end, after) = find_line(markdown, code_start, "```")?;
+
+	Some((
+		markdown.get(..fence_start)?,
+		markdown.get(code_start..code_end)?,
+		markdown.get(after..)?,
+	))
+}
+
+/// The byte range, newline included, of the first line at or after `from`
+/// that reads `text` once trimmed.
+fn find_line(markdown: &str, from: usize, text: &str) -> Option<(usize, usize)> {
+	let mut start = from;
+
+	for line in markdown.get(from..)?.split_inclusive('\n') {
+		let end = start + line.len();
+
+		if line.trim() == text {
+			return Some((start, end));
+		}
+
+		start = end;
+	}
+
+	None
+}
+
+/// The code of a component's usage example, read from its source file's
+/// module docs.
+pub fn usage_example(source: &str) -> Option<String> {
+	let docs = module_docs(source);
+
+	split_usage_example(&docs).map(|(_, code, _)| code.to_string())
+}
+
 /// The body of `components.html`: how to start, then a card per component.
 pub fn index_html(components: &[ComponentDoc<'_>]) -> String {
 	let mut html = String::from(
@@ -97,7 +140,17 @@ pub fn page_html(component: &ComponentDoc<'_>) -> String {
 
 	html.push_str(&manual_steps(component));
 	html.push_str("<h2 id=\"usage\">Usage</h2>\n");
-	html.push_str(&markdown_to_html(&module_docs(component.source)));
+
+	let docs = module_docs(component.source);
+
+	if let Some((before, code, after)) = split_usage_example(&docs) {
+		html.push_str(&markdown_to_html(before));
+		html.push_str(&preview_html(component, code));
+		html.push_str(&markdown_to_html(after));
+	} else {
+		html.push_str(&markdown_to_html(&docs));
+	}
+
 	// Writing into a String cannot fail.
 	let _ = write!(
 		html,
@@ -108,6 +161,35 @@ pub fn page_html(component: &ComponentDoc<'_>) -> String {
 	);
 
 	html
+}
+
+/// The usage example as shadcn-style tabs: a live preview framed in an
+/// iframe, and the code it runs.
+///
+/// The iframe isolates the registry's own Tailwind theme and preflight from
+/// the site's styles, and `loading="lazy"` keeps the preview's wasm off the
+/// network until the frame nears the viewport. Without scripting the tabs
+/// cannot switch and the preview cannot run, so a `<noscript>` style shows
+/// only the code.
+fn preview_html(component: &ComponentDoc<'_>, code: &str) -> String {
+	format!(
+		"<figure class=\"preview\" data-preview>\n<div class=\"preview-tabs\" role=\"tablist\" \
+		 aria-label=\"{title} example\">\n<button type=\"button\" role=\"tab\" \
+		 id=\"preview-tab-{name}\" aria-controls=\"preview-panel-{name}\" \
+		 aria-selected=\"true\">Preview</button>\n<button type=\"button\" role=\"tab\" \
+		 id=\"code-tab-{name}\" aria-controls=\"code-panel-{name}\" aria-selected=\"false\" \
+		 tabindex=\"-1\">Code</button>\n</div>\n<div class=\"preview-stage\" role=\"tabpanel\" \
+		 id=\"preview-panel-{name}\" aria-labelledby=\"preview-tab-{name}\">\n<iframe \
+		 src=\"../preview/index.html?example={name}\" title=\"{title} example\" \
+		 loading=\"lazy\"></iframe>\n</div>\n<div class=\"preview-code\" role=\"tabpanel\" \
+		 id=\"code-panel-{name}\" aria-labelledby=\"code-tab-{name}\" hidden>\n<pre><code \
+		 class=\"language-rust\">{code}</code></pre>\n</div>\n<noscript><style>.preview-tabs, \
+		 .preview-stage {{ display: none; }} .preview-code[hidden] {{ display: block; \
+		 }}</style></noscript>\n</figure>\n",
+		name = escape_html(component.name),
+		title = escape_html(component.title),
+		code = escape_html(code),
+	)
 }
 
 /// The "without the CLI" steps: copy the file, declare the module, add the
@@ -202,6 +284,42 @@ mod tests {
 		assert!(html.contains("<a href=\"utils.html\"><code>utils</code></a>"));
 		assert!(html.contains("<code class=\"language-rust\">//! A small status label."));
 		assert!(html.contains("&lt;Badge&gt;"));
+	}
+
+	#[test]
+	fn splits_the_first_rust_fence_out_of_the_docs() {
+		let docs = "Intro.\n\n```rust\nview! {}\n```\n\nNotes.\n\n```rust\nmore\n```\n";
+
+		assert_eq!(
+			split_usage_example(docs),
+			Some((
+				"Intro.\n\n",
+				"view! {}\n",
+				"\nNotes.\n\n```rust\nmore\n```\n"
+			))
+		);
+		assert_eq!(split_usage_example("```bash\nls\n```\n"), None);
+		assert_eq!(split_usage_example("```rust\nunclosed\n"), None);
+		assert_eq!(
+			usage_example(SOURCE).as_deref(),
+			Some("view! { <Badge>\"New\"</Badge> }\n")
+		);
+	}
+
+	#[test]
+	fn frames_the_usage_example_as_a_lazy_preview() {
+		let html = page_html(&badge(&[], &[]));
+		let preview = html.find("<figure class=\"preview\"").expect("a preview");
+		let code = html.find("id=\"code-panel-badge\"").expect("a code panel");
+
+		assert!(html.contains(
+			"<iframe src=\"../preview/index.html?example=badge\" title=\"Badge example\" \
+			 loading=\"lazy\">"
+		));
+		assert!(html.contains("aria-controls=\"code-panel-badge\" aria-selected=\"false\""));
+		assert!(code > preview);
+		assert!(html[code..].contains("view! { &lt;Badge&gt;"));
+		assert_eq!(html.matches("<figure").count(), 1);
 	}
 
 	#[test]

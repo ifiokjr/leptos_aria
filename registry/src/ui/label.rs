@@ -4,8 +4,10 @@
 //! use crate::components::ui::label::Label;
 //!
 //! view! {
-//!     <Label html_for="email">"Email"</Label>
-//!     <input id="email" type="email" />
+//!     <div class="grid gap-2">
+//!         <Label html_for="email">"Email"</Label>
+//!         <input id="email" type="email" class="h-9 rounded-md border px-3 text-sm" />
+//!     </div>
 //! }
 //! ```
 

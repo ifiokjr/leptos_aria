@@ -1310,6 +1310,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos_aria_preview"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "leptos",
+ "leptos_aria",
+ "leptos_aria_docs",
+ "leptos_aria_registry",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "leptos_aria_primitives"
 version = "0.1.0"
 dependencies = [
