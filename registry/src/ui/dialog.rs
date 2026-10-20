@@ -6,16 +6,27 @@
 //!
 //! view! {
 //!     <Dialog>
-//!         <DialogTrigger>"Edit profile"</DialogTrigger>
+//!         <DialogTrigger class="rounded-md border px-4 py-2 text-sm">
+//!             "Edit profile"
+//!         </DialogTrigger>
 //!         <DialogContent>
 //!             <DialogHeader>
 //!                 <DialogTitle>"Edit profile"</DialogTitle>
 //!                 <DialogDescription>"Make changes to your profile here."</DialogDescription>
 //!             </DialogHeader>
-//!             <input aria-label="Name" value="Ifiok" />
+//!             <input
+//!                 aria-label="Name"
+//!                 value="Ifiok"
+//!                 class="h-9 rounded-md border border-input px-3 text-sm"
+//!             />
 //!             <DialogFooter>
-//!                 <DialogClose>"Cancel"</DialogClose>
-//!                 <button type="submit">"Save changes"</button>
+//!                 <DialogClose class="rounded-md border px-4 py-2 text-sm">"Cancel"</DialogClose>
+//!                 <button
+//!                     type="submit"
+//!                     class="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
+//!                 >
+//!                     "Save changes"
+//!                 </button>
 //!             </DialogFooter>
 //!         </DialogContent>
 //!     </Dialog>

@@ -16,16 +16,18 @@ description = "Accessible select box for Leptos"
 [dependencies]
 leptos = { workspace = true, features = ["csr"] }
 leptos_aria_list_box = { workspace = true }
+leptos_aria_overlay = { workspace = true }
 leptos_aria_selection = { workspace = true }
 leptos_aria_utils = { workspace = true }
 wasm-bindgen = { workspace = true }
-web-sys = { workspace = true, features = ["Document", "Element", "HtmlInputElement"] }
+web-sys = { workspace = true, features = ["Document", "Element", "HtmlInputElement", "KeyboardEvent"] }
 
 [dev-dependencies]
 console_error_panic_hook = { workspace = true }
 js-sys = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 wasm-bindgen-test = { workspace = true }
+web-sys = { workspace = true, features = ["HtmlElement", "KeyboardEventInit"] }
 
 [lints]
 workspace = true

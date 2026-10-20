@@ -62,7 +62,7 @@ fix:all     # run dprint fmt and cargo clippy --fix
 lint:all    # run dprint check and cargo clippy
 test:all    # run the native and wasm32 browser test suites
 test:wasm   # run the browser test suite only
-site:build  # render the website into target/site
+site:build  # render the website and its live previews into target/site
 ```
 
 Browser tests run through `wasm-bindgen-test-runner` with a local Chrome driven by `chromedriver`; both come from the devenv shell. The `wasm-bindgen` dependency is pinned to the `wasm-bindgen-cli` version in the devenv lock so the runner and the crate always match.
@@ -70,6 +70,8 @@ Browser tests run through `wasm-bindgen-test-runner` with a local Chrome driven 
 ### The website
 
 The site at [ifiokjr.github.io/leptos_aria](https://ifiokjr.github.io/leptos_aria/) is built by the `site` binary in [`crates/leptos_aria_docs`](crates/leptos_aria_docs). It renders [`website/layout.html`](website/layout.html) around the landing page and the repository's own markdown (this readme, [docs/tailwind.md](docs/tailwind.md), and [PORTING.md](PORTING.md)), so the site, `llms-full.txt`, and the docs never drift. Static assets, including the logo, live in [`website/public`](website/public).
+
+Each component page frames a live preview of its usage example. [`crates/leptos_aria_preview`](crates/leptos_aria_preview) compiles every registry component's `//!` usage example into a small client-side app, which trunk builds into `preview/` with the registry's own Tailwind theme. The frame loads lazily, so the wasm is only fetched on component pages, when the preview scrolls into view.
 
 ## License
 

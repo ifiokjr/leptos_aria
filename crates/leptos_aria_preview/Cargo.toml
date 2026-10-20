@@ -1,0 +1,33 @@
+[package]
+name = "leptos_aria_preview"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+rust-version.workspace = true
+description = "Live previews of the registry components, framed on the website's component pages"
+
+[[bin]]
+name = "leptos-aria-preview"
+path = "src/main.rs"
+
+[dependencies]
+console_error_panic_hook = { workspace = true }
+leptos = { workspace = true, features = ["csr"] }
+leptos_aria = { path = "../leptos_aria" }
+leptos_aria_registry = { path = "../../registry" }
+wasm-bindgen = { workspace = true }
+web-sys = { workspace = true, features = ["Document", "Element", "Location", "UrlSearchParams", "Window"] }
+
+[dev-dependencies]
+wasm-bindgen-test = { workspace = true }
+
+[build-dependencies]
+leptos_aria_docs = { path = "../leptos_aria_docs" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[lints]
+workspace = true

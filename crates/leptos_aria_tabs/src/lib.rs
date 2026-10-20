@@ -6,17 +6,35 @@ use leptos::prelude::*;
 use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_id;
 
+/// A registered tab: its key and whether it is disabled.
+#[derive(Clone)]
+struct TabEntry {
+	key: String,
+	is_disabled: Signal<bool>,
+}
+
 /// The state a tab list shares with its tabs and panels through context.
 #[derive(Clone)]
 pub struct TabsContext {
 	selected_key: RwSignal<Option<String>>,
-	keys: RwSignal<Vec<String>>,
+	tabs: RwSignal<Vec<TabEntry>>,
 }
 
 impl TabsContext {
-	/// Register a tab's key in document order.
+	/// Register an enabled tab's key in document order.
 	pub fn register_key(&self, key: &str) {
-		self.keys.update(|keys| keys.push(key.to_string()));
+		self.register_tab(key, Signal::from(false));
+	}
+
+	/// Register a tab in document order with its disabled state, which
+	/// keyboard navigation and selection respect.
+	pub fn register_tab(&self, key: &str, is_disabled: Signal<bool>) {
+		self.tabs.update(|tabs| {
+			tabs.push(TabEntry {
+				key: key.to_string(),
+				is_disabled,
+			});
+		});
 	}
 
 	/// The currently selected tab key.
@@ -39,67 +57,106 @@ impl TabsContext {
 	}
 
 	/// The roving tab index of a tab: the selected tab participates in tab
-	/// order, the others do not.
+	/// order, the others do not. While nothing is selected, the first
+	/// enabled tab takes part so keyboard users can reach the list.
+	///
+	/// Reactive: reading inside an effect or view tracks the selection and
+	/// the registered tabs.
 	pub fn tab_index_for(&self, key: &str) -> i32 {
-		if self.is_selected(key) { 0 } else { -1 }
+		let focusable = match self.selected_key.get() {
+			Some(selected) => selected == key,
+			None => {
+				self.tabs.with(|tabs| {
+					tabs.iter()
+						.find(|tab| !tab.is_disabled.get())
+						.is_some_and(|tab| tab.key == key)
+				})
+			}
+		};
+
+		if focusable { 0 } else { -1 }
 	}
 
-	/// Select the tab with this key.
+	/// Select the tab with this key, unless it is missing or disabled.
 	pub fn select(&self, key: &str) {
-		if self
-			.keys
-			.with_untracked(|keys| keys.iter().any(|k| k == key))
-		{
+		let enabled = self.tabs.with_untracked(|tabs| {
+			tabs.iter()
+				.any(|tab| tab.key == key && !tab.is_disabled.get_untracked())
+		});
+
+		if enabled {
 			self.selected_key.set(Some(key.to_string()));
 		}
 	}
 
-	/// Move the selection to the tab after the selected one, wrapping.
+	/// Move the selection to the next enabled tab after the selected one,
+	/// wrapping.
 	pub fn select_next(&self) {
 		self.move_selection(1);
 	}
 
-	/// Move the selection to the tab before the selected one, wrapping.
+	/// Move the selection to the next enabled tab before the selected one,
+	/// wrapping.
 	pub fn select_previous(&self) {
 		self.move_selection(-1);
 	}
 
-	/// Select the first tab.
+	/// Select the first enabled tab.
 	pub fn select_first(&self) {
-		let first = self.keys.get_untracked().first().cloned();
-		self.selected_key.set(first);
-	}
+		let first = self.tabs.with_untracked(|tabs| {
+			tabs.iter()
+				.find(|tab| !tab.is_disabled.get_untracked())
+				.map(|tab| tab.key.clone())
+		});
 
-	/// Select the last tab.
-	pub fn select_last(&self) {
-		let last = self.keys.get_untracked().last().cloned();
-		self.selected_key.set(last);
-	}
-
-	fn move_selection(&self, offset: isize) {
-		let keys = self.keys.get_untracked();
-		let current = self.selected_key.get_untracked();
-
-		let index = current
-			.as_deref()
-			.and_then(|key| keys.iter().position(|k| k == key))
-			.unwrap_or(0);
-
-		let length = keys.len();
-
-		if length == 0 {
-			return;
+		if first.is_some() {
+			self.selected_key.set(first);
 		}
+	}
 
-		let next = (index as isize + offset).rem_euclid(length as isize) as usize;
-		self.selected_key.set(keys.get(next).cloned());
+	/// Select the last enabled tab.
+	pub fn select_last(&self) {
+		let last = self.tabs.with_untracked(|tabs| {
+			tabs.iter()
+				.rev()
+				.find(|tab| !tab.is_disabled.get_untracked())
+				.map(|tab| tab.key.clone())
+		});
+
+		if last.is_some() {
+			self.selected_key.set(last);
+		}
+	}
+
+	/// Step `offset` tabs at a time from the selected one, wrapping and
+	/// passing over disabled tabs. Without a selection, stepping forward
+	/// starts before the first tab and stepping back after the last.
+	fn move_selection(&self, offset: isize) {
+		let selected = self.selected_key.get_untracked();
+		let next = self.tabs.with_untracked(|tabs| {
+			let length = tabs.len() as isize;
+			let start = selected
+				.as_deref()
+				.and_then(|key| tabs.iter().position(|tab| tab.key == key))
+				.map_or(if offset > 0 { -1 } else { length }, |index| index as isize);
+
+			(1..=length)
+				.filter_map(|step| tabs.get((start + offset * step).rem_euclid(length) as usize))
+				.find(|tab| !tab.is_disabled.get_untracked())
+				.map(|tab| tab.key.clone())
+		});
+
+		if next.is_some() {
+			self.selected_key.set(next);
+		}
 	}
 }
 
 /// A tab list lets the user switch between related panels of content.
 ///
-/// Arrow keys move the selection between tabs, home and end select the first
-/// and last tab, and only the selected tab participates in the tab order.
+/// Arrow keys move the selection between enabled tabs, home and end select
+/// the first and last enabled tab, and only the selected tab participates in
+/// the tab order.
 #[component]
 pub fn Tabs(
 	/// The key of the initially selected tab (uncontrolled).
@@ -115,7 +172,7 @@ pub fn Tabs(
 ) -> impl IntoView {
 	let context = TabsContext {
 		selected_key: RwSignal::new(default_selected_key),
-		keys: RwSignal::new(Vec::new()),
+		tabs: RwSignal::new(Vec::new()),
 	};
 
 	provide_context(context.clone());
@@ -160,7 +217,7 @@ pub fn Tab(
 	children: Children,
 ) -> impl IntoView {
 	let context = expect_context::<TabsContext>();
-	context.register_key(&key);
+	context.register_tab(&key, is_disabled);
 
 	let tab_id = format!("leptos-aria-tab-{key}");
 	let panel_id = format!("leptos-aria-tab-panel-{key}");
@@ -260,16 +317,26 @@ mod tests {
 	async fn tabs_switch_panels_and_rove_the_tab_index() {
 		console_error_panic_hook::set_once();
 
-		mount_to_body(|| view! { <Example /> });
+		mount_to_body(|| {
+			view! {
+				<div id="tabs-test-example">
+					<Example />
+				</div>
+			}
+		});
 
 		let promise = js_sys::Promise::resolve(&wasm_bindgen::JsValue::NULL);
 		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
 
-		let tabs = document().query_selector_all("[role='tab']").unwrap();
+		let tabs = document()
+			.query_selector_all("#tabs-test-example [role='tab']")
+			.unwrap();
 		let first = tabs.get(0).unwrap().unchecked_into::<web_sys::Element>();
 		let second = tabs.get(1).unwrap().unchecked_into::<web_sys::Element>();
 
-		let panels = document().query_selector_all("[role='tabpanel']").unwrap();
+		let panels = document()
+			.query_selector_all("#tabs-test-example [role='tabpanel']")
+			.unwrap();
 		let first_panel = panels.get(0).unwrap().unchecked_into::<web_sys::Element>();
 		let second_panel = panels.get(1).unwrap().unchecked_into::<web_sys::Element>();
 
@@ -299,6 +366,104 @@ mod tests {
 			first.get_attribute("tabindex").as_deref(),
 			Some("-1"),
 			"the unselected tab leaves the tab order"
+		);
+	}
+
+	fn tab(selector: &str) -> web_sys::HtmlElement {
+		document()
+			.query_selector(selector)
+			.unwrap()
+			.unwrap()
+			.unchecked_into::<web_sys::HtmlElement>()
+	}
+
+	async fn tick() {
+		let promise = js_sys::Promise::resolve(&wasm_bindgen::JsValue::NULL);
+		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+	}
+
+	/// Dispatch a bubbling `keydown` for `key`.
+	fn key_down(target: &web_sys::Element, key: &str) {
+		let init = web_sys::KeyboardEventInit::new();
+		init.set_key(key);
+		init.set_bubbles(true);
+
+		let event =
+			web_sys::KeyboardEvent::new_with_keyboard_event_init_dict("keydown", &init).unwrap();
+
+		target.dispatch_event(&event).unwrap();
+	}
+
+	#[wasm_bindgen_test]
+	async fn arrow_keys_skip_disabled_tabs() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<Tabs default_selected_key="skip-a" class="tabs-test-skip">
+					<Tab key="skip-a">"A"</Tab>
+					<Tab key="skip-b" is_disabled=true>"B"</Tab>
+					<Tab key="skip-c">"C"</Tab>
+				</Tabs>
+			}
+		});
+
+		let list = tab(".tabs-test-skip");
+		key_down(&list, "ArrowRight");
+		tick().await;
+
+		assert_eq!(
+			tab("#leptos-aria-tab-skip-c")
+				.get_attribute("aria-selected")
+				.as_deref(),
+			Some("true"),
+			"the arrow passes over the disabled tab"
+		);
+
+		tab("#leptos-aria-tab-skip-b").click();
+		tick().await;
+
+		assert_eq!(
+			tab("#leptos-aria-tab-skip-b")
+				.get_attribute("aria-selected")
+				.as_deref(),
+			Some("false"),
+			"a disabled tab ignores clicks"
+		);
+	}
+
+	#[wasm_bindgen_test]
+	fn without_a_selection_the_first_enabled_tab_is_focusable() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<Tabs>
+					<Tab key="unselected-a" is_disabled=true>"A"</Tab>
+					<Tab key="unselected-b">"B"</Tab>
+					<Tab key="unselected-c">"C"</Tab>
+				</Tabs>
+			}
+		});
+
+		assert_eq!(
+			tab("#leptos-aria-tab-unselected-a")
+				.get_attribute("tabindex")
+				.as_deref(),
+			Some("-1")
+		);
+		assert_eq!(
+			tab("#leptos-aria-tab-unselected-b")
+				.get_attribute("tabindex")
+				.as_deref(),
+			Some("0"),
+			"keyboard users can reach the tab list"
+		);
+		assert_eq!(
+			tab("#leptos-aria-tab-unselected-c")
+				.get_attribute("tabindex")
+				.as_deref(),
+			Some("-1")
 		);
 	}
 }

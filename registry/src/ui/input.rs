@@ -33,7 +33,8 @@ const BASE: &str = "h-9 w-full min-w-0 rounded-md border border-input bg-transpa
                     dark:bg-input/30 dark:aria-invalid:ring-destructive/40";
 
 /// A text input. Value state, labelling, and the native `input` come from
-/// `leptos_aria::TextField`, which renders its `label` after the input.
+/// `leptos_aria::TextField`, which renders a `label` after the input only when
+/// one is given.
 #[component]
 pub fn Input(
 	/// A visible label, linked to the input with `aria-labelledby`.

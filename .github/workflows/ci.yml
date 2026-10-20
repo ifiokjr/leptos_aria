@@ -78,8 +78,9 @@ jobs:
         run: build:all
         shell: devenv shell -- bash -e {0}
 
+      # The static site plus the trunk-built live component previews.
       - name: build website
-        run: cargo run --locked -p leptos_aria_docs --bin site
+        run: site:build
         shell: devenv shell -- bash -e {0}
 
       - name: build registry

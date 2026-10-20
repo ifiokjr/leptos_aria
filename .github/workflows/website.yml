@@ -27,16 +27,22 @@ jobs:
         with:
           persist-credentials: false
 
-      # rustup on the runner installs the toolchain pinned in rust-toolchain.toml.
-      - name: cache rust dependencies
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      # devenv provides trunk, wasm-bindgen, tailwindcss, and wasm-opt for the
+      # live component previews, at the versions CI builds with.
+      - name: setup development environment
+        uses: ./.github/actions/devenv
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # The static site, then the component previews into _site/preview.
       - name: build site
-        run: cargo run --locked -p leptos_aria_docs --bin site -- _site
+        run: site:build _site
+        shell: devenv shell -- bash -e {0}
 
       # The installable items `leptos-aria add` fetches: _site/r/<name>.json.
       - name: build registry
         run: cargo run --locked --manifest-path crates/leptos_aria_cli/Cargo.toml -- build registry/registry.json --output _site/r --strict
+        shell: devenv shell -- bash -e {0}
 
       - name: upload pages artifact
         uses: actions/upload-pages-artifact@0252fc4ba7626f0298f0cf00902a25c6afc77fa8 # v3.0.0

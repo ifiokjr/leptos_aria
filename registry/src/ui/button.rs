@@ -7,7 +7,7 @@
 //! use leptos_aria::PressEvent;
 //!
 //! view! {
-//!     <Button on_press=Box::new(|_: &PressEvent| logging::log!("saved"))>"Save"</Button>
+//!     <Button on_press=Box::new(|_: &PressEvent| leptos::logging::log!("saved"))>"Save"</Button>
 //!     <Button variant=ButtonVariant::Outline size=ButtonSize::Sm>"Cancel"</Button>
 //!     <Button variant=ButtonVariant::Destructive is_disabled=true>"Delete"</Button>
 //! }

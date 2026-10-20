@@ -20,12 +20,10 @@
 
 use leptos::context::Provider;
 use leptos::prelude::*;
-use leptos::wasm_bindgen::JsCast;
-use leptos::web_sys;
 use leptos_aria::Menu;
 use leptos_aria::MenuItem;
-use leptos_aria::focus_safely;
 use leptos_aria::use_overlay_dismiss;
+use leptos_aria::use_popup_focus;
 
 use super::utils::cn;
 
@@ -49,29 +47,11 @@ const ITEM: &str = "relative flex cursor-default items-center gap-2 rounded-sm p
 #[derive(Clone, Copy)]
 struct MenuState {
 	is_open: RwSignal<bool>,
-	root: NodeRef<leptos::html::Div>,
 	trigger: NodeRef<leptos::html::Button>,
 }
 
-impl MenuState {
-	/// Close the menu and return focus to the trigger, unless focus has
-	/// already moved somewhere outside the menu.
-	fn close(self) {
-		self.is_open.set(false);
-
-		let focus_inside = self
-			.root
-			.get_untracked()
-			.zip(document().active_element())
-			.is_some_and(|(root, active)| root.contains(Some(active.as_ref())));
-
-		if let Some(trigger) = self.trigger.get_untracked().filter(|_| focus_inside) {
-			focus_safely(&trigger);
-		}
-	}
-}
-
-/// The menu root. Escape or a click outside closes the menu.
+/// The menu root. Escape or a click outside closes the menu, and focus
+/// returns to the trigger when it closes.
 #[component]
 pub fn DropdownMenu(
 	/// Whether the menu is open. Pass a signal to control it yourself;
@@ -85,36 +65,20 @@ pub fn DropdownMenu(
 ) -> impl IntoView {
 	let state = MenuState {
 		is_open: is_open.unwrap_or_else(|| RwSignal::new(false)),
-		root: NodeRef::new(),
 		trigger: NodeRef::new(),
 	};
+	let root = NodeRef::new();
 	let class = move || class.with(|class| cn(&["relative inline-block w-fit", class]));
 
 	use_overlay_dismiss(
-		state.root,
+		root,
 		state.is_open.into(),
-		Box::new(move || state.close()),
+		Box::new(move || state.is_open.set(false)),
 	);
-
-	// The items take keyboard input through their listbox, so it takes focus
-	// on open.
-	Effect::new(move |_| {
-		if !state.is_open.get() {
-			return;
-		}
-
-		let listbox = state.root.get().and_then(|root| {
-			root.query_selector("[role=listbox]")
-				.expect("the selector is valid")
-		});
-
-		if let Some(listbox) = listbox {
-			focus_safely(&listbox);
-		}
-	});
+	use_popup_focus(root, state.trigger, state.is_open.into(), "[role=listbox]");
 
 	view! {
-		<div data-slot="dropdown-menu" class=class node_ref=state.root>
+		<div data-slot="dropdown-menu" class=class node_ref=root>
 			<Provider value=state>{children()}</Provider>
 		</div>
 	}
@@ -132,9 +96,7 @@ pub fn DropdownMenuTrigger(
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	let MenuState {
-		is_open, trigger, ..
-	} = expect_context();
+	let MenuState { is_open, trigger } = expect_context();
 
 	view! {
 		<button
@@ -152,7 +114,9 @@ pub fn DropdownMenuTrigger(
 	}
 }
 
-/// The floating list of items, below the trigger.
+/// The floating list of items, below the trigger. `leptos_aria::Menu`
+/// highlights items with the arrow keys, runs one on a click, Enter, or
+/// Space, and then closes.
 #[component]
 pub fn DropdownMenuContent(
 	/// Names the menu for assistive technology.
@@ -163,34 +127,15 @@ pub fn DropdownMenuContent(
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	let MenuState { is_open, root, .. } = expect_context();
+	let MenuState { is_open, .. } = expect_context();
 	let class = Signal::derive(move || class.with(|class| cn(&[CONTENT, class])));
-
-	// Enter and Space only move the listbox's selection, so they also press
-	// the highlighted item, which runs its action.
-	let press_highlighted = move |event: leptos::ev::KeyboardEvent| {
-		if !matches!(event.key().as_str(), "Enter" | " ") {
-			return;
-		}
-
-		let item = root.get_untracked().and_then(|root| {
-			root.query_selector("[role=option][data-focused=true]")
-				.expect("the selector is valid")
-		});
-
-		if let Some(item) = item {
-			event.prevent_default();
-			item.unchecked_into::<web_sys::HtmlElement>().click();
-		}
-	};
 
 	view! {
 		<Menu
 			attr:data-slot="dropdown-menu-content"
 			is_open=is_open
-			label=label.unwrap_or_default()
+			nostrip:label=label
 			class=class
-			on:keydown:capture=press_highlighted
 		>
 			{children()}
 		</Menu>
@@ -214,7 +159,6 @@ pub fn DropdownMenuItem(
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	let state = expect_context::<MenuState>();
 	let class = Signal::derive(move || class.with(|class| cn(&[ITEM, class])));
 
 	view! {
@@ -222,18 +166,8 @@ pub fn DropdownMenuItem(
 			attr:data-slot="dropdown-menu-item"
 			value=value
 			is_disabled=is_disabled
+			nostrip:on_action=on_select
 			class=class
-			on:click:capture=move |_| {
-				if is_disabled.get_untracked() {
-					return;
-				}
-
-				if let Some(on_select) = on_select {
-					on_select.run(());
-				}
-
-				state.close();
-			}
 		>
 			{children()}
 		</MenuItem>

@@ -350,6 +350,47 @@ pub fn use_overlay_dismiss(
 	});
 }
 
+/// Move focus into a popup when it opens and back to its trigger when it
+/// closes.
+///
+/// On open, the first element inside `root` matching the `content` selector
+/// takes focus. On close, the trigger takes focus back, unless focus has
+/// already moved to another element outside the popup, such as the one the
+/// user clicked.
+pub fn use_popup_focus(
+	root: NodeRef<leptos::html::Div>,
+	trigger: NodeRef<leptos::html::Button>,
+	is_open: Signal<bool>,
+	content: &'static str,
+) {
+	Effect::new(move |was_open: Option<bool>| {
+		let open = is_open.get();
+		let Some(root) = root.get() else {
+			return open;
+		};
+
+		if open {
+			if let Some(target) = root.query_selector(content).ok().flatten() {
+				focus_safely(&target);
+			}
+		} else if was_open == Some(true) && focus_is_inside_or_lost(&root) {
+			if let Some(trigger) = trigger.get_untracked() {
+				focus_safely(&trigger);
+			}
+		}
+
+		open
+	});
+}
+
+/// Whether focus is inside `root`, or nowhere because the focused element
+/// was hidden.
+fn focus_is_inside_or_lost(root: &Element) -> bool {
+	document()
+		.active_element()
+		.is_none_or(|active| root.contains(Some(&active)) || active.is_same_node(Some(&body())))
+}
+
 fn install_dismiss_guard(
 	overlay: &HtmlElement,
 	on_close: Arc<dyn Fn() + Send + Sync>,

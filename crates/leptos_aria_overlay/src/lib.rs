@@ -11,6 +11,7 @@ pub use focus_manager::use_focus_manager;
 pub use hooks::BoxedOverlayCloseCallback;
 pub use hooks::use_modal;
 pub use hooks::use_overlay_dismiss;
+pub use hooks::use_popup_focus;
 pub use hooks::use_prevent_scroll;
 use leptos::prelude::*;
 use leptos_aria_utils::merge_class;

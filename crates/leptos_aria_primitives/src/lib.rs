@@ -94,6 +94,7 @@ pub fn VisuallyHidden(
 #[cfg(all(test, target_arch = "wasm32"))]
 mod tests {
 	use leptos::mount::mount_to_body;
+	use wasm_bindgen::JsCast;
 	use wasm_bindgen_test::*;
 
 	use super::*;
@@ -147,6 +148,89 @@ mod tests {
 			text.get_attribute("class").as_deref(),
 			Some("leptos-aria-text leptos-aria-text--caption primitives-test-text text-sm")
 		);
+	}
+
+	/// A one-pixel SVG, so the image loads without the network.
+	const PIXEL: &str = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' \
+	                     width='1' height='1'/%3E";
+
+	/// Wait up to a second for `done` to hold, yielding to the browser
+	/// between checks so image events can fire.
+	async fn wait_for(done: impl Fn() -> bool) -> bool {
+		for _ in 0..100 {
+			if done() {
+				return true;
+			}
+
+			let promise = js_sys::Promise::new(&mut |resolve, _| {
+				window()
+					.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 10)
+					.unwrap();
+			});
+			wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+		}
+
+		done()
+	}
+
+	#[wasm_bindgen_test]
+	async fn avatar_shows_its_image_once_it_loads() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<Avatar src=PIXEL.to_string() fallback="IJ" class="avatar-test-loads" />
+			}
+		});
+
+		let avatar = document()
+			.query_selector(".avatar-test-loads")
+			.unwrap()
+			.unwrap();
+		let loaded =
+			wait_for(|| avatar.get_attribute("data-state").as_deref() == Some("loaded")).await;
+		let image = avatar.query_selector("img").unwrap().unwrap();
+
+		assert!(loaded, "the load event marks the avatar loaded");
+		assert!(!image.has_attribute("hidden"), "the loaded image shows");
+		assert!(
+			avatar
+				.query_selector(".leptos-aria-avatar__fallback")
+				.unwrap()
+				.is_none(),
+			"the fallback leaves once the image shows"
+		);
+	}
+
+	#[wasm_bindgen_test]
+	async fn avatar_keeps_its_fallback_when_the_image_fails() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<Avatar src="data:image/png;base64,broken".to_string() fallback="IJ" class="avatar-test-fails" />
+			}
+		});
+
+		let avatar = document()
+			.query_selector(".avatar-test-fails")
+			.unwrap()
+			.unwrap();
+		let image = avatar.query_selector("img").unwrap().unwrap();
+		let failed = wait_for(|| {
+			image
+				.unchecked_ref::<web_sys::HtmlImageElement>()
+				.complete()
+		})
+		.await;
+
+		assert!(failed, "the broken image finishes loading");
+		assert!(image.has_attribute("hidden"), "a broken image stays hidden");
+		assert_eq!(
+			avatar.get_attribute("data-state").as_deref(),
+			Some("fallback")
+		);
+		assert_eq!(avatar.text_content().as_deref(), Some("IJ"));
 	}
 }
 
@@ -206,8 +290,9 @@ pub fn AspectRatio(
 
 /// An avatar shows an image with text and image-loading fallbacks.
 ///
-/// The fallback shows while no image is set or until it loads; a failed
-/// load falls back too.
+/// The image stays in the tree, `hidden`, while it loads, so its `load` event
+/// can fire; the fallback shows until then, and for good when the load fails
+/// or no image is set.
 #[component]
 pub fn Avatar(
 	/// The image URL when there is one.
@@ -221,24 +306,32 @@ pub fn Avatar(
 	class: Signal<String>,
 ) -> impl IntoView {
 	let loaded = RwSignal::new(false);
+	let alt = fallback.clone();
 
 	view! {
 		<span class=merge_class("leptos-aria-avatar", class) data-state=move || {
 			if loaded.get() { "loaded" } else { "fallback" }
 		}>
-			{move || match src.clone() {
-				Some(src) if loaded.get() => {
+			{src
+				.map(|src| {
 					view! {
-						<img class="leptos-aria-avatar__image" src=src.clone() alt=fallback.clone() />
+						<img
+							class="leptos-aria-avatar__image"
+							src=src
+							alt=alt
+							hidden=move || !loaded.get()
+							on:load=move |_| loaded.set(true)
+							on:error=move |_| loaded.set(false)
+						/>
 					}
-					.into_any()
-				}
-				_ => {
-					view! {
-						<span class="leptos-aria-avatar__fallback">{fallback.clone()}</span>
-					}
-					.into_any()
-				}
+				})}
+			{move || {
+				(!loaded.get())
+					.then(|| {
+						view! {
+							<span class="leptos-aria-avatar__fallback">{fallback.clone()}</span>
+						}
+					})
 			}}
 		</span>
 	}

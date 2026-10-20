@@ -4,13 +4,13 @@
 //! use crate::components::ui::card::*;
 //!
 //! view! {
-//!     <Card>
+//!     <Card class="w-full max-w-sm">
 //!         <CardHeader>
 //!             <CardTitle>"Notifications"</CardTitle>
 //!             <CardDescription>"You have 3 unread messages."</CardDescription>
 //!         </CardHeader>
-//!         <CardContent>"..."</CardContent>
-//!         <CardFooter>"..."</CardFooter>
+//!         <CardContent class="text-sm">"Your October invoice is ready."</CardContent>
+//!         <CardFooter class="text-sm text-muted-foreground">"Sent 5 minutes ago"</CardFooter>
 //!     </Card>
 //! }
 //! ```

@@ -3,6 +3,7 @@
 {
   packages = [
     pkgs.actionlint
+    pkgs.binaryen
     pkgs.cargo-make
     pkgs.cargo-nextest
     pkgs.chromedriver
@@ -12,6 +13,7 @@
     pkgs.nixfmt
     pkgs.ripgrep
     pkgs.rustup
+    pkgs.tailwindcss_4
     pkgs.taplo
     pkgs.trunk
     pkgs.wasm-bindgen-cli
@@ -53,8 +55,15 @@
   scripts."test:wasm".exec = ''
     cargo test --target wasm32-unknown-unknown
   '';
+  # Build the static site, then the live component previews into its
+  # `preview/` directory. Pass an output directory to build elsewhere.
   scripts."site:build".exec = ''
-    cargo run -p leptos_aria_docs --bin site
+    set -e
+    out="''${1:-target/site}"
+    mkdir -p "$out"
+    out="$(cd "$out" && pwd)"
+    cargo run --locked -p leptos_aria_docs --bin site -- "$out"
+    trunk build --release --locked --offline --config crates/leptos_aria_preview/Trunk.toml --dist "$out/preview"
   '';
   scripts."setup:helix".exec = ''
     rm -rf .helix

@@ -14,8 +14,8 @@ use leptos_aria::Avatar as AriaAvatar;
 
 use super::utils::cn;
 
-/// The root. `leptos_aria` renders either an `img` or a fallback `span` inside
-/// it and sets `data-state` to `loaded` or `fallback`.
+/// The root. `leptos_aria` keeps the `img` hidden and the fallback `span`
+/// showing until the image loads, then sets `data-state` to `loaded`.
 const BASE: &str = "relative flex size-8 shrink-0 overflow-hidden rounded-full \
                     [&>img]:aspect-square [&>img]:size-full [&>span]:flex [&>span]:size-full \
                     [&>span]:items-center [&>span]:justify-center [&>span]:rounded-full \

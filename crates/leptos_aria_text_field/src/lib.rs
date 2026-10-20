@@ -146,11 +146,20 @@ pub struct TextInputBase {
 }
 
 /// A text field allows a user to enter a single line of text.
+///
+/// A non-empty `label` renders a `<label>` after the input; without one,
+/// name the field with `aria_label`.
 #[component]
 pub fn TextField(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// The id of the input, generated when missing.
+	#[prop(optional, into)]
+	id: Option<String>,
+	/// The accessible name when there is no visible label.
+	#[prop(optional, into)]
+	aria_label: Option<String>,
 	/// The initial value (uncontrolled).
 	#[prop(optional, into)]
 	default_value: Option<String>,
@@ -192,15 +201,20 @@ pub fn TextField(
 	});
 
 	let field_value = state.value_signal();
-	let aria = field_aria(label.as_deref(), None);
+	let aria = field_aria(label.as_deref(), aria_label.as_deref());
+	let field_id = id.unwrap_or(aria.field_id);
 	let input_type = input_type.unwrap_or_else(|| "text".to_string());
 
 	view! {
 		<input
-			id=aria.field_id.clone()
+			id=field_id.clone()
 			class=merge_class("", class)
 			type=input_type
-			value=move || field_value.get()
+			// The attribute renders the first value; the property keeps the input in
+			// step with the state after the user has typed.
+			value=field_value.get_untracked()
+			prop:value=move || field_value.get()
+			aria-label=aria_label
 			placeholder=move || placeholder.clone()
 			name=move || name.clone()
 			disabled=move || is_disabled.get()
@@ -219,9 +233,15 @@ pub fn TextField(
 				}
 			}
 		/>
-		<Label id=aria.label_id r#for=aria.field_id.clone()>
-			{label.clone()}
-		</Label>
+		{label
+			.filter(|label| !label.is_empty())
+			.map(|label| {
+				view! {
+					<Label id=aria.label_id r#for=field_id>
+						{label}
+					</Label>
+				}
+			})}
 	}
 }
 
@@ -335,18 +355,25 @@ mod tests {
 		mount_to_body(|| {
 			let value: Signal<String> = Signal::derive(|| "Ada".to_string());
 
-			view! { <TextField label="First name".to_string() value=value /> }
+			view! {
+				<div id="text-field-test-labelled">
+					<TextField label="First name".to_string() value=value />
+				</div>
+			}
 		});
 
 		flush_microtasks().await;
 
 		let input = document()
-			.query_selector("input")
+			.query_selector("#text-field-test-labelled input")
 			.unwrap()
 			.unwrap()
 			.unchecked_into::<web_sys::HtmlInputElement>();
 
-		let label = document().query_selector("label").unwrap().unwrap();
+		let label = document()
+			.query_selector("#text-field-test-labelled label")
+			.unwrap()
+			.unwrap();
 
 		assert_eq!(input.value(), "Ada");
 		assert_eq!(
@@ -354,6 +381,58 @@ mod tests {
 			input.get_attribute("id").as_deref(),
 			"the label points at the input"
 		);
+	}
+
+	#[wasm_bindgen_test]
+	fn text_field_without_a_label_renders_no_label_element() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<div id="text-field-test-unlabelled">
+					<TextField id="email-field" aria_label="Email" />
+				</div>
+			}
+		});
+
+		let scope = document()
+			.get_element_by_id("text-field-test-unlabelled")
+			.unwrap();
+		let input = scope.query_selector("input").unwrap().unwrap();
+
+		assert!(
+			scope.query_selector("label").unwrap().is_none(),
+			"no empty label element"
+		);
+		assert_eq!(input.get_attribute("id").as_deref(), Some("email-field"));
+		assert_eq!(input.get_attribute("aria-label").as_deref(), Some("Email"));
+	}
+
+	#[wasm_bindgen_test]
+	async fn text_field_follows_a_controlled_value_after_typing() {
+		console_error_panic_hook::set_once();
+
+		let value = RwSignal::new(String::new());
+
+		mount_to_body(move || {
+			view! {
+				<div id="text-field-test-controlled">
+					<TextField aria_label="Name" value=value />
+				</div>
+			}
+		});
+
+		let input = document()
+			.query_selector("#text-field-test-controlled input")
+			.unwrap()
+			.unwrap()
+			.unchecked_into::<web_sys::HtmlInputElement>();
+
+		input.set_value("typed");
+		value.set("reset".to_string());
+		flush_microtasks().await;
+
+		assert_eq!(input.value(), "reset", "the owner's value wins");
 	}
 
 	/// Wait for queued reactive updates to apply.

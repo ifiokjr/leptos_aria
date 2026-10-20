@@ -19,6 +19,9 @@ leptos_aria_utils = { workspace = true }
 
 [dev-dependencies]
 console_error_panic_hook = { workspace = true }
+js-sys = { workspace = true }
+wasm-bindgen = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
 wasm-bindgen-test = { workspace = true }
 web-sys = { workspace = true, features = ["HtmlButtonElement"] }
 

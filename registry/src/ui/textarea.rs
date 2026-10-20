@@ -7,7 +7,7 @@
 //!     <Textarea
 //!         label="Message"
 //!         placeholder="Type your message here."
-//!         on_change=Box::new(|value: &str| logging::log!("{value}"))
+//!         on_change=Box::new(|value: &str| leptos::logging::log!("{value}"))
 //!     />
 //! }
 //! ```

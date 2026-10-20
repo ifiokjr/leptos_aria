@@ -366,8 +366,8 @@ async fn select_shows_the_chosen_option_and_closes() {
 			/>
 		}
 	});
-	let trigger = find(&root, "[data-slot=select-trigger]");
-	let content = find(&root, "[data-slot=select-content]");
+	let trigger = find(&root, "[data-slot=select] [role=combobox]");
+	let content = find(&root, ".leptos-aria-select-box__popup");
 
 	assert_eq!(trigger.text_content().as_deref(), Some("Pick one"));
 	assert!(trigger.has_attribute("data-placeholder"));

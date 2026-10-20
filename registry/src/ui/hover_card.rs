@@ -11,7 +11,9 @@
 //!             view! { <p class="text-sm">"The Rust framework for the web."</p> }.into_any()
 //!         })
 //!     >
-//!         <a href="https://leptos.dev">"@leptos"</a>
+//!         <a href="https://leptos.dev" class="text-sm font-medium underline underline-offset-4">
+//!             "@leptos"
+//!         </a>
 //!     </HoverCard>
 //! }
 //! ```

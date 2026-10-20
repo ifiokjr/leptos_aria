@@ -9,7 +9,12 @@
 //! let is_open = RwSignal::new(false);
 //!
 //! view! {
-//!     <button on:click=move |_| is_open.set(true)>"Delete account"</button>
+//!     <button
+//!         class="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-white"
+//!         on:click=move |_| is_open.set(true)
+//!     >
+//!         "Delete account"
+//!     </button>
 //!     <AlertDialog
 //!         is_open=is_open
 //!         title="Are you absolutely sure?"

@@ -4,7 +4,7 @@
 //! use crate::components::ui::accordion::*;
 //!
 //! view! {
-//!     <Accordion default_open=vec!["shipping".to_string()]>
+//!     <Accordion default_open=vec!["shipping".to_string()] class="w-full max-w-sm">
 //!         <AccordionItem key="shipping">
 //!             <AccordionTrigger>"Shipping"</AccordionTrigger>
 //!             <AccordionContent>"Orders ship within two working days."</AccordionContent>

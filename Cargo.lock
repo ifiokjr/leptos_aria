@@ -1256,6 +1256,7 @@ dependencies = [
  "js-sys",
  "leptos",
  "leptos_aria_list_box",
+ "leptos_aria_overlay",
  "leptos_aria_selection",
  "leptos_aria_utils",
  "wasm-bindgen",
@@ -1310,6 +1311,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos_aria_preview"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "leptos",
+ "leptos_aria",
+ "leptos_aria_docs",
+ "leptos_aria_registry",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "leptos_aria_primitives"
 version = "0.1.0"
 dependencies = [
@@ -1328,8 +1345,11 @@ name = "leptos_aria_progress"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "js-sys",
  "leptos",
  "leptos_aria_utils",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
 ]
@@ -1386,6 +1406,7 @@ dependencies = [
  "js-sys",
  "leptos",
  "leptos_aria_list_box",
+ "leptos_aria_overlay",
  "leptos_aria_selection",
  "leptos_aria_utils",
  "wasm-bindgen",

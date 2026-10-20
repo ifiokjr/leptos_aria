@@ -7,6 +7,7 @@ use leptos::mount::mount_to;
 use leptos::prelude::*;
 use leptos::tachys::view::Mountable;
 use leptos_aria::PressEvent;
+use leptos_aria::ToggleGroupMode;
 use leptos_aria_registry::ui::avatar::Avatar;
 use leptos_aria_registry::ui::button::Button;
 use leptos_aria_registry::ui::button::ButtonSize;
@@ -401,4 +402,73 @@ fn avatar_shows_the_fallback_without_an_image() {
 	);
 	assert_eq!(avatar.text_content().as_deref(), Some("IJ"));
 	assert!(has_classes(&avatar, &["size-10"], &["size-8"]));
+}
+
+/// Wait up to a second for `done` to hold, yielding to the browser between
+/// checks so image events can fire.
+async fn wait_for(done: impl Fn() -> bool) -> bool {
+	for _ in 0..100 {
+		if done() {
+			return true;
+		}
+
+		let promise = js_sys::Promise::new(&mut |resolve, _| {
+			window()
+				.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 10)
+				.unwrap();
+		});
+		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+	}
+
+	done()
+}
+
+#[wasm_bindgen_test]
+async fn avatar_swaps_the_fallback_for_its_image_once_loaded() {
+	let fixture = mount(|| {
+		view! {
+			<Avatar
+				src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E"
+				fallback="IJ"
+			/>
+		}
+	});
+	let avatar = fixture.find("[data-slot=avatar]");
+	let loaded = wait_for(|| avatar.get_attribute("data-state").as_deref() == Some("loaded")).await;
+
+	assert!(loaded, "the image loads");
+	assert!(
+		!fixture
+			.find("[data-slot=avatar] > img")
+			.has_attribute("hidden")
+	);
+	assert_eq!(
+		avatar.text_content().as_deref(),
+		Some(""),
+		"the fallback is gone"
+	);
+}
+
+#[wasm_bindgen_test]
+async fn toggle_group_in_multiple_mode_presses_many_items() {
+	let fixture = mount(|| {
+		view! {
+			<ToggleGroup mode=ToggleGroupMode::Multiple>
+				<ToggleGroupItem value="bold">"B"</ToggleGroupItem>
+				<ToggleGroupItem value="italic">"I"</ToggleGroupItem>
+			</ToggleGroup>
+		}
+	});
+	let bold = fixture.find("[data-slot=toggle-group-item]:first-child");
+	let italic = fixture.find("[data-slot=toggle-group-item]:last-child");
+
+	bold.click();
+	italic.click();
+	flush_microtasks().await;
+
+	assert_eq!(bold.get_attribute("aria-pressed").as_deref(), Some("true"));
+	assert_eq!(
+		italic.get_attribute("aria-pressed").as_deref(),
+		Some("true")
+	);
 }

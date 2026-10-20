@@ -247,7 +247,7 @@ pub fn Radio(
 	let focus_value = value.clone();
 
 	view! {
-		<label id=input_id.clone() class=merge_class("", class) on:mousedown=|event: web_sys::MouseEvent| {
+		<label class=merge_class("", class) on:mousedown=|event: web_sys::MouseEvent| {
 			// Prevent the label from taking focus when pressed.
 			event.prevent_default();
 		}>
@@ -285,7 +285,7 @@ mod tests {
 
 		mount_to_body(|| {
 			view! {
-				<RadioGroup label="Favorite fruit".to_string()>
+				<RadioGroup label="Favorite fruit".to_string() class="radio-test-exclusive">
 					<Radio value="apple".to_string()>"Apple"</Radio>
 					<Radio value="banana".to_string()>"Banana"</Radio>
 				</RadioGroup>
@@ -293,7 +293,7 @@ mod tests {
 		});
 
 		let radios = document()
-			.query_selector_all("[role='radiogroup'] input[type='radio']")
+			.query_selector_all(".radio-test-exclusive input[type='radio']")
 			.unwrap();
 		let first = radios
 			.get(0)
@@ -324,5 +324,29 @@ mod tests {
 
 		assert!(second.checked());
 		assert!(!first.checked(), "selecting one radio deselects the other");
+	}
+
+	#[wasm_bindgen_test]
+	fn a_radio_id_belongs_to_its_input_alone() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<RadioGroup class="radio-test-ids">
+					<Radio value="apple".to_string()>"Apple"</Radio>
+				</RadioGroup>
+			}
+		});
+
+		let input = document()
+			.query_selector(".radio-test-ids input")
+			.unwrap()
+			.unwrap();
+		let id = input.get_attribute("id").expect("the input has an id");
+		let owners = document()
+			.query_selector_all(&format!("[id='{id}']"))
+			.unwrap();
+
+		assert_eq!(owners.length(), 1, "ids are unique in the document");
 	}
 }
