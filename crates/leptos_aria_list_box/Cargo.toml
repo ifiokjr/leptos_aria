@@ -26,7 +26,7 @@ js-sys = { workspace = true }
 wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 wasm-bindgen-test = { workspace = true }
-web-sys = { workspace = true, features = ["Document", "Element", "NodeList", "HtmlInputElement"] }
+web-sys = { workspace = true, features = ["Document", "Element", "NodeList", "HtmlInputElement", "KeyboardEvent", "KeyboardEventInit"] }
 
 [lints]
 workspace = true
