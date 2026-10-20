@@ -16,55 +16,77 @@ use leptos_aria_utils::use_id;
 /// A callback invoked when the focused option changes.
 pub type BoxedFocusChangeCallback = Box<dyn Fn(Option<String>) + 'static>;
 
+/// What a list box knows about one mounted option.
+#[derive(Clone)]
+pub struct ListBoxOptionEntry {
+	/// The id of the option element, unique within the document and stable
+	/// while the option is mounted.
+	pub id: String,
+	/// Whether the option is disabled.
+	pub is_disabled: Signal<bool>,
+}
+
 /// The state a list box shares with its options through context.
 #[derive(Clone)]
 pub struct ListBoxContext {
 	pub state: SelectionState,
+	/// The keys of the mounted options, in the order they registered.
 	pub keys: RwSignal<CollectionKeys>,
 	pub focused_key: RwSignal<Option<String>>,
-	/// The id of the list box element; option ids derive from it.
+	/// The id of the list box element.
 	pub id: String,
-	/// Each registered option's disabled flag, by key. A key without a flag
-	/// is enabled.
-	pub disabled_options: StoredValue<HashMap<String, Signal<bool>>>,
+	/// The mounted options, by key.
+	pub options: StoredValue<HashMap<String, ListBoxOptionEntry>>,
 }
 
 impl ListBoxContext {
-	/// Register an option's key in document order, as an enabled option.
+	/// Register an enabled option's key. See [`Self::register_option`].
 	pub fn register_key(&self, key: &str) {
-		self.keys.update(|keys| {
-			keys.0.push(key.to_string());
-		});
+		self.register_option(key, Signal::default());
 	}
 
-	/// Register an option's key in document order with its disabled flag.
+	/// Register an option's key and disabled flag, after the keys already
+	/// registered.
+	///
+	/// The registration lasts until the current reactive owner is cleaned
+	/// up, which for a [`ListBoxOption`] is when it unmounts.
 	pub fn register_option(&self, key: &str, is_disabled: Signal<bool>) {
-		self.register_key(key);
-		self.disabled_options.update_value(|options| {
-			options.insert(key.to_string(), is_disabled);
+		let id = use_id();
+
+		self.options.update_value(|options| {
+			options.insert(
+				key.to_string(),
+				ListBoxOptionEntry {
+					id: id.clone(),
+					is_disabled,
+				},
+			);
 		});
+		self.keys.update(|keys| keys.0.push(key.to_string()));
+
+		let (keys, options, key) = (self.keys, self.options, key.to_string());
+
+		on_cleanup(move || unregister_option(keys, options, &key, &id));
 	}
 
 	/// Whether the option with this key is disabled, read untracked.
 	///
-	/// Keys outlive their options, so an option that has unmounted, whose
-	/// flag is disposed, counts as disabled: it can be neither focused nor
-	/// selected.
+	/// A flag whose owner is gone counts as disabled, so the option can be
+	/// neither focused nor selected.
 	pub fn is_key_disabled(&self, key: &str) -> bool {
-		self.disabled_options
-			.with_value(|options| options.get(key).copied())
+		self.options
+			.with_value(|options| options.get(key).map(|option| option.is_disabled))
 			.is_some_and(|is_disabled| is_disabled.try_get_untracked().unwrap_or(true))
 	}
 
-	/// The id of the option with this key, unique within the document.
+	/// The id of the mounted option with this key, unique within the
+	/// document.
 	///
 	/// Reactive: reading inside an effect or view tracks the registered keys.
 	pub fn option_id(&self, key: &str) -> Option<String> {
-		let index = self
-			.keys
-			.with(|keys| keys.0.iter().position(|k| k == key))?;
-
-		Some(format!("{}-option-{index}", self.id))
+		self.keys.track();
+		self.options
+			.with_value(|options| options.get(key).map(|option| option.id.clone()))
 	}
 
 	/// The id of the focused option, for `aria-activedescendant`.
@@ -155,6 +177,30 @@ impl ListBoxContext {
 	}
 }
 
+/// Drop an unmounted option's key. A list box that re-renders its options
+/// can register the same key again before the old option cleans up, so the
+/// entry is only removed while it is still this option's.
+///
+/// The list box itself may already be gone when its options clean up, in
+/// which case there is nothing left to update.
+fn unregister_option(
+	keys: RwSignal<CollectionKeys>,
+	options: StoredValue<HashMap<String, ListBoxOptionEntry>>,
+	key: &str,
+	id: &str,
+) {
+	options.try_update_value(|options| {
+		if options.get(key).is_some_and(|option| option.id == id) {
+			options.remove(key);
+		}
+	});
+	keys.try_update(|keys| {
+		if let Some(index) = keys.0.iter().position(|registered| registered == key) {
+			keys.0.remove(index);
+		}
+	});
+}
+
 /// A list box presents a list of options and lets the user select one or
 /// more of them.
 ///
@@ -208,7 +254,7 @@ pub fn ListBox(
 		keys: RwSignal::new(CollectionKeys::default()),
 		focused_key: focused_key.unwrap_or_else(|| RwSignal::new(None)),
 		id: use_id(),
-		disabled_options: StoredValue::new(HashMap::new()),
+		options: StoredValue::new(HashMap::new()),
 	};
 
 	provide_context(context.clone());
@@ -526,5 +572,124 @@ mod tests {
 			Some("true"),
 			"re-enabling the option makes it selectable"
 		);
+	}
+
+	#[wasm_bindgen_test]
+	async fn options_unregister_when_they_unmount() {
+		console_error_panic_hook::set_once();
+
+		let fruits = RwSignal::new(vec!["Apple", "Banana", "Cherry"]);
+
+		mount_to_body(move || {
+			view! {
+				<ListBox class="list-box-test-unmount">
+					{move || {
+						fruits
+							.get()
+							.into_iter()
+							.map(|fruit| view! { <ListBoxOption value=fruit>{fruit}</ListBoxOption> })
+							.collect_view()
+					}}
+				</ListBox>
+			}
+		});
+
+		let listbox = document()
+			.query_selector(".list-box-test-unmount")
+			.unwrap()
+			.unwrap();
+
+		fruits.set(vec!["Cherry", "Banana", "Apple"]);
+		tick().await;
+
+		let steps = [
+			("Home", "Cherry", "home follows the re-rendered order"),
+			(
+				"ArrowDown",
+				"Banana",
+				"arrow down follows the re-rendered order",
+			),
+			(
+				"ArrowDown",
+				"Apple",
+				"no stale key sits between the options",
+			),
+			(
+				"ArrowDown",
+				"Cherry",
+				"arrow down wraps over the mounted options",
+			),
+		];
+
+		for (key, expected, reason) in steps {
+			key_down(&listbox, key);
+			tick().await;
+
+			assert_eq!(active_text(&listbox).as_deref(), Some(expected), "{reason}");
+		}
+
+		fruits.set(vec!["Banana", "Date"]);
+		tick().await;
+
+		assert!(
+			!listbox.has_attribute("aria-activedescendant"),
+			"an unmounted focused option is no longer announced"
+		);
+
+		let options = listbox.query_selector_all("[role='option']").unwrap();
+		let ids = (0..options.length())
+			.filter_map(|index| options.get(index))
+			.map(|option| option.unchecked_into::<web_sys::Element>().id())
+			.collect::<std::collections::HashSet<_>>();
+
+		assert_eq!(ids.len(), 2, "every mounted option has its own id");
+
+		key_down(&listbox, "End");
+		tick().await;
+
+		assert_eq!(active_text(&listbox).as_deref(), Some("Date"));
+	}
+}
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod registration_tests {
+	use super::*;
+
+	fn context() -> ListBoxContext {
+		ListBoxContext {
+			state: use_selection_state(UseSelectionStateProps::default()),
+			keys: RwSignal::new(CollectionKeys::default()),
+			focused_key: RwSignal::new(None),
+			id: use_id(),
+			options: StoredValue::new(HashMap::new()),
+		}
+	}
+
+	#[test]
+	fn a_late_cleanup_keeps_the_newer_registration() {
+		let root = Owner::new();
+		root.set();
+
+		let context = context();
+		let old_option = root.child();
+		let new_option = root.child();
+
+		old_option.with(|| context.register_key("apple"));
+		new_option.with(|| context.register_key("apple"));
+
+		let new_id = new_option.with(|| untrack(|| context.option_id("apple")));
+		old_option.cleanup();
+
+		assert_eq!(context.keys.get_untracked().0, vec!["apple".to_string()]);
+		assert_eq!(
+			untrack(|| context.option_id("apple")),
+			new_id,
+			"the newer option keeps its entry"
+		);
+
+		new_option.cleanup();
+
+		assert_eq!(context.keys.get_untracked().0, Vec::<String>::new());
+		assert_eq!(untrack(|| context.option_id("apple")), None);
 	}
 }
