@@ -24,6 +24,9 @@ pub struct ComboBoxItem {
 /// A selection signal, the reactive read of the shared selection state.
 pub type SelectionSignal = Signal<Selection>;
 
+/// The class always present on the combo box root element.
+const BASE_CLASS: &str = "leptos-aria-combo-box";
+
 /// A callback invoked when the combo box value changes.
 pub type BoxedComboChangeCallback = Box<dyn Fn(&str) + Send + Sync>;
 
@@ -261,6 +264,9 @@ pub fn ComboBox(
 	/// Whether the combo box is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes added after the built-in `leptos-aria-combo-box` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let input_value = match value {
 		Some(controlled) => InputValue::Controlled(controlled),
@@ -285,27 +291,41 @@ pub fn ComboBox(
 	let input_state = Arc::clone(&state);
 	let key_state = state;
 
+	let root_class = move || {
+		class.with(|class| {
+			let class = class.trim();
+
+			if class.is_empty() {
+				BASE_CLASS.to_string()
+			} else {
+				format!("{BASE_CLASS} {class}")
+			}
+		})
+	};
+
 	view! {
-		<input
-			type="text"
-			role="combobox"
-			aria-expanded=move || is_open.get().to_string()
-			aria-controls=listbox_id.clone()
-			aria-autocomplete="list"
-			aria-haspopup="listbox"
-			disabled=move || is_disabled.get()
-			prop:value=move || input_value.signal().get()
-			on:input=move |event: web_sys::Event| input_state.handle_input(event)
-			on:keydown=move |event: web_sys::KeyboardEvent| key_state.handle_key_down(event)
-		/>
-		<ListBox
-			label=label.unwrap_or_default()
-			selection=selection
-			on_change=on_selection_change
-			focused_key=focused_key
-		>
-			{list}
-		</ListBox>
+		<div class=root_class>
+			<input
+				type="text"
+				role="combobox"
+				aria-expanded=move || is_open.get().to_string()
+				aria-controls=listbox_id.clone()
+				aria-autocomplete="list"
+				aria-haspopup="listbox"
+				disabled=move || is_disabled.get()
+				prop:value=move || input_value.signal().get()
+				on:input=move |event: web_sys::Event| input_state.handle_input(event)
+				on:keydown=move |event: web_sys::KeyboardEvent| key_state.handle_key_down(event)
+			/>
+			<ListBox
+				label=label.unwrap_or_default()
+				selection=selection
+				on_change=on_selection_change
+				focused_key=focused_key
+			>
+				{list}
+			</ListBox>
+		</div>
 	}
 }
 
@@ -350,6 +370,30 @@ mod tests {
 			fixture.input.get_attribute("aria-autocomplete").as_deref(),
 			Some("list")
 		);
+	}
+
+	#[wasm_bindgen_test]
+	async fn class_is_added_after_the_base_class() {
+		console_error_panic_hook::set_once();
+
+		let container = document()
+			.create_element("div")
+			.unwrap()
+			.unchecked_into::<web_sys::HtmlElement>();
+		document().body().unwrap().append_child(&container).unwrap();
+
+		let class = RwSignal::new(String::new());
+		let _handle = mount_to(container.clone(), move || {
+			view! { <ComboBox options=Vec::new() class=class /> }
+		});
+		let root = container.first_element_child().unwrap();
+		assert_eq!(root.class_name(), "leptos-aria-combo-box");
+
+		class.set("  fruit-picker ".to_string());
+		tick().await;
+		assert_eq!(root.class_name(), "leptos-aria-combo-box fruit-picker");
+
+		container.remove();
 	}
 
 	#[wasm_bindgen_test]
