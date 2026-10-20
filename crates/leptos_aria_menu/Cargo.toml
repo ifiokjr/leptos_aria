@@ -16,6 +16,7 @@ description = "Accessible menu, menu trigger, context menu, and menubar for Lept
 [dependencies]
 leptos = { workspace = true, features = ["csr"] }
 leptos_aria_list_box = { workspace = true }
+leptos_aria_overlay = { workspace = true }
 leptos_aria_selection = { workspace = true }
 leptos_aria_utils = { workspace = true }
 wasm-bindgen = { workspace = true }
@@ -27,7 +28,7 @@ js-sys = { workspace = true }
 wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 wasm-bindgen-test = { workspace = true }
-web-sys = { workspace = true, features = ["Document", "Element", "NodeList", "HtmlInputElement"] }
+web-sys = { workspace = true, features = ["Document", "Element", "NodeList", "HtmlInputElement", "HtmlButtonElement", "HtmlElement", "KeyboardEvent", "KeyboardEventInit"] }
 
 [lints]
 workspace = true

@@ -20,6 +20,8 @@ pub struct ListBoxContext {
 	pub state: SelectionState,
 	pub keys: RwSignal<CollectionKeys>,
 	pub focused_key: RwSignal<Option<String>>,
+	/// The id of the list box element; option ids derive from it.
+	pub id: String,
 }
 
 impl ListBoxContext {
@@ -28,6 +30,24 @@ impl ListBoxContext {
 		self.keys.update(|keys| {
 			keys.0.push(key.to_string());
 		});
+	}
+
+	/// The id of the option with this key, unique within the document.
+	///
+	/// Reactive: reading inside an effect or view tracks the registered keys.
+	pub fn option_id(&self, key: &str) -> Option<String> {
+		let index = self
+			.keys
+			.with(|keys| keys.0.iter().position(|k| k == key))?;
+
+		Some(format!("{}-option-{index}", self.id))
+	}
+
+	/// The id of the focused option, for `aria-activedescendant`.
+	///
+	/// Reactive: reading inside an effect or view tracks the focus.
+	pub fn active_descendant(&self) -> Option<String> {
+		self.focused_key.get().and_then(|key| self.option_id(&key))
 	}
 
 	/// Move focus to the option after the currently focused one.
@@ -145,12 +165,14 @@ pub fn ListBox(
 		state,
 		keys: RwSignal::new(CollectionKeys::default()),
 		focused_key: RwSignal::new(None),
+		id: use_id(),
 	};
 
 	provide_context(context.clone());
 
-	let label_id = use_id();
-	let listbox_id = use_id();
+	let label_id = label.is_some().then(use_id);
+	let listbox_id = context.id.clone();
+	let active_context = context.clone();
 
 	view! {
 		{label.map(|label| view! { <span id=label_id.clone()>{label}</span> })}
@@ -159,6 +181,7 @@ pub fn ListBox(
 			id=listbox_id.clone()
 			role="listbox"
 			aria-labelledby=label_id.clone()
+			aria-activedescendant=move || active_context.active_descendant()
 			aria-multiselectable=move || is_multiple.get().to_string()
 			tabindex=0
 			on:keydown=move |event: web_sys::KeyboardEvent| handle_key_down(&context, &event)
@@ -200,7 +223,7 @@ pub fn ListBoxOption(
 	let context = expect_context::<ListBoxContext>();
 	context.register_key(&value);
 
-	let option_id = use_id();
+	let option_id = untrack(|| context.option_id(&value));
 	let is_focused = Signal::derive({
 		let focused = context.focused_key;
 		let value = value.clone();
@@ -251,14 +274,16 @@ mod tests {
 
 		mount_to_body(|| {
 			view! {
-				<ListBox label="Fruits".to_string()>
+				<ListBox label="Fruits".to_string() class="list-box-test-exclusive">
 					<ListBoxOption value="apple".to_string()>"Apple"</ListBoxOption>
 					<ListBoxOption value="banana".to_string()>"Banana"</ListBoxOption>
 				</ListBox>
 			}
 		});
 
-		let options = document().query_selector_all("[role='option']").unwrap();
+		let options = document()
+			.query_selector_all(".list-box-test-exclusive [role='option']")
+			.unwrap();
 
 		let first = options.get(0).unwrap().unchecked_into::<web_sys::Element>();
 		let second = options.get(1).unwrap().unchecked_into::<web_sys::Element>();
@@ -291,5 +316,59 @@ mod tests {
 
 	fn click_event() -> web_sys::Event {
 		web_sys::Event::new("click").unwrap()
+	}
+
+	/// Dispatch a bubbling `keydown` for `key`.
+	fn key_down(target: &web_sys::Element, key: &str) {
+		let init = web_sys::KeyboardEventInit::new();
+		init.set_key(key);
+		init.set_bubbles(true);
+
+		let event =
+			web_sys::KeyboardEvent::new_with_keyboard_event_init_dict("keydown", &init).unwrap();
+
+		target.dispatch_event(&event).unwrap();
+	}
+
+	#[wasm_bindgen_test]
+	async fn the_focused_option_is_the_active_descendant() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<ListBox class="list-box-test-active">
+					<ListBoxOption value="apple".to_string()>"Apple"</ListBoxOption>
+					<ListBoxOption value="banana".to_string()>"Banana"</ListBoxOption>
+				</ListBox>
+			}
+		});
+
+		let listbox = document()
+			.query_selector(".list-box-test-active")
+			.unwrap()
+			.unwrap();
+
+		assert!(!listbox.has_attribute("aria-activedescendant"));
+		assert!(
+			!listbox.has_attribute("aria-labelledby"),
+			"an unlabelled list box points at no label"
+		);
+
+		key_down(&listbox, "ArrowDown");
+		key_down(&listbox, "ArrowDown");
+
+		let promise = js_sys::Promise::resolve(&wasm_bindgen::JsValue::NULL);
+		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+
+		let active = listbox
+			.get_attribute("aria-activedescendant")
+			.expect("the focused option is announced");
+		let option = document().get_element_by_id(&active).unwrap();
+
+		assert_eq!(option.text_content().as_deref(), Some("Banana"));
+		assert_eq!(
+			option.get_attribute("data-focused").as_deref(),
+			Some("true")
+		);
 	}
 }
