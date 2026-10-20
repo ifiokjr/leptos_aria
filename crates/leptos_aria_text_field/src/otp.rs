@@ -3,11 +3,14 @@
 use std::rc::Rc;
 
 use leptos::prelude::*;
+use leptos_aria_utils::LabelElementType;
+use leptos_aria_utils::UseLabelsProps;
 use leptos_aria_utils::merge_class;
+use leptos_aria_utils::use_labels;
 use wasm_bindgen::JsCast;
 
 use crate::BoxedTextChangeCallback;
-use crate::field_aria;
+use crate::labelled::LabelledField;
 
 /// A one-time-password field spreads a code across one input per digit.
 ///
@@ -46,13 +49,23 @@ pub fn OneTimePasswordField(
 
 		chars.into_iter().take(cells).collect()
 	});
-	let aria = field_aria(label.as_deref(), None);
+	// The group is a `div`, which a `<label for>` cannot name, so a `span`
+	// label names it through `aria-labelledby`.
+	let labels = use_labels(UseLabelsProps {
+		label: label.clone().filter(|label| !label.is_empty()),
+		label_element_type: LabelElementType::Span,
+		..Default::default()
+	});
+	let label_id = labels.label_props.id;
+	let label = label
+		.filter(|label| !label.is_empty())
+		.map(|label| view! { <span id=label_id>{label}</span> });
 
-	view! {
+	let group = view! {
 		<div
 			class=merge_class("leptos-aria-otp-field", class)
 			role="group"
-			aria-labelledby=aria.aria_labelledby.clone()
+			aria-labelledby=labels.field_props.aria_labelledby
 		>
 			{(0..cells)
 				.map(|index| {
@@ -62,11 +75,11 @@ pub fn OneTimePasswordField(
 				})
 				.collect::<Vec<_>>()}
 		</div>
-		{label.map(|label| {
-			view! {
-				<label id=aria.label_id.clone() for=aria.field_id.clone()>{label}</label>
-			}
-		})}
+	};
+
+	LabelledField {
+		label,
+		field: group,
 	}
 }
 
@@ -175,5 +188,54 @@ fn focus_otp_cell(index: usize) {
 		.and_then(|cell| cell.dyn_into::<web_sys::HtmlInputElement>().ok())
 	{
 		cell.focus().ok();
+	}
+}
+
+#[cfg(all(test, target_arch = "wasm32"))]
+mod tests {
+	use wasm_bindgen_test::*;
+
+	use super::*;
+	use crate::tests::child_tags;
+	use crate::tests::mount_in_container;
+
+	wasm_bindgen_test_configure!(run_in_browser);
+
+	#[wasm_bindgen_test]
+	fn otp_field_renders_its_label_first_and_names_the_group() {
+		let root = mount_in_container(|| {
+			view! {
+				<OneTimePasswordField label="Code".to_string() length=4usize attr:data-slot="input-otp" />
+			}
+		});
+		let label = root.query_selector("span").unwrap().unwrap();
+		let group = root.query_selector("[role=group]").unwrap().unwrap();
+
+		assert_eq!(child_tags(&root), ["span", "div"]);
+		assert_eq!(label.text_content().as_deref(), Some("Code"));
+		assert_eq!(
+			group.get_attribute("aria-labelledby").as_deref(),
+			label.get_attribute("id").as_deref(),
+			"the label names the group"
+		);
+		assert_eq!(
+			group.get_attribute("data-slot").as_deref(),
+			Some("input-otp")
+		);
+		assert_eq!(label.get_attribute("data-slot"), None);
+		assert!(
+			root.query_selector("label").unwrap().is_none(),
+			"a div group cannot be the target of a <label for>"
+		);
+		assert_eq!(group.child_element_count(), 4, "one cell per digit");
+	}
+
+	#[wasm_bindgen_test]
+	fn otp_field_without_a_label_renders_only_the_group() {
+		let root = mount_in_container(|| view! { <OneTimePasswordField /> });
+		let group = root.query_selector("[role=group]").unwrap().unwrap();
+
+		assert_eq!(child_tags(&root), ["div"]);
+		assert_eq!(group.get_attribute("aria-labelledby"), None);
 	}
 }

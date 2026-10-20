@@ -468,7 +468,7 @@ mod tests {
 
 	/// A container in the body, removed again when dropped, even when a test
 	/// panics, so other tests' document-wide queries never see its elements.
-	struct Container(web_sys::Element);
+	pub(crate) struct Container(web_sys::Element);
 
 	impl std::ops::Deref for Container {
 		type Target = web_sys::Element;
@@ -485,7 +485,9 @@ mod tests {
 	}
 
 	/// Mount a view into a fresh container appended to the body.
-	fn mount_in_container<N: IntoView + 'static>(view: impl FnOnce() -> N + 'static) -> Container {
+	pub(crate) fn mount_in_container<N: IntoView + 'static>(
+		view: impl FnOnce() -> N + 'static,
+	) -> Container {
 		console_error_panic_hook::set_once();
 
 		let root = document().create_element("div").unwrap();
@@ -496,7 +498,7 @@ mod tests {
 	}
 
 	/// The tag names of the element children of `root`, in DOM order.
-	fn child_tags(root: &web_sys::Element) -> Vec<String> {
+	pub(crate) fn child_tags(root: &web_sys::Element) -> Vec<String> {
 		let children = root.children();
 
 		(0..children.length())
