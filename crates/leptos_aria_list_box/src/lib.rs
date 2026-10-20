@@ -181,6 +181,11 @@ pub fn ListBox(
 	/// Handler that is called when the selection changes.
 	#[prop(optional)]
 	on_change: Option<leptos_aria_selection::BoxedSelectionCallback>,
+	/// The focused option (controlled), for an owner such as a combo box
+	/// whose input keeps DOM focus while the arrow keys move through the
+	/// options.
+	#[prop(optional)]
+	focused_key: Option<RwSignal<Option<String>>>,
 	/// Classes for the root element.
 	#[prop(optional, into)]
 	class: Signal<String>,
@@ -201,7 +206,7 @@ pub fn ListBox(
 	let context = ListBoxContext {
 		state,
 		keys: RwSignal::new(CollectionKeys::default()),
-		focused_key: RwSignal::new(None),
+		focused_key: focused_key.unwrap_or_else(|| RwSignal::new(None)),
 		id: use_id(),
 		disabled_options: StoredValue::new(HashMap::new()),
 	};
