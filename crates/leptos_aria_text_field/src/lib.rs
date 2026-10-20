@@ -6,6 +6,7 @@ use std::rc::Rc;
 
 use leptos::prelude::*;
 use leptos_aria_utils::UseLabelsProps;
+use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_labels;
 use wasm_bindgen::JsCast;
 
@@ -180,6 +181,9 @@ pub fn TextField(
 	/// The id of the element describing the field.
 	#[prop(optional, into)]
 	description_id: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let state = use_text_field_state(UseTextFieldStateProps {
 		default_value,
@@ -194,6 +198,7 @@ pub fn TextField(
 	view! {
 		<input
 			id=aria.field_id.clone()
+			class=merge_class("", class)
 			type=input_type
 			value=move || field_value.get()
 			placeholder=move || placeholder.clone()
@@ -253,6 +258,9 @@ pub fn TextArea(
 	/// The id of the element describing the field.
 	#[prop(optional, into)]
 	description_id: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let state = use_text_field_state(UseTextFieldStateProps {
 		default_value,
@@ -266,6 +274,7 @@ pub fn TextArea(
 	view! {
 		<textarea
 			id=aria.field_id.clone()
+			class=merge_class("", class)
 			prop:value=move || field_value.get()
 			placeholder=move || placeholder.clone()
 			name=move || name.clone()

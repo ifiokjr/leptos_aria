@@ -4,6 +4,7 @@
 use std::sync::Arc;
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_id;
 
 /// A callback invoked when the selected value changes.
@@ -172,6 +173,9 @@ pub fn RadioGroup(
 	/// The name used when submitting an HTML form.
 	#[prop(optional, into)]
 	name: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let state = use_radio_group_state(UseRadioGroupStateProps {
@@ -192,6 +196,7 @@ pub fn RadioGroup(
 	view! {
 		<div
 			role="radiogroup"
+			class=merge_class("", class)
 			aria-labelledby=label_id.clone()
 			on:focusout=move |_| {
 				// Reset the roving focus memory when focus leaves the group
@@ -217,6 +222,9 @@ pub fn Radio(
 	/// Whether this radio is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let group = expect_context::<RadioGroupContext>();
@@ -239,7 +247,7 @@ pub fn Radio(
 	let focus_value = value.clone();
 
 	view! {
-		<label id=input_id.clone() on:mousedown=|event: web_sys::MouseEvent| {
+		<label id=input_id.clone() class=merge_class("", class) on:mousedown=|event: web_sys::MouseEvent| {
 			// Prevent the label from taking focus when pressed.
 			event.prevent_default();
 		}>

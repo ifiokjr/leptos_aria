@@ -1,20 +1,35 @@
 [package]
 name = "leptos_aria_cli"
 version = "0.1.0"
+categories = ["command-line-utilities", "development-tools", "web-programming"]
 edition = "2024"
+homepage = "https://ifiokjr.github.io/leptos_aria/"
+keywords = ["leptos", "aria", "shadcn", "tailwind", "cli"]
 license = "Unlicense"
 readme = "readme.md"
 repository = "https://github.com/ifiokjr/leptos_aria"
-description = "The leptos_aria component registry CLI"
+description = "Copy Tailwind-styled leptos_aria components into your Leptos project, shadcn-style"
+
+# Built on its own: the CLI has no wasm dependencies and keeps its own lockfile.
+[workspace]
 
 [[bin]]
 name = "leptos-aria"
 path = "src/main.rs"
 
 [dependencies]
+anyhow = "1"
 clap = { version = "4", features = ["derive"] }
+indexmap = { version = "2", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde_json = { version = "1", features = ["preserve_order"] }
+similar = "2"
+toml = "0.9"
+ureq = "3"
 
 [lints.rust]
 unsafe_code = "deny"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"

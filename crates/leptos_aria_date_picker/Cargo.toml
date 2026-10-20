@@ -17,6 +17,7 @@ description = "Accessible date field, date picker, and date range picker for Lep
 leptos = { workspace = true, features = ["csr"] }
 leptos_aria_calendar = { workspace = true }
 leptos_aria_date = { workspace = true }
+leptos_aria_utils = { workspace = true }
 [dev-dependencies]
 console_error_panic_hook = { workspace = true }
 js-sys = { workspace = true }

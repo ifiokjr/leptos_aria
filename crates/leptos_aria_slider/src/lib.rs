@@ -5,6 +5,7 @@
 use std::sync::Arc;
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 use wasm_bindgen::JsCast;
 
 /// A callback invoked when the value changes.
@@ -88,6 +89,9 @@ pub fn Slider(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes added after the built-in `leptos-aria-slider` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let min = min.unwrap_or(0.0);
 	let max = max.unwrap_or(100.0);
@@ -115,7 +119,7 @@ pub fn Slider(
 	});
 
 	view! {
-		<div class="leptos-aria-slider">
+		<div class=merge_class("leptos-aria-slider", class)>
 			<input
 				type="range"
 				class="leptos-aria-slider__input"

@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use leptos::prelude::*;
 use leptos_aria_date::DateValue;
+use leptos_aria_utils::merge_class;
 
 /// A callback invoked when a date is selected.
 pub type BoxedDateSelectCallback = Box<dyn Fn(DateValue) + Send + Sync + 'static>;
@@ -71,6 +72,9 @@ pub fn Calendar(
 	/// Handler that is called when a date is selected.
 	#[prop(optional)]
 	on_select: Option<BoxedDateSelectCallback>,
+	/// Classes added after the built-in `leptos-aria-calendar` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let selected = RwSignal::new(default_value.unwrap_or(DateValue::new(2026, 1, 1)));
 	let month = RwSignal::new(default_value.map_or(
@@ -96,7 +100,7 @@ pub fn Calendar(
 
 	view! {
 		<div
-			class="leptos-aria-calendar"
+			class=merge_class("leptos-aria-calendar", class)
 			role="grid"
 			aria-label=move || month_label(label_state.month.get())
 			on:keydown=move |event: web_sys::KeyboardEvent| {
@@ -206,30 +210,37 @@ fn MonthGrid(
 	let weeks = Signal::derive(move || month_weeks(month.get()));
 
 	view! {
-		<div class="leptos_aria-calendar__grid" role="rowgroup">
+		<div class="leptos-aria-calendar__grid" role="rowgroup">
 			{move || {
 				weeks
 					.get()
 					.into_iter()
-					.map(|week| {
-						view! {
-							<div class="leptos-aria-calendar__week" role="row">
-								{week
-									.into_iter()
-									.map(|date| {
-										let is_focused = focused.get_untracked() == date;
-										let is_selected = selected.get_untracked() == date;
-
-										view! {
-											<CalendarCell date=date is_focused=is_focused is_selected=is_selected />
-										}
-									})
-									.collect::<Vec<_>>()}
-							</div>
-						}
-					})
+					.map(|week| week_row(week, focused, selected))
 					.collect::<Vec<_>>()
 			}}
+		</div>
+	}
+}
+
+/// One `role="row"` week of date cells.
+fn week_row(
+	week: Vec<DateValue>,
+	focused: RwSignal<DateValue>,
+	selected: RwSignal<DateValue>,
+) -> impl IntoView {
+	let cells = week
+		.into_iter()
+		.map(|date| {
+			let is_focused = focused.get_untracked() == date;
+			let is_selected = selected.get_untracked() == date;
+
+			view! { <CalendarCell date=date is_focused=is_focused is_selected=is_selected /> }
+		})
+		.collect::<Vec<_>>();
+
+	view! {
+		<div class="leptos-aria-calendar__week" role="row">
+			{cells}
 		</div>
 	}
 }
@@ -237,17 +248,15 @@ fn MonthGrid(
 /// One date cell of the calendar.
 #[component]
 fn CalendarCell(date: DateValue, is_focused: bool, is_selected: bool) -> impl IntoView {
+	let current = if is_focused { "date" } else { "false" };
+	let class = if is_selected {
+		"leptos-aria-calendar__cell leptos-aria-calendar__cell--selected"
+	} else {
+		"leptos-aria-calendar__cell"
+	};
+
 	view! {
-		<span
-			role="gridcell"
-			aria-selected=is_selected.to_string()
-			aria-current=if is_focused { "date" } else { "false" }
-			class=if is_selected {
-				"leptos-aria-calendar__cell leptos-aria-calendar__cell--selected"
-			} else {
-				"leptos-aria-calendar__cell"
-			}
-		>
+		<span role="gridcell" aria-selected=is_selected.to_string() aria-current=current class=class>
 			{date.day.to_string()}
 		</span>
 	}
@@ -299,5 +308,24 @@ mod tests {
 			.unwrap();
 
 		assert!(selected.is_some(), "the selected date is marked");
+	}
+
+	#[wasm_bindgen_test]
+	async fn calendar_appends_the_caller_class() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! { <Calendar class="custom-calendar" default_value=DateValue::new(2026, 10, 18) /> }
+		});
+
+		let calendar = document()
+			.query_selector(".leptos-aria-calendar.custom-calendar")
+			.unwrap()
+			.expect("the caller class sits on the calendar root");
+
+		assert_eq!(
+			calendar.get_attribute("class").as_deref(),
+			Some("leptos-aria-calendar custom-calendar")
+		);
 	}
 }

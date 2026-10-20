@@ -34,6 +34,10 @@ jobs:
       - name: build site
         run: cargo run --locked -p leptos_aria_docs --bin site -- _site
 
+      # The installable items `leptos-aria add` fetches: _site/r/<name>.json.
+      - name: build registry
+        run: cargo run --locked --manifest-path crates/leptos_aria_cli/Cargo.toml -- build registry/registry.json --output _site/r --strict
+
       - name: upload pages artifact
         uses: actions/upload-pages-artifact@0252fc4ba7626f0298f0cf00902a25c6afc77fa8 # v3.0.0
         with:

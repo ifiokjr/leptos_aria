@@ -5,6 +5,7 @@
 use std::rc::Rc;
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 use wasm_bindgen::JsCast;
 
 /// A callback invoked when the value changes.
@@ -42,6 +43,9 @@ pub fn NumberField(
 	/// Whether the field is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let step = step.unwrap_or(1.0);
 	let local = RwSignal::new(default_value.unwrap_or(0.0));
@@ -73,6 +77,7 @@ pub fn NumberField(
 	view! {
 		<input
 			id=aria.field_id.clone()
+			class=merge_class("", class)
 			type="number"
 			value=move || read_value.get().to_string()
 			min=min_value.map(|min| min.to_string())

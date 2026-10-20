@@ -17,6 +17,7 @@ description = "Accessible toggle button, switch, and toggle group for Leptos"
 leptos = { workspace = true, features = ["csr"] }
 leptos_aria_button = { workspace = true }
 leptos_aria_interactions = { workspace = true }
+leptos_aria_utils = { workspace = true }
 wasm-bindgen = { workspace = true }
 
 web-sys = { workspace = true, features = ["HtmlInputElement"] }

@@ -4,6 +4,7 @@
 use leptos::prelude::*;
 use leptos_aria_utils::LabelElementType;
 use leptos_aria_utils::UseLabelsProps;
+use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_labels;
 
 /// The props shared by [`ProgressBar`] and [`Meter`].
@@ -161,6 +162,9 @@ pub fn ProgressBar(
 	/// The content to display as the value's label (e.g. "1 of 4").
 	#[prop(optional)]
 	value_label: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	#[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
 	let props = ProgressBaseProps {
@@ -179,6 +183,7 @@ pub fn ProgressBar(
 	view! {
 		<div
 			id=aria.id.clone()
+			class=merge_class("", class)
 			role=aria.role
 			aria-valuenow=aria.aria_value_now.map(|value| value.to_string())
 			aria-valuemin=aria.aria_value_min.to_string()
@@ -222,6 +227,9 @@ pub fn Meter(
 	/// The content to display as the value's label (e.g. "1 of 4").
 	#[prop(optional)]
 	value_label: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	#[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
 	let props = ProgressBaseProps {
@@ -240,6 +248,7 @@ pub fn Meter(
 	view! {
 		<div
 			id=aria.id.clone()
+			class=merge_class("", class)
 			role=aria.role
 			aria-valuenow=aria.aria_value_now.map(|value| value.to_string())
 			aria-valuemin=aria.aria_value_min.to_string()

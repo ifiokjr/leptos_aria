@@ -685,6 +685,61 @@ main {
 	white-space: nowrap;
 }
 
+/* Component registry pages */
+
+.prose.wide {
+	max-width: 52rem;
+	padding-bottom: 0;
+}
+
+.prose .lede {
+	margin-top: 0;
+}
+
+.prose .eyebrow a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.prose .install {
+	margin-bottom: 1.25rem;
+}
+
+.prose details {
+	margin: 0 0 1.5rem;
+	padding: 0.75rem 1rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--bg-raised);
+}
+
+.prose summary {
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.prose details ol {
+	margin: 0.75rem 0 0;
+}
+
+.prose pre code {
+	font-size: 0.82rem;
+}
+
+.component-grid {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+	margin-top: 1rem;
+}
+
+.component-grid strong {
+	font-family: var(--font-display);
+	font-weight: 700;
+}
+
+.component-grid span {
+	font-size: 0.9rem;
+}
+
 /* Small screens */
 
 @media (max-width: 52rem) {

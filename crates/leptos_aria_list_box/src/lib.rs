@@ -8,6 +8,7 @@ use leptos_aria_selection::SelectionMode;
 use leptos_aria_selection::SelectionState;
 use leptos_aria_selection::UseSelectionStateProps;
 use leptos_aria_selection::use_selection_state;
+use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_id;
 
 /// A callback invoked when the focused option changes.
@@ -128,6 +129,9 @@ pub fn ListBox(
 	/// options.
 	#[prop(optional)]
 	focused_key: Option<RwSignal<Option<String>>>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let state = use_selection_state(UseSelectionStateProps {
@@ -156,6 +160,7 @@ pub fn ListBox(
 	view! {
 		{label.map(|label| view! { <span id=label_id.clone()>{label}</span> })}
 		<div
+			class=merge_class("", class)
 			id=listbox_id.clone()
 			role="listbox"
 			aria-labelledby=label_id.clone()
@@ -192,6 +197,9 @@ pub fn ListBoxOption(
 	/// Whether this option is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let context = expect_context::<ListBoxContext>();
@@ -214,6 +222,7 @@ pub fn ListBoxOption(
 
 	view! {
 		<div
+			class=merge_class("", class)
 			id=option_id.clone()
 			role="option"
 			aria-selected=move || is_selected.get().to_string()

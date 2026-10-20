@@ -3,6 +3,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 
 /// State management for a disclosure: expanded content toggled by a button.
 #[derive(Clone)]
@@ -66,6 +67,9 @@ pub fn Disclosure(
 	/// Whether the content is initially expanded (uncontrolled).
 	#[prop(optional, into)]
 	default_open: Signal<bool>,
+	/// Classes added after the built-in `leptos-aria-disclosure` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let state = use_disclosure_state(UseDisclosureStateProps {
@@ -82,7 +86,7 @@ pub fn Disclosure(
 	let toggle_state = state;
 
 	view! {
-		<div class="leptos-aria-disclosure">
+		<div class=merge_class("leptos-aria-disclosure", class)>
 			<button
 				id=button_id.clone()
 				type="button"
@@ -107,8 +111,13 @@ pub fn Disclosure(
 
 /// The panel content of a disclosure; rendered inside the hidden region.
 #[component]
-pub fn DisclosurePanel(children: Children) -> impl IntoView {
-	view! { <div class="leptos-aria-disclosure__content">{children()}</div> }
+pub fn DisclosurePanel(
+	/// Classes added after the built-in `leptos-aria-disclosure__content` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
+	children: Children,
+) -> impl IntoView {
+	view! { <div class=merge_class("leptos-aria-disclosure__content", class)>{children()}</div> }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
@@ -151,6 +160,25 @@ mod tests {
 		assert_eq!(
 			trigger.get_attribute("aria-expanded").as_deref(),
 			Some("true")
+		);
+	}
+
+	#[wasm_bindgen_test]
+	async fn disclosure_appends_the_caller_class() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! { <Disclosure class="custom-disclosure">"More info"</Disclosure> }
+		});
+
+		let disclosure = document()
+			.query_selector(".leptos-aria-disclosure.custom-disclosure")
+			.unwrap()
+			.expect("the caller class sits on the disclosure root");
+
+		assert_eq!(
+			disclosure.get_attribute("class").as_deref(),
+			Some("leptos-aria-disclosure custom-disclosure")
 		);
 	}
 }

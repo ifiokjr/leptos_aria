@@ -8,11 +8,12 @@
 
 ```bash
 cargo install leptos_aria_cli
-leptos-aria init          # write leptos-aria.json
-leptos-aria add button    # copy a styled wrapper into src/aria
-leptos-aria list          # list the registry
+leptos-aria init               # leptos-aria.json, theme CSS variables, the `cn` helper
+leptos-aria add button dialog  # copy components into src/components/ui
+leptos-aria diff               # compare your copies with the registry
+leptos-aria build              # turn your registry.json into a hostable registry
 ```
 
-The copied files are yours to edit. They layer Tailwind classes over the headless [`leptos_aria`](https://crates.io/crates/leptos_aria) crates, which keep handling roles, keyboard, and focus.
+The copied files are yours to edit. They layer Tailwind classes over the headless [`leptos_aria`](https://crates.io/crates/leptos_aria) crates, which keep handling roles, keyboard, and focus. Items use shadcn/ui's registry-item schema, and namespaced registries (`leptos-aria add @acme/card`) work as they do with shadcn.
 
-[Website](https://ifiokjr.github.io/leptos_aria/) · [Registry](https://ifiokjr.github.io/leptos_aria/registry.json) · [Repository](https://github.com/ifiokjr/leptos_aria)
+[Components](https://ifiokjr.github.io/leptos_aria/components.html) · [CLI guide](https://ifiokjr.github.io/leptos_aria/cli.html) · [Repository](https://github.com/ifiokjr/leptos_aria)

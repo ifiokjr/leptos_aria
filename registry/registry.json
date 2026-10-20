@@ -4,33 +4,614 @@
 	"homepage": "https://ifiokjr.github.io/leptos_aria/",
 	"items": [
 		{
-			"name": "button",
-			"type": "registry:component",
-			"title": "Button",
-			"description": "Accessible button with press, focus, and form wiring",
-			"dependencies": ["leptos", "leptos_aria"],
+			"name": "default",
+			"type": "registry:style",
+			"title": "Default style",
+			"description": "Theme tokens, dark mode, and base styles shared by every component",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"cssVars": {
+				"theme": {
+					"color-background": "var(--background)",
+					"color-foreground": "var(--foreground)",
+					"color-card": "var(--card)",
+					"color-card-foreground": "var(--card-foreground)",
+					"color-popover": "var(--popover)",
+					"color-popover-foreground": "var(--popover-foreground)",
+					"color-primary": "var(--primary)",
+					"color-primary-foreground": "var(--primary-foreground)",
+					"color-secondary": "var(--secondary)",
+					"color-secondary-foreground": "var(--secondary-foreground)",
+					"color-muted": "var(--muted)",
+					"color-muted-foreground": "var(--muted-foreground)",
+					"color-accent": "var(--accent)",
+					"color-accent-foreground": "var(--accent-foreground)",
+					"color-destructive": "var(--destructive)",
+					"color-border": "var(--border)",
+					"color-input": "var(--input)",
+					"color-ring": "var(--ring)",
+					"radius-sm": "calc(var(--radius) - 4px)",
+					"radius-md": "calc(var(--radius) - 2px)",
+					"radius-lg": "var(--radius)",
+					"radius-xl": "calc(var(--radius) + 4px)"
+				},
+				"light": {
+					"radius": "0.625rem",
+					"background": "oklch(1 0 0)",
+					"foreground": "oklch(0.145 0 0)",
+					"card": "oklch(1 0 0)",
+					"card-foreground": "oklch(0.145 0 0)",
+					"popover": "oklch(1 0 0)",
+					"popover-foreground": "oklch(0.145 0 0)",
+					"primary": "oklch(0.205 0 0)",
+					"primary-foreground": "oklch(0.985 0 0)",
+					"secondary": "oklch(0.97 0 0)",
+					"secondary-foreground": "oklch(0.205 0 0)",
+					"muted": "oklch(0.97 0 0)",
+					"muted-foreground": "oklch(0.556 0 0)",
+					"accent": "oklch(0.97 0 0)",
+					"accent-foreground": "oklch(0.205 0 0)",
+					"destructive": "oklch(0.577 0.245 27.325)",
+					"border": "oklch(0.922 0 0)",
+					"input": "oklch(0.922 0 0)",
+					"ring": "oklch(0.708 0 0)"
+				},
+				"dark": {
+					"background": "oklch(0.145 0 0)",
+					"foreground": "oklch(0.985 0 0)",
+					"card": "oklch(0.205 0 0)",
+					"card-foreground": "oklch(0.985 0 0)",
+					"popover": "oklch(0.205 0 0)",
+					"popover-foreground": "oklch(0.985 0 0)",
+					"primary": "oklch(0.922 0 0)",
+					"primary-foreground": "oklch(0.205 0 0)",
+					"secondary": "oklch(0.269 0 0)",
+					"secondary-foreground": "oklch(0.985 0 0)",
+					"muted": "oklch(0.269 0 0)",
+					"muted-foreground": "oklch(0.708 0 0)",
+					"accent": "oklch(0.269 0 0)",
+					"accent-foreground": "oklch(0.985 0 0)",
+					"destructive": "oklch(0.704 0.191 22.216)",
+					"border": "oklch(1 0 0 / 10%)",
+					"input": "oklch(1 0 0 / 15%)",
+					"ring": "oklch(0.556 0 0)"
+				}
+			},
+			"css": {
+				"@custom-variant dark (&:is(.dark *))": {},
+				"@layer base": {
+					"*": {
+						"@apply border-border outline-ring/50": {}
+					},
+					"body": {
+						"@apply bg-background text-foreground": {}
+					}
+				}
+			},
+			"docs": "Add class=\"dark\" to <html> for the dark theme."
+		},
+		{
+			"name": "utils",
+			"type": "registry:lib",
+			"title": "Utils",
+			"description": "The `cn` helper that merges Tailwind classes so yours win conflicts",
+			"dependencies": [
+				"tw_merge"
+			],
 			"files": [
-				{ "path": "src/aria/button.rs", "target": "src/aria/button.rs" }
+				{
+					"path": "src/ui/utils.rs",
+					"type": "registry:lib"
+				}
+			]
+		},
+		{
+			"name": "accordion",
+			"type": "registry:ui",
+			"title": "Accordion",
+			"description": "Vertically stacked sections that each expand to reveal their content",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/accordion.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "alert",
+			"type": "registry:ui",
+			"title": "Alert",
+			"description": "A prominent message with a title and description, announced to screen readers",
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/alert.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "alert-dialog",
+			"type": "registry:ui",
+			"title": "Alert Dialog",
+			"description": "A modal that interrupts with an important message and waits for confirm or cancel",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/alert_dialog.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "avatar",
+			"type": "registry:ui",
+			"title": "Avatar",
+			"description": "A round user image with a text fallback",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/avatar.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "badge",
+			"type": "registry:ui",
+			"title": "Badge",
+			"description": "A small status label in default, secondary, destructive, and outline variants",
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/badge.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "breadcrumb",
+			"type": "registry:ui",
+			"title": "Breadcrumb",
+			"description": "The path to the current page through a hierarchy of links",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/breadcrumb.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "button",
+			"type": "registry:ui",
+			"title": "Button",
+			"description": "A button with variants and sizes, with press, keyboard, and focus behaviour from leptos_aria",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/button.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "card",
+			"type": "registry:ui",
+			"title": "Card",
+			"description": "A bordered surface with header, title, description, action, content, and footer slots",
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/card.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "checkbox",
+			"type": "registry:ui",
+			"title": "Checkbox",
+			"description": "A checkbox with its label, supporting an indeterminate dash",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/checkbox.rs",
+					"type": "registry:ui"
+				}
 			]
 		},
 		{
 			"name": "dialog",
-			"type": "registry:component",
+			"type": "registry:ui",
 			"title": "Dialog",
-			"description": "Modal dialog with focus trap, scroll lock, and dismissal",
-			"dependencies": ["leptos", "leptos_aria"],
+			"description": "A modal window that traps focus and closes on Escape or a backdrop click",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
 			"files": [
-				{ "path": "src/aria/dialog.rs", "target": "src/aria/dialog.rs" }
+				{
+					"path": "src/ui/dialog.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "dropdown-menu",
+			"type": "registry:ui",
+			"title": "Dropdown Menu",
+			"description": "A menu of actions that drops down from a button",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/dropdown_menu.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "hover-card",
+			"type": "registry:ui",
+			"title": "Hover Card",
+			"description": "A preview card that appears while an element is hovered or focused",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/hover_card.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "input",
+			"type": "registry:ui",
+			"title": "Input",
+			"description": "A single-line text input",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/input.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "kbd",
+			"type": "registry:ui",
+			"title": "Kbd",
+			"description": "A keyboard key or shortcut",
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/kbd.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "label",
+			"type": "registry:ui",
+			"title": "Label",
+			"description": "A caption for a form control",
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/label.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "pagination",
+			"type": "registry:ui",
+			"title": "Pagination",
+			"description": "Page navigation with previous, next, and a button per page",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/pagination.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "popover",
+			"type": "registry:ui",
+			"title": "Popover",
+			"description": "Rich content in a floating panel anchored to the button that opens it",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/popover.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "progress",
+			"type": "registry:ui",
+			"title": "Progress",
+			"description": "A bar showing how far a task has come",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/progress.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "radio-group",
+			"type": "registry:ui",
+			"title": "Radio Group",
+			"description": "A set of options where only one can be chosen",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/radio_group.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "select",
+			"type": "registry:ui",
+			"title": "Select",
+			"description": "A button that opens a list of options and shows the one chosen",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/select.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "separator",
+			"type": "registry:ui",
+			"title": "Separator",
+			"description": "A thin horizontal or vertical line between groups of content",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/separator.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "skeleton",
+			"type": "registry:ui",
+			"title": "Skeleton",
+			"description": "A pulsing placeholder shown while content loads",
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/skeleton.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "slider",
+			"type": "registry:ui",
+			"title": "Slider",
+			"description": "A thumb on a track for choosing a value in a range",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/slider.rs",
+					"type": "registry:ui"
+				}
 			]
 		},
 		{
 			"name": "switch",
-			"type": "registry:component",
+			"type": "registry:ui",
 			"title": "Switch",
-			"description": "On/off toggle with switch role",
-			"dependencies": ["leptos", "leptos_aria"],
+			"description": "An on/off switch with its label",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
 			"files": [
-				{ "path": "src/aria/switch.rs", "target": "src/aria/switch.rs" }
+				{
+					"path": "src/ui/switch.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "tabs",
+			"type": "registry:ui",
+			"title": "Tabs",
+			"description": "Layered panels of content, one visible at a time, switched by a row of tabs",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/tabs.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "textarea",
+			"type": "registry:ui",
+			"title": "Textarea",
+			"description": "A multi-line text input that grows with its content",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/textarea.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "toggle",
+			"type": "registry:ui",
+			"title": "Toggle",
+			"description": "A two-state button that stays pressed until pressed again",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/toggle.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "toggle-group",
+			"type": "registry:ui",
+			"title": "Toggle Group",
+			"description": "A row of toggles joined into one control, one pressed at a time",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils",
+				"toggle"
+			],
+			"files": [
+				{
+					"path": "src/ui/toggle_group.rs",
+					"type": "registry:ui"
+				}
+			]
+		},
+		{
+			"name": "tooltip",
+			"type": "registry:ui",
+			"title": "Tooltip",
+			"description": "A short label that appears on hover or keyboard focus",
+			"dependencies": [
+				"leptos_aria"
+			],
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				{
+					"path": "src/ui/tooltip.rs",
+					"type": "registry:ui"
+				}
 			]
 		}
 	]

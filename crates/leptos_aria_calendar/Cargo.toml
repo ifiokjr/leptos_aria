@@ -16,6 +16,7 @@ description = "Accessible calendar grid for Leptos"
 [dependencies]
 leptos = { workspace = true, features = ["csr"] }
 leptos_aria_date = { workspace = true }
+leptos_aria_utils = { workspace = true }
 wasm-bindgen = { workspace = true }
 web-sys = { workspace = true, features = ["Document", "Element"] }
 [dev-dependencies]

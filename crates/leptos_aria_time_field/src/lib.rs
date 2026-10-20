@@ -3,6 +3,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 
 /// A time of day, `0:00` through `23:59`.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -60,6 +61,9 @@ pub fn TimeField(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let initial = default_value.unwrap_or_default();
 	let local = RwSignal::new(initial);
@@ -75,6 +79,7 @@ pub fn TimeField(
 	view! {
 		<input
 			type="text"
+			class=merge_class("", class)
 			value=move || text.get()
 			aria-label=label.unwrap_or_default()
 			on:keydown=move |event: web_sys::KeyboardEvent| {
