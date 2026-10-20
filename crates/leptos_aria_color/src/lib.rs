@@ -8,6 +8,7 @@ use std::sync::Arc;
 
 pub use color::Color;
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 use wasm_bindgen::JsCast;
 
 /// A callback invoked when the color changes.
@@ -19,10 +20,13 @@ pub fn ColorSwatch(
 	/// The color to show.
 	#[prop(into)]
 	color: Signal<Color>,
+	/// Classes added after the built-in `leptos-aria-color-swatch` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	view! {
 		<span
-			class="leptos-aria-color-swatch"
+			class=merge_class("leptos-aria-color-swatch", class)
 			role="img"
 			aria-label=move || color.get().to_hex()
 			style=move || format!("background-color: {};", color.get().to_rgb_string())
@@ -48,6 +52,9 @@ pub fn ColorField(
 	/// Handler that is called when the color changes.
 	#[prop(optional)]
 	on_change: Option<BoxedColorChangeCallback>,
+	/// Classes for the root element, the text input.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let initial = default_value.unwrap_or_else(|| Color::new(0.0, 0.0, 0.0, 1.0));
 	let local = RwSignal::new(initial.clone());
@@ -81,6 +88,7 @@ pub fn ColorField(
 	view! {
 		<input
 			id=aria.field_id.clone()
+			class=merge_class("", class)
 			type="text"
 			aria-labelledby=aria.aria_labelledby.clone()
 			prop:value=move || state.input_text.get()
@@ -198,6 +206,9 @@ pub fn ColorArea(
 	/// Handler that is called when the color changes.
 	#[prop(optional)]
 	on_change: Option<BoxedColorChangeCallback>,
+	/// Classes added after the built-in `leptos-aria-color-area` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let state = Arc::new(ColorAreaState {
 		color: value,
@@ -207,7 +218,7 @@ pub fn ColorArea(
 
 	view! {
 		<div
-			class="leptos-aria-color-area"
+			class=merge_class("leptos-aria-color-area", class)
 			role="application"
 			aria-label="Saturation and brightness"
 			style=move || format!("background: {};", hue_background(&value.get()))
@@ -290,6 +301,9 @@ pub fn ColorSlider(
 	/// Handler that is called when the color changes.
 	#[prop(optional)]
 	on_change: Option<BoxedColorChangeCallback>,
+	/// Classes added after the built-in `leptos-aria-color-slider` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let channel = channel.unwrap_or_else(|| Signal::from(ColorChannel::Hue));
 	let state = Arc::new(SliderState {
@@ -305,7 +319,7 @@ pub fn ColorSlider(
 
 	view! {
 		<div
-			class="leptos-aria-color-slider"
+			class=merge_class("leptos-aria-color-slider", class)
 			role="slider"
 			aria-label=move || channel.get().label()
 			aria-valuemin="0"
@@ -458,6 +472,9 @@ pub fn ColorWheel(
 	/// Handler that is called when the hue changes.
 	#[prop(optional)]
 	on_change: Option<BoxedColorChangeCallback>,
+	/// Classes added after the built-in `leptos-aria-color-wheel` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let state = Arc::new(WheelState {
 		color: value,
@@ -470,7 +487,7 @@ pub fn ColorWheel(
 
 	view! {
 		<div
-			class="leptos-aria-color-wheel"
+			class=merge_class("leptos-aria-color-wheel", class)
 			role="slider"
 			aria-label="Hue"
 			aria-valuemin="0"

@@ -6,6 +6,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 
 /// How long a toast stays on screen before expiring, five seconds by
 /// default.
@@ -128,7 +129,12 @@ pub struct ToastRegionContext {
 
 /// Create the toast queue for a region and provide it to descendants.
 #[component]
-pub fn ToastRegion(children: Children) -> impl IntoView {
+pub fn ToastRegion(
+	/// Classes added after the built-in `leptos-aria-toast-region` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
+	children: Children,
+) -> impl IntoView {
 	let queue = ToastQueue::new();
 
 	provide_context(ToastRegionContext {
@@ -140,7 +146,7 @@ pub fn ToastRegion(children: Children) -> impl IntoView {
 	view! {
 		{children()}
 		<div
-			class="leptos-aria-toast-region"
+			class=merge_class("leptos-aria-toast-region", class)
 			role="region"
 			aria-label="Notifications"
 			aria-live="polite"

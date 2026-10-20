@@ -15,6 +15,7 @@ description = "Form wrapper that resets signal-driven controls with the native f
 
 [dependencies]
 leptos = { workspace = true, features = ["csr"] }
+leptos_aria_utils = { workspace = true }
 
 [dev-dependencies]
 console_error_panic_hook = { workspace = true }

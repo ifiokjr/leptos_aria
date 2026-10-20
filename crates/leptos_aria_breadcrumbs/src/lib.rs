@@ -3,12 +3,18 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 
 /// Breadcrumbs show the hierarchy of the current page.
 #[component]
-pub fn Breadcrumbs(children: Children) -> impl IntoView {
+pub fn Breadcrumbs(
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
+	children: Children,
+) -> impl IntoView {
 	view! {
-		<nav aria-label="Breadcrumbs">
+		<nav class=merge_class("", class) aria-label="Breadcrumbs">
 			<ol class="leptos-aria-breadcrumbs">{children()}</ol>
 		</nav>
 	}
@@ -23,6 +29,9 @@ pub fn BreadcrumbItem(
 	/// Whether this crumb is the current page.
 	#[prop(optional, into)]
 	is_current: Signal<bool>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let as_link = href.is_some();
@@ -46,7 +55,7 @@ pub fn BreadcrumbItem(
 	};
 
 	view! {
-		<li>{crumb}</li>
+		<li class=merge_class("", class)>{crumb}</li>
 	}
 }
 

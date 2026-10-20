@@ -20,12 +20,12 @@ The `leptos_aria` crate re-exports every component, hook, and utility. Each comp
 
 ## Style with Tailwind v4
 
-Components are headless. Pass classes with Leptos' `attr:` prefix and target state with Tailwind's built-in `data-[...]` and `aria-*` variants:
+Components are headless. Pass classes with each component's `class` prop and target state with Tailwind's built-in `data-[...]` and `aria-*` variants:
 
 ```rust
 view! {
 	<AccordionItem key="faq".to_string()>
-		<AccordionTrigger attr:class="data-[state=open]:font-bold">"Is it accessible?"</AccordionTrigger>
+		<AccordionTrigger class="data-[state=open]:font-bold">"Is it accessible?"</AccordionTrigger>
 		<AccordionPanel>"By default."</AccordionPanel>
 	</AccordionItem>
 }

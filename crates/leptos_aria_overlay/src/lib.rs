@@ -13,6 +13,7 @@ pub use hooks::use_modal;
 pub use hooks::use_overlay_dismiss;
 pub use hooks::use_prevent_scroll;
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::closure::Closure;
 
@@ -34,6 +35,9 @@ pub fn Modal(
 	/// The accessible role of the dialog, `dialog` by default.
 	#[prop(optional, into)]
 	role: Option<&'static str>,
+	/// Classes added after the built-in `leptos-aria-modal` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let close = unwrap_close(on_close, is_open);
@@ -58,7 +62,7 @@ pub fn Modal(
 			style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5);"
 		/>
 		<div
-			class="leptos-aria-modal"
+			class=merge_class("leptos-aria-modal", class)
 			node_ref=overlay
 			role=role
 			aria-modal="true"
@@ -83,12 +87,15 @@ pub fn Dialog(
 	/// The id of the element labeling the dialog.
 	#[prop(optional, into)]
 	aria_labelledby: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let role = role.unwrap_or("dialog");
 
 	view! {
-		<div role=role aria-label=aria_label aria-labelledby=aria_labelledby>
+		<div class=merge_class("", class) role=role aria-label=aria_label aria-labelledby=aria_labelledby>
 			{children()}
 		</div>
 	}
@@ -119,6 +126,9 @@ pub fn Popover(
 	/// The placement relative to the trigger, bottom by default.
 	#[prop(optional, into)]
 	placement: Signal<PopoverPlacement>,
+	/// Classes added after the built-in `leptos-aria-popover` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let popover_ref: NodeRef<leptos::html::Div> = NodeRef::new();
@@ -128,7 +138,7 @@ pub fn Popover(
 
 	view! {
 		<div
-			class="leptos-aria-popover"
+			class=merge_class("leptos-aria-popover", class)
 			node_ref=popover_ref
 			role="dialog"
 			hidden=move || !is_open.get()
@@ -227,6 +237,10 @@ pub fn Tooltip(
 	/// How the tooltip is triggered, focus by default.
 	#[prop(optional, into)]
 	trigger: Signal<TooltipTrigger>,
+	/// Classes added after the built-in `leptos-aria-tooltip` class, applied to
+	/// the tooltip bubble.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	/// The content of the trigger.
 	children: Children,
 ) -> impl IntoView {
@@ -247,7 +261,7 @@ pub fn Tooltip(
 		<span
 			id=tooltip_id.clone()
 			role="tooltip"
-			class="leptos-aria-tooltip"
+			class=merge_class("leptos-aria-tooltip", class)
 			hidden=move || !is_open.get()
 			style="position: absolute; bottom: 100%; left: 0;"
 		>
@@ -397,6 +411,9 @@ pub fn AlertDialog(
 	/// Handler that is called when the confirm action fires.
 	#[prop(optional)]
 	on_confirm: Option<Arc<dyn Fn() + Send + Sync>>,
+	/// Classes added after the built-in `leptos-aria-alert-dialog` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let overlay: NodeRef<leptos::html::Div> = NodeRef::new();
 
@@ -418,7 +435,7 @@ pub fn AlertDialog(
 
 	view! {
 		<div
-			class="leptos-aria-alert-dialog"
+			class=merge_class("leptos-aria-alert-dialog", class)
 			node_ref=overlay
 			role="alertdialog"
 			aria-modal="true"
@@ -468,6 +485,10 @@ pub fn HoverCard(
 	/// The content to display as the card's accessible label.
 	#[prop(into)]
 	label: String,
+	/// Classes added after the built-in `leptos-aria-hover-card` class, applied
+	/// to the card.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 	content: Children,
 ) -> impl IntoView {
@@ -488,7 +509,7 @@ pub fn HoverCard(
 		</span>
 		<span
 			id=label_id.clone()
-			class="leptos-aria-hover-card"
+			class=merge_class("leptos-aria-hover-card", class)
 			role="tooltip"
 			data-state=move || if is_open.get() { "open" } else { "closed" }
 			hidden=move || !is_open.get()

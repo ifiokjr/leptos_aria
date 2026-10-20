@@ -6,6 +6,7 @@ use leptos::prelude::*;
 use leptos_aria_selection::SelectionMode;
 use leptos_aria_selection::UseSelectionStateProps;
 use leptos_aria_selection::use_selection_state;
+use leptos_aria_utils::merge_class;
 
 /// The state a grid shares with its cells through context.
 #[derive(Clone)]
@@ -23,6 +24,9 @@ pub fn Grid(
 	/// Whether more than one row can be selected.
 	#[prop(optional, into)]
 	is_multiple: Signal<bool>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let selection = use_selection_state(UseSelectionStateProps {
@@ -46,6 +50,7 @@ pub fn Grid(
 	view! {
 		{label.map(|label| view! { <span id=label_id.clone()>{label}</span> })}
 		<div
+			class=merge_class("", class)
 			role="grid"
 			aria-labelledby=label_id.clone()
 			on:keydown=move |event: web_sys::KeyboardEvent| {
@@ -67,10 +72,13 @@ pub fn GridRow(
 	/// The row's key, reported in the selection.
 	#[prop(into)]
 	key: String,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	view! {
-		<div role="row" data-key=key>{children()}</div>
+		<div class=merge_class("", class) role="row" data-key=key>{children()}</div>
 	}
 }
 
@@ -80,10 +88,14 @@ pub fn GridCell(
 	/// Whether the cell is a column header.
 	#[prop(optional, into)]
 	is_header: Signal<bool>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	view! {
 		<div
+			class=merge_class("", class)
 			role=move || if is_header.get() { "columnheader" } else { "gridcell" }
 			tabindex="-1"
 		>

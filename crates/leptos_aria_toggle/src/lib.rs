@@ -8,6 +8,7 @@ use leptos_aria_button::BoxedPressEventCallback;
 use leptos_aria_button::Button;
 use leptos_aria_button::ButtonType;
 use leptos_aria_interactions::PressEvent;
+use leptos_aria_utils::merge_class;
 use wasm_bindgen::JsCast;
 
 /// A callback invoked when the selection state changes.
@@ -151,6 +152,9 @@ pub fn ToggleButton(
 	/// The behavior of the button when used in an HTML form.
 	#[prop(optional, into)]
 	r#type: Signal<ButtonType>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let state = use_toggle_state(UseToggleStateProps {
@@ -169,6 +173,7 @@ pub fn ToggleButton(
 			on_press=press
 			r#type=r#type
 			aria_pressed=Signal::derive(move || selected.get())
+			class=class
 		>
 			{children()}
 		</Button>
@@ -250,6 +255,42 @@ mod tests {
 			"a click toggles the pressed state"
 		);
 	}
+
+	#[wasm_bindgen_test]
+	async fn toggle_button_forwards_the_caller_class() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| view! { <ToggleButton class="custom-toggle">"Bold"</ToggleButton> });
+
+		flush_microtasks().await;
+
+		let button = document()
+			.query_selector("button.custom-toggle")
+			.unwrap()
+			.expect("the caller class sits on the toggle button");
+
+		assert_eq!(
+			button.get_attribute("aria-pressed").as_deref(),
+			Some("false")
+		);
+	}
+
+	#[wasm_bindgen_test]
+	async fn switch_appends_the_caller_class() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| view! { <Switch class="custom-switch">"Wi-Fi"</Switch> });
+
+		let switch = document()
+			.query_selector(".leptos-aria-switch.custom-switch")
+			.unwrap()
+			.expect("the caller class sits on the switch root");
+
+		assert_eq!(
+			switch.get_attribute("class").as_deref(),
+			Some("leptos-aria-switch custom-switch")
+		);
+	}
 }
 
 /// A switch is a toggle with on/off semantics rather than pressed/unpressed.
@@ -270,6 +311,9 @@ pub fn Switch(
 	/// Whether the switch is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes added after the built-in `leptos-aria-switch` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let state = use_toggle_state(UseToggleStateProps {
@@ -281,7 +325,7 @@ pub fn Switch(
 	let checked = state.selected_signal();
 
 	view! {
-		<label class="leptos-aria-switch" on:mousedown=|event: web_sys::MouseEvent| {
+		<label class=merge_class("leptos-aria-switch", class) on:mousedown=|event: web_sys::MouseEvent| {
 			// Prevent the label from taking focus when pressed.
 			event.prevent_default();
 		}>
@@ -340,6 +384,9 @@ pub fn ToggleGroup(
 	/// The keys of the initially selected buttons.
 	#[prop(optional, into)]
 	default_value: Vec<String>,
+	/// Classes added after the built-in `leptos-aria-toggle-group` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let context = ToggleGroupContext {
@@ -349,7 +396,7 @@ pub fn ToggleGroup(
 
 	provide_context(context.clone());
 
-	view! { <div class="leptos-aria-toggle-group" role="group">{children()}</div> }
+	view! { <div class=merge_class("leptos-aria-toggle-group", class) role="group">{children()}</div> }
 }
 
 /// One toggle button inside a [`ToggleGroup`].
@@ -362,6 +409,9 @@ pub fn ToggleGroupItem(
 	/// Whether this button is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes added after the built-in `leptos-aria-toggle-group__item` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let context = expect_context::<ToggleGroupContext>();
@@ -377,7 +427,7 @@ pub fn ToggleGroupItem(
 	view! {
 		<button
 			type="button"
-			class="leptos-aria-toggle-group__item"
+			class=merge_class("leptos-aria-toggle-group__item", class)
 			aria-pressed=move || is_selected.get().to_string()
 			data-state=move || if is_selected.get() { "on" } else { "off" }
 			disabled=move || is_disabled.get()

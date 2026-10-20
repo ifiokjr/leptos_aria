@@ -5,6 +5,7 @@
 use std::sync::Arc;
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 
 /// A callback invoked when the page changes.
 pub type BoxedPageChangeCallback = Box<dyn Fn(usize) + Send + Sync + 'static>;
@@ -27,6 +28,9 @@ pub fn Pagination(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes added after the built-in `leptos-aria-pagination` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let state = Arc::new(PaginationState {
 		page,
@@ -36,7 +40,7 @@ pub fn Pagination(
 	let prev_disabled = Arc::clone(&state);
 	let prev_click = Arc::clone(&state);
 	let next_disabled = Arc::clone(&state);
-	let _next_click = Arc::clone(&state);
+	let next_click = Arc::clone(&state);
 	let pages = Arc::clone(&state);
 	let nav_state = Arc::clone(&state);
 	let pages_render = pages;
@@ -44,7 +48,7 @@ pub fn Pagination(
 
 	view! {
 		<nav
-			class="leptos-aria-pagination"
+			class=merge_class("leptos-aria-pagination", class)
 			aria-labelledby=label_id.clone()
 			data-page=move || nav_state.page.get().to_string()
 		>
@@ -53,8 +57,8 @@ pub fn Pagination(
 				type="button"
 				class="leptos-aria-pagination__previous"
 				aria-label="Previous page"
-				disabled=move || prev_disabled.page.get() <= 1
-				on:click=move |_| prev_click.go_to(prev_click.page.get_untracked() - 1)
+				disabled=move || { prev_disabled.page.get() <= 1 }
+				on:click=move |_| prev_click.go_to(prev_click.page.get_untracked().saturating_sub(1))
 			>
 				"‹"
 			</button>
@@ -63,7 +67,7 @@ pub fn Pagination(
 				type="button"
 				class="leptos-aria-pagination__next"
 				aria-label="Next page"
-				disabled=move || next_disabled.page.get() >= next_disabled.count.get()
+				disabled=move || { next_disabled.page.get() >= next_disabled.count.get() }
 				on:click=move |_| next_click.go_to(next_click.page.get_untracked() + 1)
 			>
 				"›"
@@ -116,4 +120,63 @@ fn render_pages(state: &Arc<PaginationState>) -> Vec<AnyView> {
 			.into_any()
 		})
 		.collect()
+}
+
+#[cfg(all(test, target_arch = "wasm32"))]
+mod tests {
+	use leptos::mount::mount_to_body;
+	use wasm_bindgen::JsCast;
+	use wasm_bindgen_test::*;
+
+	use super::*;
+
+	wasm_bindgen_test_configure!(run_in_browser);
+
+	fn button(selector: &str) -> web_sys::HtmlButtonElement {
+		document()
+			.query_selector(selector)
+			.unwrap()
+			.unwrap()
+			.unchecked_into::<web_sys::HtmlButtonElement>()
+	}
+
+	async fn tick() {
+		let promise = js_sys::Promise::resolve(&wasm_bindgen::JsValue::NULL);
+		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+	}
+
+	#[wasm_bindgen_test]
+	async fn previous_and_next_move_one_page() {
+		console_error_panic_hook::set_once();
+
+		let page = RwSignal::new(2_usize);
+
+		mount_to_body(move || {
+			view! {
+				<Pagination
+					page=page
+					count=3_usize
+					on_change=Box::new(move |next| page.set(next))
+					class="custom-pagination"
+				/>
+			}
+		});
+
+		let nav = document()
+			.query_selector(".leptos-aria-pagination")
+			.unwrap()
+			.unwrap();
+		assert_eq!(
+			nav.get_attribute("class").as_deref(),
+			Some("leptos-aria-pagination custom-pagination")
+		);
+
+		button(".leptos-aria-pagination__next").click();
+		tick().await;
+		assert_eq!(page.get_untracked(), 3, "next moves forward");
+
+		button(".leptos-aria-pagination__previous").click();
+		tick().await;
+		assert_eq!(page.get_untracked(), 2, "previous moves back");
+	}
 }

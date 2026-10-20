@@ -8,6 +8,7 @@ use std::sync::Arc;
 
 use leptos::prelude::*;
 use leptos_aria_toggle::ToggleState;
+use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_id;
 use wasm_bindgen::JsCast;
 
@@ -174,6 +175,9 @@ pub fn Checkbox(
 	/// regardless of user interaction.
 	#[prop(optional, into)]
 	is_indeterminate: Signal<bool>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let input_id = use_id();
 	let group = use_context::<CheckboxGroupContext>();
@@ -197,7 +201,7 @@ pub fn Checkbox(
 	let (name, checked) = group_props(group.as_ref(), value.as_deref(), &is_selected);
 
 	view! {
-		<label id=input_id.clone() on:mousedown=|event: web_sys::MouseEvent| {
+		<label id=input_id.clone() class=merge_class("", class) on:mousedown=|event: web_sys::MouseEvent| {
 			// Prevent the label from taking focus when pressed; the input
 			// still receives focus on click.
 			event.prevent_default();
@@ -265,6 +269,9 @@ pub fn CheckboxGroup(
 	/// The content to display as the group label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let state = use_checkbox_group_state(UseCheckboxGroupStateProps {
@@ -284,7 +291,7 @@ pub fn CheckboxGroup(
 	let values = state.values_signal();
 
 	view! {
-		<div role="group" aria-labelledby=label_id.clone()>
+		<div role="group" class=merge_class("", class) aria-labelledby=label_id.clone()>
 			{label.map(|label| {
 				view! { <span id=label_id.clone()>{label}</span> }
 			})}

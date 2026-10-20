@@ -6,6 +6,7 @@ use leptos::prelude::*;
 use leptos_aria_selection::SelectionMode;
 use leptos_aria_selection::UseSelectionStateProps;
 use leptos_aria_selection::use_selection_state;
+use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_id;
 
 /// The state a tag group shares with its tags.
@@ -29,6 +30,9 @@ pub fn TagGroup(
 	/// The current selection (controlled).
 	#[prop(optional, into)]
 	selection: Option<Signal<leptos_aria_selection::Selection>>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let state = use_selection_state(UseSelectionStateProps {
@@ -53,7 +57,7 @@ pub fn TagGroup(
 
 	view! {
 		{label.map(|label| view! { <span id=label_id.clone()>{label}</span> })}
-		<div role="group" aria-labelledby=label_id.clone()>
+		<div class=merge_class("", class) role="group" aria-labelledby=label_id.clone()>
 			{children()}
 		</div>
 	}
@@ -65,6 +69,9 @@ pub fn Tag(
 	/// The value of the tag, reported in the selection.
 	#[prop(into)]
 	value: String,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let context = expect_context::<TagGroupContext>();
@@ -79,6 +86,7 @@ pub fn Tag(
 
 	view! {
 		<div
+			class=merge_class("", class)
 			id=tag_id.clone()
 			role="row"
 			aria-selected=move || is_selected.get().to_string()

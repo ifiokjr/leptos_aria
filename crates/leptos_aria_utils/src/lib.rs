@@ -1,6 +1,7 @@
 #![doc(html_logo_url = "https://ifiokjr.github.io/leptos_aria/logo.svg")]
 #![doc(html_favicon_url = "https://ifiokjr.github.io/leptos_aria/favicon.ico")]
 
+pub use class::merge_class;
 pub use focus_safely::focus_safely;
 pub use focus_without_scrolling::*;
 pub use global_listeners::*;
@@ -27,6 +28,7 @@ pub use use_label::use_label;
 pub use use_label::use_labels;
 pub use virtual_event::*;
 
+mod class;
 mod focus_safely;
 mod focus_without_scrolling;
 mod global_listeners;

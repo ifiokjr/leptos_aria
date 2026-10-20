@@ -14,7 +14,7 @@ leptos-aria add button
 
 - [Tailwind v4 guide](https://ifiokjr.github.io/leptos_aria/tailwind.html): styling states with `data-[state=open]` variants and `@custom-variant` blocks, plus the full data-attribute contract
 - [Registry](https://ifiokjr.github.io/leptos_aria/registry.json): the shadcn-schema component manifest the CLI reads
-- [Porting roadmap](https://ifiokjr.github.io/leptos_aria/roadmap.html): every upstream hook, utility, and component with its crate
+- [Porting roadmap](https://github.com/ifiokjr/leptos_aria/blob/main/PORTING.md): every upstream hook, utility, and component with its crate
 - [API docs](https://docs.rs/leptos_aria): the facade crate on docs.rs
 - [Full documentation](https://ifiokjr.github.io/leptos_aria/llms-full.txt): every document above in one file
 

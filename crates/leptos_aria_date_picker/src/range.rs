@@ -3,6 +3,7 @@
 use leptos::prelude::*;
 use leptos_aria_calendar::Calendar;
 use leptos_aria_date::DateValue;
+use leptos_aria_utils::merge_class;
 
 /// A date range between a start and an end date.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -103,9 +104,12 @@ pub fn DateRangeField(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes added after the built-in `leptos-aria-date-range-field` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	view! {
-		<span class="leptos-aria-date-range-field" aria-label=label.unwrap_or_default()>
+		<span class=merge_class("leptos-aria-date-range-field", class) aria-label=label.unwrap_or_default()>
 			{move || format_date(value.get().start)}
 			" – "
 			{move || format_date(value.get().end)}
@@ -130,6 +134,9 @@ pub fn DateRangePicker(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes added after the built-in `leptos-aria-date-range-picker` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let is_open = RwSignal::new(false);
 	let range = RwSignal::new(
@@ -141,7 +148,7 @@ pub fn DateRangePicker(
 	let calendar_state = state;
 
 	view! {
-		<div class="leptos-aria-date-range-picker">
+		<div class=merge_class("leptos-aria-date-range-picker", class)>
 			<button
 				type="button"
 				class="leptos-aria-date-range-picker__trigger"
@@ -169,9 +176,15 @@ pub fn DateRangePicker(
 
 /// A calendar that selects a range across two clicks.
 #[component]
-pub fn RangeCalendar(range: DateRangeState) -> impl IntoView {
+pub fn RangeCalendar(
+	range: DateRangeState,
+	/// Classes added after the built-in `leptos-aria-calendar` class of the
+	/// inner calendar.
+	#[prop(optional, into)]
+	class: Signal<String>,
+) -> impl IntoView {
 	view! {
-		<Calendar default_value=range.range_untracked().start />
+		<Calendar class=class default_value=range.range_untracked().start />
 		<span class="leptos-aria-range-calendar__count">
 			{move || format!("{} days", range.range().day_count()) }
 		</span>

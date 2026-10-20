@@ -8,6 +8,7 @@ use leptos::prelude::*;
 use leptos_aria_selection::SelectionMode;
 use leptos_aria_selection::UseSelectionStateProps;
 use leptos_aria_selection::use_selection_state;
+use leptos_aria_utils::merge_class;
 
 /// The state a tree shares with its items through context.
 #[derive(Clone)]
@@ -50,6 +51,9 @@ pub fn Tree(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let selection = Arc::new(use_selection_state(UseSelectionStateProps {
@@ -67,6 +71,7 @@ pub fn Tree(
 	view! {
 		{label.map(|label| view! { <span id=label_id.clone()>{label}</span> })}
 		<div
+			class=merge_class("", class)
 			role="tree"
 			aria-labelledby=label_id.clone()
 			on:keydown=move |event: web_sys::KeyboardEvent| {
@@ -86,6 +91,9 @@ pub fn TreeItem(
 	/// The item's key, reported in the selection.
 	#[prop(into)]
 	key: String,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let context = expect_context::<TreeContext>();
@@ -96,6 +104,7 @@ pub fn TreeItem(
 
 	view! {
 		<div
+			class=merge_class("", class)
 			role="treeitem"
 			aria-expanded=move || expanded.get().to_string()
 			data-key=key.clone()
@@ -108,8 +117,13 @@ pub fn TreeItem(
 
 /// The children of a tree branch, shown when expanded.
 #[component]
-pub fn TreeGroup(children: Children) -> impl IntoView {
-	view! { <div role="group">{children()}</div> }
+pub fn TreeGroup(
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
+	children: Children,
+) -> impl IntoView {
+	view! { <div class=merge_class("", class) role="group">{children()}</div> }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]

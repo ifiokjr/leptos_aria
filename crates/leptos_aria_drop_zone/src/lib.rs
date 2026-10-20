@@ -5,6 +5,7 @@
 use std::sync::Arc;
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_id;
 use wasm_bindgen::JsCast;
 
@@ -22,6 +23,9 @@ pub fn DropZone(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes added after the built-in `leptos-aria-drop-zone` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let zone_id = use_id();
@@ -41,7 +45,7 @@ pub fn DropZone(
 	view! {
 		{label.map(|label| view! { <span id=zone_id.clone()>{label}</span> })}
 		<div
-			class="leptos-aria-drop-zone"
+			class=merge_class("leptos-aria-drop-zone", class)
 			role="button"
 			tabindex="0"
 			aria-labelledby=zone_id.clone()
@@ -142,9 +146,12 @@ pub fn DropZoneItem(
 	/// The size of the file in bytes.
 	#[prop(optional, into)]
 	size: Option<u64>,
+	/// Classes added after the built-in `leptos-aria-drop-zone__item` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	view! {
-		<li class="leptos-aria-drop-zone__item">
+		<li class=merge_class("leptos-aria-drop-zone__item", class)>
 			<span>{name}</span>
 			{size.map(|size| view! { <span class="leptos-aria-drop-zone__size">{size}</span> })}
 		</li>
@@ -188,6 +195,30 @@ mod tests {
 			Some("false")
 		);
 	}
+
+	#[wasm_bindgen_test]
+	async fn drop_zone_appends_the_caller_class() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<DropZone class="custom-zone" on_drop=Box::new(|_| {})>
+					"Drag files here"
+				</DropZone>
+			}
+		});
+
+		let zone = document()
+			.query_selector(".leptos-aria-drop-zone.custom-zone")
+			.unwrap()
+			.unwrap()
+			.unchecked_into::<web_sys::Element>();
+
+		assert_eq!(
+			zone.get_attribute("class").as_deref(),
+			Some("leptos-aria-drop-zone custom-zone")
+		);
+	}
 }
 
 /// A callback invoked when a drag starts or ends.
@@ -212,13 +243,16 @@ pub fn DraggableItem(
 	/// Handler that is called when the drag ends.
 	#[prop(optional)]
 	on_drag_end: Option<BoxedDragStateCallback>,
+	/// Classes added after the built-in `leptos-aria-draggable` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let is_dragging = RwSignal::new(false);
 
 	view! {
 		<div
-			class="leptos-aria-draggable"
+			class=merge_class("leptos-aria-draggable", class)
 			draggable="true"
 			data-is-dragging=move || if is_dragging.get() { "true" } else { "false" }
 			on:dragstart=move |event: web_sys::DragEvent| {

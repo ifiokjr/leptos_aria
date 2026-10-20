@@ -3,6 +3,7 @@
 use std::rc::Rc;
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 use wasm_bindgen::JsCast;
 
 use crate::BoxedTextChangeCallback;
@@ -29,6 +30,9 @@ pub fn OneTimePasswordField(
 	/// Whether the field is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes added after the built-in `leptos-aria-otp-field` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let cells = length.get_untracked().clamp(1, 12);
 	let on_change = on_change.map(Rc::new);
@@ -46,7 +50,7 @@ pub fn OneTimePasswordField(
 
 	view! {
 		<div
-			class="leptos-aria-otp-field"
+			class=merge_class("leptos-aria-otp-field", class)
 			role="group"
 			aria-labelledby=aria.aria_labelledby.clone()
 		>

@@ -15,6 +15,7 @@ description = "Accessible breadcrumb navigation for Leptos"
 
 [dependencies]
 leptos = { workspace = true, features = ["csr"] }
+leptos_aria_utils = { workspace = true }
 [dev-dependencies]
 console_error_panic_hook = { workspace = true }
 js-sys = { workspace = true }

@@ -15,6 +15,7 @@ description = "Heading, text, visually hidden, separator, aspect ratio, avatar, 
 
 [dependencies]
 leptos = { workspace = true, features = ["csr"] }
+leptos_aria_utils = { workspace = true }
 wasm-bindgen = { workspace = true }
 web-sys = { workspace = true, features = ["Document", "Element", "HtmlButtonElement"] }
 

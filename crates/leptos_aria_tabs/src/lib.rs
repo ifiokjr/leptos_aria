@@ -3,6 +3,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_id;
 
 /// The state a tab list shares with its tabs and panels through context.
@@ -107,6 +108,9 @@ pub fn Tabs(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let context = TabsContext {
@@ -120,7 +124,7 @@ pub fn Tabs(
 
 	view! {
 		{label.map(|label| view! { <span id=label_id.clone()>{label}</span> })}
-		<div role="tablist" aria-labelledby=label_id.clone() on:keydown=move |event: web_sys::KeyboardEvent| {
+		<div class=merge_class("", class) role="tablist" aria-labelledby=label_id.clone() on:keydown=move |event: web_sys::KeyboardEvent| {
 			handle_key_down(&context, &event);
 		}>
 			{children()}
@@ -150,6 +154,9 @@ pub fn Tab(
 	/// Whether the tab is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let context = expect_context::<TabsContext>();
@@ -170,6 +177,7 @@ pub fn Tab(
 
 	view! {
 		<button
+			class=merge_class("", class)
 			id=tab_id.clone()
 			type="button"
 			role="tab"
@@ -199,6 +207,9 @@ pub fn TabPanel(
 	/// The id of the element labeling the panel; the matching tab by default.
 	#[prop(optional, into)]
 	aria_labelledby: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let context = expect_context::<TabsContext>();
@@ -212,6 +223,7 @@ pub fn TabPanel(
 
 	view! {
 		<div
+			class=merge_class("", class)
 			id=format!("leptos-aria-tab-panel-{key}")
 			role="tabpanel"
 			aria-labelledby=labelledby
@@ -281,8 +293,6 @@ mod tests {
 			!second_panel.has_attribute("hidden"),
 			"the second panel shows"
 		);
-
-		web_sys::console::log_1(&format!("DBG second tab html={}", second.outer_html()).into());
 
 		assert_eq!(second.get_attribute("tabindex"), Some("0".to_string()));
 		assert_eq!(

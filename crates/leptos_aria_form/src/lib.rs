@@ -5,6 +5,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 
 /// The form context provided by the [`Form`] component.
 ///
@@ -102,6 +103,9 @@ pub fn Form(
 	/// The id of the form element.
 	#[prop(optional, into)]
 	id: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	/// The content of the form.
 	children: Children,
 ) -> impl IntoView {
@@ -113,6 +117,7 @@ pub fn Form(
 	view! {
 		<form
 			id=move || id.clone().unwrap_or_default()
+			class=merge_class("", class)
 			on:reset=move |_| reset_context.reset()
 		>
 			{children()}
