@@ -13,6 +13,7 @@ mod range;
 use leptos::prelude::*;
 use leptos_aria_calendar::Calendar;
 use leptos_aria_date::DateValue;
+use leptos_aria_utils::merge_class;
 
 /// A date field lets the user type a date in `YYYY-MM-DD` form.
 #[component]
@@ -26,6 +27,9 @@ pub fn DateField(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let initial = default_value.unwrap_or(DateValue::new(1970, 1, 1));
 	let local = RwSignal::new(initial);
@@ -38,7 +42,7 @@ pub fn DateField(
 	});
 
 	view! {
-		<input type="text" value=move || text.get() aria-label=label.unwrap_or_default() />
+		<input type="text" class=merge_class("", class) value=move || text.get() aria-label=label.unwrap_or_default() />
 	}
 }
 
@@ -51,11 +55,14 @@ pub fn DatePicker(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes added after the built-in `leptos-aria-date-picker` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let is_open = RwSignal::new(false);
 
 	view! {
-		<div class="leptos-aria-date-picker">
+		<div class=merge_class("leptos-aria-date-picker", class)>
 			<button
 				type="button"
 				class="leptos-aria-date-picker__trigger"

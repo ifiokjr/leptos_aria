@@ -10,6 +10,7 @@ use leptos_aria_list_box::ListBoxOption;
 use leptos_aria_selection::SelectionMode;
 use leptos_aria_selection::UseSelectionStateProps;
 use leptos_aria_selection::use_selection_state;
+use leptos_aria_utils::merge_class;
 
 /// One option of a select box: a value with its text.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -31,6 +32,9 @@ pub fn SelectBox(
 	/// Whether the select box is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let is_open = RwSignal::new(false);
 	let state = use_selection_state(UseSelectionStateProps {
@@ -59,6 +63,7 @@ pub fn SelectBox(
 	view! {
 		<button
 			type="button"
+			class=merge_class("", class)
 			role="combobox"
 			aria-expanded=move || is_open.get().to_string()
 			aria-haspopup="listbox"

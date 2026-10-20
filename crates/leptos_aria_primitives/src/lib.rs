@@ -3,6 +3,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 
 /// Heading renders a semantic heading level.
 #[component]
@@ -10,20 +11,24 @@ pub fn Heading(
 	/// The heading level, 2 by default.
 	#[prop(optional, into)]
 	level: Signal<u8>,
+	/// Classes added after the built-in `leptos-aria-heading` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	// The level is resolved once at mount: headings do not change level in
 	// place, and re-calling the children per level change is not possible with
 	// `FnOnce` children.
 	let level = level.get_untracked().clamp(1, 6);
+	let class = merge_class("leptos-aria-heading", class);
 
 	match level {
-		1 => view! { <h1 class="leptos-aria-heading">{children()}</h1> }.into_any(),
-		2 => view! { <h2 class="leptos-aria-heading">{children()}</h2> }.into_any(),
-		3 => view! { <h3 class="leptos-aria-heading">{children()}</h3> }.into_any(),
-		4 => view! { <h4 class="leptos-aria-heading">{children()}</h4> }.into_any(),
-		5 => view! { <h5 class="leptos-aria-heading">{children()}</h5> }.into_any(),
-		_ => view! { <h6 class="leptos-aria-heading">{children()}</h6> }.into_any(),
+		1 => view! { <h1 class=class>{children()}</h1> }.into_any(),
+		2 => view! { <h2 class=class>{children()}</h2> }.into_any(),
+		3 => view! { <h3 class=class>{children()}</h3> }.into_any(),
+		4 => view! { <h4 class=class>{children()}</h4> }.into_any(),
+		5 => view! { <h5 class=class>{children()}</h5> }.into_any(),
+		_ => view! { <h6 class=class>{children()}</h6> }.into_any(),
 	}
 }
 
@@ -34,10 +39,14 @@ pub fn Text(
 	/// The text size, one of the semantic sizes.
 	#[prop(optional, into)]
 	size: Signal<TextSize>,
+	/// Classes added after the built-in `leptos-aria-text` and
+	/// `leptos-aria-text--{size}` classes.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	view! {
-		<span class=move || format!("leptos-aria-text leptos-aria-text--{}", size.get().class())>
+		<span class=move || merge_class(size.get().class(), class)()>
 			{children()}
 		</span>
 	}
@@ -54,12 +63,14 @@ pub enum TextSize {
 }
 
 impl TextSize {
+	/// The built-in classes of the text root: the base class and its size
+	/// modifier.
 	fn class(self) -> &'static str {
 		match self {
-			TextSize::Body => "body",
-			TextSize::Caption => "caption",
-			TextSize::Heading => "heading",
-			TextSize::Title => "title",
+			TextSize::Body => "leptos-aria-text leptos-aria-text--body",
+			TextSize::Caption => "leptos-aria-text leptos-aria-text--caption",
+			TextSize::Heading => "leptos-aria-text leptos-aria-text--heading",
+			TextSize::Title => "leptos-aria-text leptos-aria-text--title",
 		}
 	}
 }
@@ -67,9 +78,14 @@ impl TextSize {
 /// VisuallyHidden renders content that is available to screen readers but
 /// invisible on screen.
 #[component]
-pub fn VisuallyHidden(children: Children) -> impl IntoView {
+pub fn VisuallyHidden(
+	/// Classes added after the built-in `leptos-aria-visually-hidden` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
+	children: Children,
+) -> impl IntoView {
 	view! {
-		<span class="leptos-aria-visually-hidden">
+		<span class=merge_class("leptos-aria-visually-hidden", class)>
 			{children()}
 		</span>
 	}
@@ -109,6 +125,29 @@ mod tests {
 
 		assert!(hidden.is_some(), "the content stays in the DOM for readers");
 	}
+
+	#[wasm_bindgen_test]
+	async fn text_appends_the_caller_class_after_the_built_in_classes() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<Text size=TextSize::Caption class="primitives-test-text text-sm">
+					"Caption"
+				</Text>
+			}
+		});
+
+		let text = document()
+			.query_selector(".primitives-test-text")
+			.unwrap()
+			.unwrap();
+
+		assert_eq!(
+			text.get_attribute("class").as_deref(),
+			Some("leptos-aria-text leptos-aria-text--caption primitives-test-text text-sm")
+		);
+	}
 }
 
 /// A separator divides content into groups, optionally with a label.
@@ -120,6 +159,9 @@ pub fn Separator(
 	/// The orientation, horizontal by default.
 	#[prop(optional, into)]
 	orientation: Signal<&'static str>,
+	/// Classes added after the built-in `leptos-aria-separator` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let has_label = label.is_some();
 	let role = Signal::derive(move || {
@@ -132,7 +174,7 @@ pub fn Separator(
 
 	view! {
 		<div
-			class="leptos-aria-separator"
+			class=merge_class("leptos-aria-separator", class)
 			role=move || role.get()
 			aria-orientation=move || orientation.get()
 			aria-label=move || label.clone()
@@ -147,11 +189,14 @@ pub fn AspectRatio(
 	/// The width-to-height ratio, `16 / 9` as `16.0 / 9.0`.
 	#[prop(into)]
 	ratio: Signal<f64>,
+	/// Classes added after the built-in `leptos-aria-aspect-ratio` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	view! {
 		<div
-			class="leptos-aria-aspect-ratio"
+			class=merge_class("leptos-aria-aspect-ratio", class)
 			style=move || format!("aspect-ratio: {} / {};", ratio.get(), 1.0)
 		>
 			{children()}
@@ -171,11 +216,14 @@ pub fn Avatar(
 	/// The text shown while no image is available.
 	#[prop(into)]
 	fallback: String,
+	/// Classes added after the built-in `leptos-aria-avatar` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let loaded = RwSignal::new(false);
 
 	view! {
-		<span class="leptos-aria-avatar" data-state=move || {
+		<span class=merge_class("leptos-aria-avatar", class) data-state=move || {
 			if loaded.get() { "loaded" } else { "fallback" }
 		}>
 			{move || match src.clone() {
@@ -202,9 +250,14 @@ pub fn Avatar(
 /// whether more content exists past each edge so scroll shadows can be
 /// styled externally.
 #[component]
-pub fn ScrollArea(children: Children) -> impl IntoView {
+pub fn ScrollArea(
+	/// Classes added after the built-in `leptos-aria-scroll-area` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
+	children: Children,
+) -> impl IntoView {
 	view! {
-		<div class="leptos-aria-scroll-area" role="group" style="overflow: auto;">
+		<div class=merge_class("leptos-aria-scroll-area", class) role="group" style="overflow: auto;">
 			{children()}
 		</div>
 	}

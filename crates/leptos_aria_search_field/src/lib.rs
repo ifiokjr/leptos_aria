@@ -46,6 +46,9 @@ pub fn SearchField(
 	/// Whether the search is still loading, which disables submission.
 	#[prop(optional, into)]
 	is_loading: Signal<bool>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let state = leptos_aria_text_field::use_text_field_state(
 		leptos_aria_text_field::UseTextFieldStateProps {
@@ -67,6 +70,7 @@ pub fn SearchField(
 			name=name.clone().unwrap_or_default()
 			is_disabled=is_disabled
 			input_type="search".to_string()
+			class=class
 		/>
 		<button
 			type="button"

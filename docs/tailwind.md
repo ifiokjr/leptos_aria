@@ -4,7 +4,7 @@ Every component is headless: no styles ship, and state is exposed as `data-*` at
 
 ## Style with arbitrary variants
 
-Tailwind v4 supports `data-[...]` variants out of the box. Pass classes to a component with Leptos' `attr:` prefix, which forwards the attribute to the element the component renders:
+Tailwind v4 supports `data-[...]` variants out of the box. Every component takes a `class` prop, added after its built-in `leptos-aria-*` class on the element it renders. Pass a string, or a closure for classes that change:
 
 ```rust
 use leptos::prelude::*;
@@ -16,10 +16,10 @@ use leptos_aria::AccordionTrigger;
 view! {
 	<Accordion>
 		<AccordionItem key="one".to_string()>
-			<AccordionTrigger attr:class="data-[state=open]:bg-slate-100 font-medium">
+			<AccordionTrigger class="data-[state=open]:bg-slate-100 font-medium">
 				"Section"
 			</AccordionTrigger>
-			<AccordionPanel attr:class="data-[state=open]:animate-in">
+			<AccordionPanel class="data-[state=open]:animate-in">
 				"Content"
 			</AccordionPanel>
 		</AccordionItem>

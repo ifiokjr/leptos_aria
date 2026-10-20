@@ -5,6 +5,7 @@ use leptos::prelude::*;
 pub use leptos_aria_interactions::BoxedPressEventCallback;
 use leptos_aria_interactions::UsePressProps;
 use leptos_aria_interactions::use_press;
+use leptos_aria_utils::merge_class;
 
 /// The accessible button, providing mouse, keyboard, and touch interactions
 /// plus focus handling across browsers.
@@ -41,6 +42,9 @@ pub fn Button(
 	/// can be triggered by this element.
 	#[prop(optional, into)]
 	aria_haspopup: Option<Signal<String>>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let press = use_press(UsePressProps {
@@ -54,6 +58,7 @@ pub fn Button(
 	view! {
 		<button
 			type=move || r#type.get().to_string()
+			class=merge_class("", class)
 			disabled=move || is_disabled.get()
 			aria-disabled=move || is_disabled.get().to_string()
 			aria-pressed=move || aria_pressed.map(|pressed| pressed.get().to_string())
@@ -156,6 +161,23 @@ mod tests {
 			"a synthetic click fires on_press through use_press"
 		);
 	}
+
+	#[wasm_bindgen_test]
+	fn appends_the_caller_class() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| view! { <Button class="font-bold">"Styled"</Button> });
+
+		let button = document()
+			.query_selector("button.font-bold")
+			.unwrap()
+			.expect("the styled button renders");
+
+		assert_eq!(button.get_attribute("class").as_deref(), Some("font-bold"));
+
+		// Leave the document as the other tests expect it.
+		button.remove();
+	}
 }
 
 /// An anchor styled and behaving as a button.
@@ -175,6 +197,9 @@ pub fn AnchorButton(
 	/// Handler that is called when the press is released over the target.
 	#[prop(optional)]
 	on_press: Option<BoxedPressEventCallback>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let press = use_press(UsePressProps {
@@ -186,6 +211,7 @@ pub fn AnchorButton(
 	view! {
 		<a
 			role="button"
+			class=merge_class("", class)
 			tabindex="0"
 			href=move || if is_disabled.get() { String::new() } else { href.clone() }
 			aria-disabled=move || is_disabled.get().to_string()
@@ -215,6 +241,9 @@ pub fn CustomButton(
 	/// Handler that is called when the press is released over the target.
 	#[prop(optional)]
 	on_press: Option<BoxedPressEventCallback>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let press = use_press(UsePressProps {
@@ -226,6 +255,7 @@ pub fn CustomButton(
 	view! {
 		<div
 			role="button"
+			class=merge_class("", class)
 			tabindex=move || if is_disabled.get() { -1 } else { 0 }
 			aria-disabled=move || is_disabled.get().to_string()
 			on:click=move |event| (press.on_click)(event)

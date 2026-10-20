@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use leptos::prelude::*;
 use leptos_aria_date::DateValue;
+use leptos_aria_utils::merge_class;
 
 /// A callback invoked when a date is selected.
 pub type BoxedDateSelectCallback = Box<dyn Fn(DateValue) + Send + Sync + 'static>;
@@ -71,6 +72,9 @@ pub fn Calendar(
 	/// Handler that is called when a date is selected.
 	#[prop(optional)]
 	on_select: Option<BoxedDateSelectCallback>,
+	/// Classes added after the built-in `leptos-aria-calendar` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 ) -> impl IntoView {
 	let selected = RwSignal::new(default_value.unwrap_or(DateValue::new(2026, 1, 1)));
 	let month = RwSignal::new(default_value.map_or(
@@ -96,7 +100,7 @@ pub fn Calendar(
 
 	view! {
 		<div
-			class="leptos-aria-calendar"
+			class=merge_class("leptos-aria-calendar", class)
 			role="grid"
 			aria-label=move || month_label(label_state.month.get())
 			on:keydown=move |event: web_sys::KeyboardEvent| {
@@ -299,5 +303,24 @@ mod tests {
 			.unwrap();
 
 		assert!(selected.is_some(), "the selected date is marked");
+	}
+
+	#[wasm_bindgen_test]
+	async fn calendar_appends_the_caller_class() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! { <Calendar class="custom-calendar" default_value=DateValue::new(2026, 10, 18) /> }
+		});
+
+		let calendar = document()
+			.query_selector(".leptos-aria-calendar.custom-calendar")
+			.unwrap()
+			.expect("the caller class sits on the calendar root");
+
+		assert_eq!(
+			calendar.get_attribute("class").as_deref(),
+			Some("leptos-aria-calendar custom-calendar")
+		);
 	}
 }

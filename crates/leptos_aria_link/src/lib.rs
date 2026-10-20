@@ -9,6 +9,7 @@ pub use leptos_aria_interactions::use_focusable;
 use leptos_aria_interactions::use_press;
 use leptos_aria_utils::LinkTarget;
 use leptos_aria_utils::handle_link_click;
+use leptos_aria_utils::merge_class;
 
 /// A link allows a user to navigate to another page or resource within a web
 /// page or application.
@@ -33,6 +34,9 @@ pub fn Link(
 	/// Handler that is called when the press is released over the target.
 	#[prop(optional)]
 	on_press: Option<BoxedPressEventCallback>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let press = use_press(UsePressProps {
@@ -53,6 +57,7 @@ pub fn Link(
 
 	view! {
 		<a
+			class=merge_class("", class)
 			href=move || if is_disabled.get() { String::new() } else { href.clone() }
 			target=move || target.clone()
 			rel=move || rel.clone()

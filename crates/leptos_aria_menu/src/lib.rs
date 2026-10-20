@@ -5,6 +5,7 @@
 use leptos::prelude::*;
 use leptos_aria_list_box::ListBox;
 use leptos_aria_list_box::ListBoxOption;
+use leptos_aria_utils::merge_class;
 
 /// A menu presents a list of actions or options the user can choose.
 ///
@@ -17,10 +18,14 @@ pub fn Menu(
 	/// The content to display as the label.
 	#[prop(optional)]
 	label: Option<String>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	view! {
 		<div
+			class=merge_class("", class)
 			role="menu"
 			hidden=move || !is_open.get()
 			on:keydown=move |event: web_sys::KeyboardEvent| {
@@ -43,10 +48,13 @@ pub fn MenuItem(
 	/// Whether this item is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes for the root element, the list box option.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	view! {
-		<ListBoxOption value=value is_disabled=is_disabled>
+		<ListBoxOption value=value is_disabled=is_disabled class=class>
 			<span role="menuitem">{children()}</span>
 		</ListBoxOption>
 	}
@@ -88,6 +96,35 @@ mod tests {
 
 		assert_eq!(items.length(), 2);
 	}
+
+	#[wasm_bindgen_test]
+	async fn menu_item_class_lands_on_the_option() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<Menubar class="menu-test-bar flex">
+					<Menu is_open=RwSignal::new(true)>
+						<MenuItem value="copy".to_string() class="menu-test-item">"Copy"</MenuItem>
+					</Menu>
+				</Menubar>
+			}
+		});
+
+		let bar = document()
+			.query_selector(".menu-test-bar")
+			.unwrap()
+			.unwrap();
+		let option = document()
+			.query_selector("[role='option'].menu-test-item")
+			.unwrap();
+
+		assert_eq!(
+			bar.get_attribute("class").as_deref(),
+			Some("leptos-aria-menubar menu-test-bar flex")
+		);
+		assert!(option.is_some(), "the item class is on the option root");
+	}
 }
 
 /// A menu trigger opens a menu from a button.
@@ -102,12 +139,15 @@ pub fn MenuTrigger(
 	/// Whether the trigger is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes added after the built-in `leptos-aria-menu-trigger` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let is_open = RwSignal::new(false);
 
 	view! {
-		<div class="leptos-aria-menu-trigger">
+		<div class=merge_class("leptos-aria-menu-trigger", class)>
 			<button
 				type="button"
 				class="leptos-aria-menu-trigger__button"
@@ -185,12 +225,18 @@ mod trigger_tests {
 
 /// A context menu opens its menu on right-click instead of a button press.
 #[component]
-pub fn ContextMenu(children: Children) -> impl IntoView {
+pub fn ContextMenu(
+	/// Classes added after the built-in `leptos-aria-context-menu__trigger`
+	/// class.
+	#[prop(optional, into)]
+	class: Signal<String>,
+	children: Children,
+) -> impl IntoView {
 	let is_open = RwSignal::new(false);
 
 	view! {
 		<span
-			class="leptos-aria-context-menu__trigger"
+			class=merge_class("leptos-aria-context-menu__trigger", class)
 			data-state=move || if is_open.get() { "open" } else { "closed" }
 			on:contextmenu=move |event: web_sys::MouseEvent| {
 				event.prevent_default();
@@ -205,10 +251,15 @@ pub fn ContextMenu(children: Children) -> impl IntoView {
 
 /// A menubar is a horizontal bar of menus, navigated left and right.
 #[component]
-pub fn Menubar(children: Children) -> impl IntoView {
+pub fn Menubar(
+	/// Classes added after the built-in `leptos-aria-menubar` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
+	children: Children,
+) -> impl IntoView {
 	view! {
 		<div
-			class="leptos-aria-menubar"
+			class=merge_class("leptos-aria-menubar", class)
 			role="menubar"
 			aria-orientation="horizontal"
 			on:keydown=move |event: web_sys::KeyboardEvent| {

@@ -3,6 +3,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 use wasm_bindgen::JsCast;
 
 /// A callback invoked with the selected files.
@@ -23,12 +24,15 @@ pub fn FileTrigger(
 	/// Whether the trigger is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes added after the built-in `leptos-aria-file-trigger` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let input_id = leptos_aria_utils::use_id();
 
 	view! {
-		<label for=input_id.clone() class="leptos-aria-file-trigger">
+		<label for=input_id.clone() class=merge_class("leptos-aria-file-trigger", class)>
 			{children()}
 		</label>
 		<input

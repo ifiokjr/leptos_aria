@@ -5,6 +5,7 @@
 use std::sync::Arc;
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 
 /// An accordion is a vertically stacked set of expandable sections.
 ///
@@ -72,6 +73,9 @@ pub fn Accordion(
 	/// The keys of the initially open sections.
 	#[prop(optional, into)]
 	default_open: Vec<String>,
+	/// Classes added after the built-in `leptos-aria-accordion` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let resolved_mode = mode.get_untracked();
@@ -83,7 +87,7 @@ pub fn Accordion(
 	provide_context(context);
 
 	view! {
-		<div class="leptos-aria-accordion" data-mode=mode_label(resolved_mode)>
+		<div class=merge_class("leptos-aria-accordion", class) data-mode=mode_label(resolved_mode)>
 			{children()}
 		</div>
 	}
@@ -105,6 +109,9 @@ pub fn AccordionItem(
 	/// Whether this section is disabled.
 	#[prop(optional, into)]
 	is_disabled: Signal<bool>,
+	/// Classes added after the built-in `leptos-aria-accordion__item` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let context = expect_context::<AccordionContext>();
@@ -120,7 +127,7 @@ pub fn AccordionItem(
 
 	view! {
 		<div
-			class="leptos-aria-accordion__item"
+			class=merge_class("leptos-aria-accordion__item", class)
 			data-state=move || item_state.open_state_label()
 			data-disabled=move || disabled_state.is_disabled.get().to_string()
 		>
@@ -131,7 +138,12 @@ pub fn AccordionItem(
 
 /// The trigger toggling an [`AccordionItem`].
 #[component]
-pub fn AccordionTrigger(children: Children) -> impl IntoView {
+pub fn AccordionTrigger(
+	/// Classes added after the built-in `leptos-aria-accordion__trigger` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
+	children: Children,
+) -> impl IntoView {
 	let item = expect_context::<Arc<AccordionItemState>>();
 	let toggle_item = Arc::clone(&item);
 	let label_item = Arc::clone(&item);
@@ -140,7 +152,7 @@ pub fn AccordionTrigger(children: Children) -> impl IntoView {
 	view! {
 		<button
 			type="button"
-			class="leptos-aria-accordion__trigger"
+			class=merge_class("leptos-aria-accordion__trigger", class)
 			aria-expanded=move || {
 				if label_item
 					.context
@@ -161,14 +173,19 @@ pub fn AccordionTrigger(children: Children) -> impl IntoView {
 
 /// The expandable content of an [`AccordionItem`].
 #[component]
-pub fn AccordionPanel(children: Children) -> impl IntoView {
+pub fn AccordionPanel(
+	/// Classes added after the built-in `leptos-aria-accordion__panel` class.
+	#[prop(optional, into)]
+	class: Signal<String>,
+	children: Children,
+) -> impl IntoView {
 	let item = expect_context::<Arc<AccordionItemState>>();
 	let panel = Arc::clone(&item);
 	let panel_state = Arc::clone(&item);
 
 	view! {
 		<div
-			class="leptos-aria-accordion__panel"
+			class=merge_class("leptos-aria-accordion__panel", class)
 			role="region"
 			data-state=move || panel_state.open_state_label()
 			hidden=move || !panel.context.is_open(&panel.key)
@@ -255,5 +272,38 @@ mod tests {
 			Some("false"),
 			"single mode closes the first section"
 		);
+	}
+
+	#[wasm_bindgen_test]
+	fn trigger_appends_the_caller_class() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<Accordion>
+					<AccordionItem key="styled".to_string()>
+						<AccordionTrigger class="font-bold">"Styled"</AccordionTrigger>
+						<AccordionPanel>"Panel"</AccordionPanel>
+					</AccordionItem>
+				</Accordion>
+			}
+		});
+
+		let trigger = document()
+			.query_selector(".leptos-aria-accordion__trigger.font-bold")
+			.unwrap()
+			.expect("the styled trigger renders");
+
+		assert_eq!(
+			trigger.get_attribute("class").as_deref(),
+			Some("leptos-aria-accordion__trigger font-bold")
+		);
+
+		// Leave the document as the other tests expect it.
+		trigger
+			.closest(".leptos-aria-accordion")
+			.unwrap()
+			.expect("the trigger sits inside its accordion")
+			.remove();
 	}
 }

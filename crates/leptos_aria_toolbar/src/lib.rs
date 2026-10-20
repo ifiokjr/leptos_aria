@@ -3,6 +3,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use leptos::prelude::*;
+use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_id;
 
 /// A toolbar is a container for a set of related controls, navigated with
@@ -15,6 +16,9 @@ pub fn Toolbar(
 	/// The orientation of the toolbar, horizontal by default.
 	#[prop(optional, into)]
 	orientation: Option<Signal<&'static str>>,
+	/// Classes for the root element.
+	#[prop(optional, into)]
+	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
 	let label_id = use_id();
@@ -28,6 +32,7 @@ pub fn Toolbar(
 		{label.map(|label| view! { <span id=label_id.clone()>{label}</span> })}
 		<div
 			role="toolbar"
+			class=merge_class("", class)
 			aria-orientation=move || resolved_orientation.get()
 			aria-labelledby=label_id.clone()
 			on:keydown=move |event: web_sys::KeyboardEvent| {
