@@ -51,7 +51,7 @@
 			<pre><code><span class="tok-k">view!</span> {
   <span class="tok-p">&lt;</span><span class="tok-k">AccordionItem</span> <span class="tok-a">key</span>=<span class="tok-s">"faq"</span>.to_string()<span class="tok-p">&gt;</span>
     <span class="tok-p">&lt;</span><span class="tok-k">AccordionTrigger</span>
-      <span class="tok-a">attr:class</span>=<span class="tok-s">"data-[state=open]:font-bold"</span><span class="tok-p">&gt;</span>
+      <span class="tok-a">class</span>=<span class="tok-s">"data-[state=open]:font-bold"</span><span class="tok-p">&gt;</span>
       <span class="tok-s">"Is it accessible?"</span>
     <span class="tok-p">&lt;/</span><span class="tok-k">AccordionTrigger</span><span class="tok-p">&gt;</span>
     <span class="tok-p">&lt;</span><span class="tok-k">AccordionPanel</span><span class="tok-p">&gt;</span><span class="tok-s">"By default."</span><span class="tok-p">&lt;/</span><span class="tok-k">AccordionPanel</span><span class="tok-p">&gt;</span>
@@ -104,8 +104,8 @@
 	<p class="section-index" aria-hidden="true">03</p>
 	<h2 id="catalogue-heading">63 components, 15 interaction hooks</h2>
 	<p class="section-lede">
-		Every one tracked against its React Aria original on the
-		<a href="roadmap.html">porting roadmap</a>.
+		Install Tailwind-styled versions with one command from the
+		<a href="components.html">component registry</a>.
 	</p>
 	<dl class="catalogue">
 		<div>
@@ -156,17 +156,19 @@
 		<p class="section-index" aria-hidden="true">04</p>
 		<h2 id="cli-heading">Own the styled layer</h2>
 		<p class="section-lede">
-			The CLI copies Tailwind-styled wrappers into <code>src/aria</code>. The headless crates stay
-			underneath; the classes are yours to change.
+			Like shadcn/ui: the CLI copies Tailwind-styled components into
+			<code>src/components/ui</code>, wires up the modules and theme, and the files become yours.
+			The headless crates stay underneath. <a href="components.html">Browse the components</a> or
+			read the <a href="cli.html">CLI guide</a>.
 		</p>
 	</div>
 	<pre class="terminal"><code><span class="tok-c"># once</span>
 <span class="tok-p">$</span> cargo install leptos_aria_cli
 <span class="tok-p">$</span> leptos-aria init
 
-<span class="tok-c"># per component</span>
+<span class="tok-c"># per component, and again after upgrades</span>
 <span class="tok-p">$</span> leptos-aria add button dialog switch
-<span class="tok-p">$</span> leptos-aria list</code></pre>
+<span class="tok-p">$</span> leptos-aria diff</code></pre>
 </section>
 
 <section class="section" aria-labelledby="agents-heading">

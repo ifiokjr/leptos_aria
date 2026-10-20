@@ -1,7 +1,7 @@
 [workspace]
-members = ["crates/*"]
+members = ["crates/*", "registry"]
 exclude = ["crates/leptos_aria_cli"]
-default-members = ["crates/*"]
+default-members = ["crates/*", "registry"]
 resolver = "2"
 
 [workspace.package]
@@ -24,6 +24,7 @@ leptos = "0.8.22"
 leptos-use = "0.19"
 send_wrapper = "0.6"
 slotmap = "1"
+tw_merge = "0.1.22"
 typed-builder = "0.23"
 # Pinned to the `wasm-bindgen-cli` version shipped in the devenv lock's
 # nixpkgs, so the `wasm-bindgen-test-runner` from the devenv shell always

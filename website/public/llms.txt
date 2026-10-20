@@ -13,7 +13,9 @@ leptos-aria add button
 ## Docs
 
 - [Tailwind v4 guide](https://ifiokjr.github.io/leptos_aria/tailwind.html): styling states with `data-[state=open]` variants and `@custom-variant` blocks, plus the full data-attribute contract
-- [Registry](https://ifiokjr.github.io/leptos_aria/registry.json): the shadcn-schema component manifest the CLI reads
+- [CLI guide](https://ifiokjr.github.io/leptos_aria/cli.html): `init`, `add`, `diff`, `build`, `leptos-aria.json`, theming, and hosting your own registry
+- [Components](https://ifiokjr.github.io/leptos_aria/components.html): every styled registry component with install command, usage, and source
+- [Registry index](https://ifiokjr.github.io/leptos_aria/r/registry.json): the shadcn-schema registry the CLI reads; each item is at `r/<name>.json`
 - [Porting roadmap](https://github.com/ifiokjr/leptos_aria/blob/main/PORTING.md): every upstream hook, utility, and component with its crate
 - [API docs](https://docs.rs/leptos_aria): the facade crate on docs.rs
 - [Full documentation](https://ifiokjr.github.io/leptos_aria/llms-full.txt): every document above in one file
@@ -35,4 +37,4 @@ Components: Button, AnchorButton, CustomButton, ToggleButton, ToggleGroup, Switc
 
 ## Registry CLI
 
-`leptos-aria init` writes the config; `leptos-aria add <name>` copies styled wrappers (your files, Tailwind classes) that depend on the headless crates; `leptos-aria list` names the registry.
+A shadcn/ui-style CLI. `leptos-aria init` writes `leptos-aria.json`, the theme CSS variables, and the `cn` helper. `leptos-aria add <name>` copies a Tailwind-styled component into `src/components/ui` with its dependencies. `list`, `view`, and `diff` read the registry, and `build` turns your own `registry.json` into a hostable registry. Items are served at `https://ifiokjr.github.io/leptos_aria/r/<name>.json` in shadcn's registry-item schema.

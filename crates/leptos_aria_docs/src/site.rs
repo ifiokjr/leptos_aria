@@ -21,8 +21,10 @@ pub struct PageMeta<'a> {
 	pub description: &'a str,
 }
 
-/// Fill the layout's `{{slug}}`, `{{url}}`, `{{title}}`, `{{description}}`,
-/// and `{{content}}` placeholders.
+/// Fill the layout's `{{slug}}`, `{{url}}`, `{{root}}`, `{{title}}`,
+/// `{{description}}`, and `{{content}}` placeholders. `{{root}}` is the
+/// relative prefix back to the site root (`../` for `components/button.html`),
+/// so asset and nav links work at any depth.
 ///
 /// Metadata is HTML-escaped; `content` is inserted verbatim and last, so
 /// placeholder-like text inside a page is never substituted.
@@ -32,6 +34,7 @@ pub fn render_layout(layout: &str, page: &PageMeta<'_>, content: &str) -> String
 	layout
 		.replace("{{slug}}", &escape_html(page.slug))
 		.replace("{{url}}", &escape_html(&url))
+		.replace("{{root}}", &"../".repeat(page.path.matches('/').count()))
 		.replace("{{title}}", &escape_html(page.title))
 		.replace("{{description}}", &escape_html(page.description))
 		.replace("{{content}}", content)
@@ -90,7 +93,7 @@ fn skip_leading_html(markdown: &str) -> &str {
 }
 
 /// Escape the five characters that are unsafe in HTML text and attributes.
-fn escape_html(text: &str) -> String {
+pub(crate) fn escape_html(text: &str) -> String {
 	let mut escaped = String::with_capacity(text.len());
 
 	for char in text.chars() {
@@ -113,7 +116,7 @@ mod tests {
 
 	const PAGE: PageMeta<'static> = PageMeta {
 		slug: "tailwind",
-		path: "tailwind.html",
+		path: "guides/tailwind.html",
 		title: "Tailwind <v4> guide",
 		description: "Style \"state\" & more",
 	};
@@ -121,13 +124,13 @@ mod tests {
 	#[test]
 	fn fills_and_escapes_layout_placeholders() {
 		let layout = "<title>{{title}}</title><meta content=\"{{description}}\"><link \
-		              href=\"{{url}}\"><body data-page=\"{{slug}}\">{{content}}</body>";
+		              href=\"{{url}}\"><a href=\"{{root}}a.css\"><body data-page=\"{{slug}}\">{{content}}</body>";
 		let html = render_layout(layout, &PAGE, "<p>{{title}}</p>");
 
 		assert_eq!(
 			html,
 			"<title>Tailwind &lt;v4&gt; guide</title><meta content=\"Style &quot;state&quot; \
-			 &amp; more\"><link href=\"https://ifiokjr.github.io/leptos_aria/tailwind.html\"><body \
+			 &amp; more\"><link href=\"https://ifiokjr.github.io/leptos_aria/guides/tailwind.html\"><a href=\"../a.css\"><body \
 			 data-page=\"tailwind\"><p>{{title}}</p></body>"
 		);
 	}

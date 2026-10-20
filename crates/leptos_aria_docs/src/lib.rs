@@ -4,5 +4,6 @@
 
 pub use markdown::*;
 
+pub mod components;
 mod markdown;
 pub mod site;

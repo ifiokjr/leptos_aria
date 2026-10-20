@@ -37,12 +37,12 @@ See [docs/tailwind.md](docs/tailwind.md) for the full attribute contract and `@c
 
 ```bash
 cargo install leptos_aria_cli
-leptos-aria init          # write leptos-aria.json
-leptos-aria add button    # copy a styled wrapper into src/aria
-leptos-aria list          # list the registry
+leptos-aria init               # leptos-aria.json, theme CSS variables, the `cn` helper
+leptos-aria add button dialog  # copy components into src/components/ui
+leptos-aria diff               # compare your copies with the registry
 ```
 
-Copied components are yours to edit: Tailwind classes on top, headless crates underneath, the same workflow as shadcn/ui.
+The same workflow as shadcn/ui: copied components are yours to edit, with Tailwind classes on top and the headless crates underneath. Browse the [components](https://ifiokjr.github.io/leptos_aria/components.html) or read the [CLI guide](docs/cli.md), which also covers theming and hosting your own registry. The registry's source is the [`registry`](registry) crate, compiled and tested in CI so every component builds exactly as you receive it.
 
 ## Contributing
 

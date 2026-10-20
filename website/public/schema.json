@@ -1,0 +1,46 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://ifiokjr.github.io/leptos_aria/schema.json",
+	"title": "leptos-aria.json",
+	"description": "Configuration for the leptos-aria component CLI.",
+	"type": "object",
+	"properties": {
+		"$schema": { "type": "string" },
+		"style": {
+			"type": "string",
+			"default": "default",
+			"description": "The registry style installed by `leptos-aria init`."
+		},
+		"tailwind": {
+			"type": "object",
+			"properties": {
+				"css": {
+					"type": "string",
+					"description": "The CSS file that imports Tailwind. Theme variables and component CSS are written here."
+				}
+			},
+			"required": ["css"],
+			"additionalProperties": false
+		},
+		"paths": {
+			"type": "object",
+			"properties": {
+				"ui": {
+					"type": "string",
+					"default": "src/components/ui",
+					"description": "The module directory that receives components."
+				}
+			},
+			"required": ["ui"],
+			"additionalProperties": false
+		},
+		"registries": {
+			"type": "object",
+			"description": "Extra registries keyed by @namespace. Each value is a URL or path template containing {name}.",
+			"propertyNames": { "pattern": "^@[a-z0-9][a-z0-9-_]*$" },
+			"additionalProperties": { "type": "string", "pattern": "\\{name\\}" }
+		}
+	},
+	"required": ["tailwind", "paths"],
+	"additionalProperties": false
+}
