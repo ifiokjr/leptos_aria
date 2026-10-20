@@ -27,10 +27,11 @@ const BASE: &str = "flex field-sizing-content min-h-16 w-full rounded-md border 
                     dark:bg-input/30 dark:aria-invalid:ring-destructive/40";
 
 /// A text area. Value state, labelling, and the native `textarea` come from
-/// `leptos_aria::TextArea`, which renders its `label` after the field.
+/// `leptos_aria::TextArea`, which renders its `label` before the field and
+/// spreads `class` and `data-slot` onto the field alone.
 #[component]
 pub fn Textarea(
-	/// A visible label, linked to the field with `aria-labelledby`.
+	/// A visible label, linked to the field with `for`.
 	#[prop(optional, into)]
 	label: Option<String>,
 	/// The value at first (uncontrolled).
