@@ -19,16 +19,18 @@ concurrency:
 
 jobs:
   release:
-    # The local checkout cannot open the pull request with the job token in
-    # this repository's configuration, so monochange writes the release
-    # branch and the pull request is opened through the GitHub CLI with the
-    # workflow's own write grant below.
     if: github.repository_owner == 'ifiokjr'
     timeout-minutes: 20
     runs-on: ubuntu-latest
     permissions:
+      # Push release tags, and upload the release files as git blobs and a
+      # tree. The monochange GitHub App writes the release commit and pull
+      # request on monochange.dev, and this run proves its repository with an
+      # OIDC token.
       contents: write
+      # Close a stale release pull request when no changesets are pending.
       pull-requests: write
+      id-token: write
     steps:
       - name: checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -36,14 +38,14 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # Pin the exact release: the workflow drives the `step prepare-release`
-      # / `step commit-release` surface that this version ships, and the
-      # release tarball carries the binary at its root (no directory layer).
+      # Pin the exact release: hosted release commits need 0.20.0 or newer,
+      # and the release tarball carries the binary at its root (no directory
+      # layer).
       - name: install monochange
         run: |
           set -euo pipefail
           curl -fsSL \
-            "https://github.com/monochange/monochange/releases/download/v0.19.0/monochange-x86_64-unknown-linux-musl-v0.19.0.tar.gz" \
+            "https://github.com/monochange/monochange/releases/download/v0.20.0/monochange-x86_64-unknown-linux-musl-v0.20.0.tar.gz" \
             | tar -xz -C /usr/local/bin
           chmod +x /usr/local/bin/monochange
           monochange --version
@@ -100,56 +102,39 @@ jobs:
         if: steps.release_record.outputs.is_release_commit == 'true'
         run: echo "HEAD is a merged release commit; publish dispatched."
 
-      - name: prepare release
+      - name: detect pending changesets
         id: prepare
         if: steps.release_record.outputs.is_release_commit != 'true'
         run: |
           set -euo pipefail
-          if ! find .changeset -type f -name '*.md' -print -quit | grep -q .; then
+          if find .changeset -type f -name '*.md' -print -quit | grep -q .; then
+            echo "has_changesets=true" >> "$GITHUB_OUTPUT"
+          else
             echo "No pending changesets; nothing to release."
             echo "has_changesets=false" >> "$GITHUB_OUTPUT"
-            exit 0
           fi
-          # Branch first so the release commit lands on the release branch,
-          # never on main itself.
-          git switch -c monochange/release/release
-          monochange step prepare-release
-          monochange step commit-release --no-verify
-          echo "has_changesets=true" >> "$GITHUB_OUTPUT"
 
       - name: open or refresh release pull request
-        if: steps.release_record.outputs.is_release_commit != 'true'
+        if: steps.release_record.outputs.is_release_commit != 'true' && steps.prepare.outputs.has_changesets == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # monochange.dev's GitHub App creates a verified release commit on
+          # `monochange/release/release` and opens the release pull request as
+          # the monochange bot, so the pull request's own workflows run, which
+          # a push made with the job token never triggers.
+          MONOCHANGE_RELEASE_BACKEND: hosted
+        run: monochange run release
+
+      # No pending changes: retire a stale release branch and PR instead of
+      # leaving outdated content open.
+      - name: close stale release pull request
+        if: steps.release_record.outputs.is_release_commit != 'true' && steps.prepare.outputs.has_changesets != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           branch="monochange/release/release"
-          if [ "${{ steps.prepare.outputs.has_changesets }}" != "true" ]; then
-            # No pending changes: retire a stale release branch and PR instead
-            # of refreshing outdated content.
-            if pr_number="$(gh pr list --head "$branch" --json number --jq '.[0].number // empty')"; then
-              [ -n "$pr_number" ] && gh pr close "$pr_number" --delete-branch || true
-            fi
-            exit 0
-          fi
-          git push --force \
-            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
-            "HEAD:refs/heads/$branch"
-          body="$(git log --format='-%h %s' main..HEAD | head -40)"
-          if ! pr_number="$(gh pr list --head "$branch" --json number --jq '.[0].number // empty')"; then
-            echo "Failed to list existing pull requests." >&2
-            exit 1
-          fi
+          pr_number="$(gh pr list --head "$branch" --json number --jq '.[0].number // empty')"
           if [ -n "$pr_number" ]; then
-            gh pr edit "$pr_number" --title "chore(release): prepare release" --body "$body" || true
-          else
-            # Creating a pull request from Actions needs the repository
-            # setting "Allow GitHub Actions to create and approve pull
-            # requests"; when it is off, leave the branch to open manually.
-            if ! gh pr create --head "$branch" --base main \
-              --title "chore(release): prepare release" \
-              --body "$body" --label release --label automated; then
-              echo "::warning::Could not create the release pull request (Actions PR creation disabled). Open it manually:"
-              echo "https://github.com/$GITHUB_REPOSITORY/compare/main...$branch"
-            fi
+            gh pr close "$pr_number" --delete-branch
           fi
