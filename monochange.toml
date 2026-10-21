@@ -1627,3 +1627,15 @@ base = "main"
 title = "chore(release): prepare release"
 labels = ["release", "automated"]
 auto_merge = false
+
+# Run by the release-pr workflow with MONOCHANGE_RELEASE_BACKEND=hosted: the
+# release files are uploaded as a git tree, and the monochange GitHub App
+# writes the verified release commit to `monochange/release/release` and
+# opens the release pull request.
+[cli.release]
+help_text = "Prepare, commit, and open the release pull request."
+steps = [
+	{ name = "prepare release", type = "PrepareRelease", allow_empty_changesets = true },
+	{ name = "commit release", type = "CommitRelease", inputs = { stage_all = true, no_verify = true }, when = "{{ number_of_changesets > 0 }}" },
+	{ name = "open release request", type = "OpenReleaseRequest", inputs = { stage_all = true, no_verify = true }, when = "{{ number_of_changesets > 0 }}" },
+]
