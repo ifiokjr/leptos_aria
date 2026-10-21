@@ -45,7 +45,7 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsSL \
-            "https://github.com/monochange/monochange/releases/download/v0.20.0/monochange-x86_64-unknown-linux-musl-v0.20.0.tar.gz" \
+            "https://github.com/monochange/monochange/releases/download/v0.20.1/monochange-x86_64-unknown-linux-musl-v0.20.1.tar.gz" \
             | tar -xz -C /usr/local/bin
           chmod +x /usr/local/bin/monochange
           monochange --version
