@@ -118,11 +118,10 @@ fn build_field_props(props: &UseLabelProps, label_props: &LabelProps, id: &str) 
 fn preferred_aria_labelledby(props: &UseLabelProps, label_props: &LabelProps) -> Option<String> {
 	// A <label for> element labels the field itself, so aria-labelledby only
 	// carries the extra labeling ids; non-labelable fields include the label
-	// element id as well.
-	let labelable = matches!(props.label_element_type, LabelElementType::Label)
-		&& !label_props.r#for.is_empty();
+	// element id as well. Without a label there is no id to include.
+	let labelable = matches!(props.label_element_type, LabelElementType::Label);
 
-	if labelable {
+	if labelable || label_props.id.is_empty() {
 		return non_empty(props.aria_labelledby.as_deref());
 	}
 
@@ -188,4 +187,61 @@ pub fn use_labels(props: UseLabelsProps) -> UseLabelResult {
 	};
 
 	use_label(resolved)
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	fn labelledby(
+		label: Option<&str>,
+		element: LabelElementType,
+		extra: Option<&str>,
+	) -> Option<String> {
+		let result = use_labels(UseLabelsProps {
+			label: label.map(str::to_string),
+			aria_labelledby: extra.map(str::to_string),
+			label_element_type: element,
+			..Default::default()
+		});
+
+		result.field_props.aria_labelledby
+	}
+
+	#[test]
+	fn a_label_for_names_a_labelable_field_without_aria_labelledby() {
+		assert_eq!(
+			labelledby(Some("Name"), LabelElementType::Label, None),
+			None
+		);
+		assert_eq!(
+			labelledby(Some("Name"), LabelElementType::Label, Some("hint")).as_deref(),
+			Some("hint")
+		);
+	}
+
+	#[test]
+	fn a_non_labelable_field_is_named_by_its_label_id() {
+		let result = use_labels(UseLabelsProps {
+			label: Some("Code".to_string()),
+			aria_labelledby: Some("hint".to_string()),
+			label_element_type: LabelElementType::Span,
+			..Default::default()
+		});
+
+		assert_eq!(
+			result.field_props.aria_labelledby,
+			Some(format!("{} hint", result.label_props.id))
+		);
+	}
+
+	#[test]
+	fn a_non_labelable_field_without_a_label_has_no_empty_aria_labelledby() {
+		assert_eq!(labelledby(None, LabelElementType::Span, None), None);
+		assert_eq!(labelledby(None, LabelElementType::Span, Some("")), None);
+		assert_eq!(
+			labelledby(None, LabelElementType::Span, Some("heading")).as_deref(),
+			Some("heading")
+		);
+	}
 }
