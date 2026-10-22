@@ -6,6 +6,18 @@
 cargo install leptos_aria_cli
 ```
 
+Skip the compile with a prebuilt binary through [`cargo-binstall`](https://github.com/cargo-bins/cargo-binstall):
+
+```bash
+cargo binstall leptos_aria_cli
+```
+
+Every [GitHub release](https://github.com/ifiokjr/leptos_aria/releases) also carries `leptos-aria` archives for Linux (glibc and musl), macOS, and Windows on x86_64 and aarch64, each with SHA-256 and SHA-512 checksums. The archives are built by the release workflow and carry a build provenance attestation, which `gh` can verify:
+
+```bash
+gh attestation verify leptos-aria-x86_64-unknown-linux-gnu-v0.1.2.tar.gz --repo ifiokjr/leptos_aria
+```
+
 ## init
 
 Run once, from the crate that renders your UI:

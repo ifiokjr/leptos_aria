@@ -1,80 +1,310 @@
 name: publish
 
-# Runs when a monochange release commit lands on main (dispatched by
-# release-pr.yml) or manually for retries. Authenticates to crates.io with
-# trusted publishing (GitHub Actions OIDC) — no registry token secret.
+# Builds the leptos-aria CLI for every release target, uploads the archives to
+# the draft release, attests their provenance, publishes the crates to
+# crates.io with trusted publishing (GitHub Actions OIDC, no registry token
+# secret), and only then flips the draft release public.
+#
+# release-pr.yml owns the handoff: it creates the tag and the draft release,
+# then dispatches this workflow with the tag as input. It also dispatches dry
+# runs (against the release pull request branch while the PR is open, and again
+# against the merge commit before tagging) that build every artifact and
+# validate the registry publish without uploading, publishing, or touching
+# any release. Manual retries dispatch with the same tag.
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to publish (for example v0.1.0)."
+        description: "Release tag to publish (for example v0.2.0). Used by the automated release handoff and manual retries."
         required: true
         type: string
       dry_run:
-        description: "Simulate the publish: build everything and publish nothing."
+        description: "Simulate the publish: build every release artifact and validate the registry publish, but upload nothing, publish nothing, and leave any release untouched."
         required: false
         type: boolean
         default: false
+      checkout_ref:
+        description: "Ref or commit to build when it points at the same commit as `tag`. Dry runs pass the branch or merge commit being released here so the exact tree is validated before the tag exists; the resolve job rejects the run when the two disagree."
+        required: false
+        type: string
 
-# Every job runs read-only except the publisher, which carries the write
-# grants it needs at job level.
 permissions:
   contents: read
 
+# Dry runs and real publishes never share a slot: a long dry run must not
+# delay a publish retry, and a late dry-run dispatch must never displace a
+# queued publish. A publish is never cancelled mid-flight either: a partial
+# registry publish is worse than a queued run waiting its turn.
 concurrency:
-  group: publish-${{ inputs.tag || github.ref_name }}
+  group: ${{ github.workflow }}-${{ inputs.tag }}-${{ inputs.dry_run == true && 'dry-run' || 'release' }}
   cancel-in-progress: false
 
+env:
+  RELEASE_TAG: ${{ inputs.tag }}
+
 jobs:
+  # Resolve the release to exactly one commit before anything is checked out.
+  # `checkout_ref` exists so a dry run can validate the release commit before
+  # the tag exists; left unconstrained it would also let a manual retry build
+  # from an arbitrary ref, and the archives this workflow uploads are the ones
+  # users install. Every downstream job checks out the `sha` output instead of
+  # re-deriving a symbolic ref.
   resolve-revision:
     name: resolve the release revision
-    timeout-minutes: 5
+    if: github.repository_owner == 'ifiokjr' && startsWith(inputs.tag, 'v')
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     outputs:
       sha: ${{ steps.resolve.outputs.sha }}
     steps:
-      - name: checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: resolve the tag commit
+      - name: resolve the tag and checkout ref to one commit
         id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          REQUESTED_REF: ${{ inputs.checkout_ref }}
         run: |
           set -euo pipefail
-          # The publish job checks out this exact sha; resolving from a
-          # moving ref (main) is fine because the tag pins the revision.
-          sha="$(git rev-list -n1 "$RELEASE_TAG")"
-          if [ -z "$sha" ]; then
-            echo "::error::Could not resolve $RELEASE_TAG to a commit." >&2
+
+          # `gh api` exits non-zero on an unknown ref but still prints an error
+          # body to stdout, so the exit status, not the output, decides success.
+          resolve_sha() {
+            local ref="$1" payload
+            if ! payload="$(gh api "repos/$GITHUB_REPOSITORY/commits/$ref" 2>/dev/null)"; then
+              return 1
+            fi
+            printf '%s' "$payload" | jq -r '.sha'
+          }
+
+          requested="${REQUESTED_REF:-$RELEASE_TAG}"
+
+          # The tag is resolved through its fully-qualified name so a branch
+          # that happens to share the tag's name cannot satisfy the equality
+          # check below. A pre-tag dry run legitimately has no tag yet; every
+          # other run must resolve one.
+          tag_sha=""
+          if candidate="$(resolve_sha "refs/tags/$RELEASE_TAG")"; then
+            tag_sha="$candidate"
+          elif [[ "$DRY_RUN" != "true" ]]; then
+            echo "::error::Release tag '$RELEASE_TAG' does not resolve to a commit." >&2
             exit 1
           fi
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-        env:
-          RELEASE_TAG: ${{ inputs.tag }}
 
-  publish:
-    name: publish packages and release
+          if ! resolved_sha="$(resolve_sha "$requested")"; then
+            echo "::error::Checkout ref '$requested' does not resolve to a commit." >&2
+            exit 1
+          fi
+
+          # The published revision must be the tagged one. A mismatch means the
+          # tag and the requested ref disagree about what is being released, so
+          # stop rather than build the wrong tree.
+          if [[ -n "$tag_sha" && "$tag_sha" != "$resolved_sha" ]]; then
+            echo "::error::$RELEASE_TAG is at $tag_sha but '$requested' is at $resolved_sha; refusing to build a revision the tag does not point at." >&2
+            exit 1
+          fi
+
+          if [[ -z "$tag_sha" ]]; then
+            echo "Release tag '$RELEASE_TAG' does not exist yet; pinning this dry run to $resolved_sha."
+          fi
+          echo "sha=$resolved_sha" >> "$GITHUB_OUTPUT"
+          echo "Releasing $RELEASE_TAG from $resolved_sha"
+
+  upload-assets:
+    name: build ${{ matrix.target }}
     needs: resolve-revision
-    # The publisher environment gates every registry publish behind a
-    # required reviewer; this job holds `id-token: write` and exchanges it
-    # for crates.io trusted publishing. Keep the environment protection rule
-    # configured in repository settings.
-    environment: publisher
+    if: needs.resolve-revision.result == 'success'
     permissions:
-      contents: write # `gh release create` publishes the GitHub release
-      id-token: write # crates.io trusted publishing exchanges the OIDC token
+      contents: write # Read the draft release and upload archives and checksums into it.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: aarch64-pc-windows-msvc
+            os: windows-latest
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      # release-pr.yml creates the draft release before dispatching this
+      # workflow. Wait for it to be visible before uploading into it. A dry run
+      # never waits and never uploads: no draft release exists for it.
+      - name: wait for the draft release
+        if: inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              echo "Release $RELEASE_TAG exists after $attempt attempt(s)."
+              exit 0
+            fi
+            echo "  attempt $attempt/30: release not found yet; sleeping 10s"
+            sleep 10
+          done
+          echo "::error::Release $RELEASE_TAG was not created within the wait window. Check the release-pr tag job." >&2
+          exit 1
+
+      - name: checkout release revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve-revision.outputs.sha }}
+          persist-credentials: false
+
+      - name: install rust toolchain
+        uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
+        with:
+          toolchain: stable
+
+      # The repository's rust-toolchain.toml pins a nightly for the wasm
+      # crates. The CLI is a plain stable crate outside that workspace, so
+      # build its release binaries on stable instead of downloading the
+      # pinned nightly on every runner.
+      - name: build on stable
+        shell: bash
+        run: echo "RUSTUP_TOOLCHAIN=stable" >> "$GITHUB_ENV"
+
+      - name: setup cross toolchain
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: taiki-e/setup-cross-toolchain-action@12b7ad4acfa95a1476779d6c06699b96ec1691f8 # v1.42.0
+        with:
+          target: ${{ matrix.target }}
+
+      - name: set static crt linkage
+        if: endsWith(matrix.target, 'windows-msvc')
+        shell: bash
+        run: echo "RUSTFLAGS=${RUSTFLAGS:-} -C target-feature=+crt-static" >> "$GITHUB_ENV"
+
+      - name: build and upload binaries
+        uses: taiki-e/upload-rust-binary-action@f0d45ae91ee7b8ee928de7a9d04d893a08bcbec6 # v1.30.2
+        with:
+          bin: leptos-aria
+          manifest-path: crates/leptos_aria_cli/Cargo.toml
+          locked: true
+          profile: release
+          target: ${{ matrix.target }}
+          # The cross toolchain step configures cargo's linker for every Linux
+          # target, so plain cargo builds all of them; name it explicitly so
+          # the action never falls back to a container build.
+          build-tool: cargo
+          # The action uploads to the release this tag names. A dry run
+          # uploads nothing, so the tag need not exist for it.
+          ref: refs/tags/${{ env.RELEASE_TAG }}
+          archive: leptos-aria-$target-${{ env.RELEASE_TAG }}
+          tar: all
+          zip: windows
+          checksum: sha256,sha512
+          dry-run: ${{ inputs.dry_run == true }}
+          dry-run-intended: ${{ inputs.dry_run == true }}
+          token: ${{ github.token }}
+
+  attest-assets:
+    name: attest release assets
+    needs:
+      - resolve-revision
+      - upload-assets
+    # Every target must have uploaded before anything is attested. Nothing is
+    # uploaded in a dry run, so there is nothing to attest.
     if: >-
       needs.resolve-revision.result == 'success' &&
-      github.repository_owner == 'ifiokjr' &&
-      startsWith(inputs.tag, 'v') &&
-      (inputs.dry_run != true)
+      needs.upload-assets.result == 'success' &&
+      inputs.dry_run != true
+    permissions:
+      attestations: write # Record provenance for every release asset.
+      contents: write # Download assets from the draft release.
+      id-token: write # Exchange GitHub's OIDC identity for an attestation.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # Attest the draft release's own assets rather than job-local files so
+      # the attestation covers exactly what users download.
+      - name: download the release archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          asset_dir="$RUNNER_TEMP/release-asset-attestations"
+          mkdir -p "$asset_dir"
+          gh release download "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern 'leptos-aria-*' \
+            --dir "$asset_dir"
+          shopt -s nullglob
+          archives=("$asset_dir"/*)
+          if [ ${#archives[@]} -eq 0 ]; then
+            echo "::error::No release archives downloaded for $RELEASE_TAG" >&2
+            exit 1
+          fi
+          sha256sum "$asset_dir"/*
+
+      - name: attest the release archives
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ runner.temp }}/release-asset-attestations/*
+
+      - name: verify the attestations
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for archive in "$RUNNER_TEMP/release-asset-attestations"/*; do
+            verified=false
+            for attempt in 1 2 3 4 5; do
+              if gh attestation verify "$archive" --repo "$GITHUB_REPOSITORY"; then
+                verified=true
+                break
+              fi
+              echo "Attestation for $(basename "$archive") is not available yet (attempt $attempt/5)."
+              sleep 10
+            done
+            if [ "$verified" != true ]; then
+              echo "::error::Failed to verify the attestation for $archive" >&2
+              exit 1
+            fi
+          done
+
+  publish:
+    name: publish crates and release
+    needs:
+      - resolve-revision
+      - attest-assets
+    # The publisher environment gates every registry publish behind a required
+    # reviewer; this job holds `id-token: write` and exchanges it for crates.io
+    # trusted publishing. That protection rule lives in repository settings and
+    # cannot be reviewed here: keep it configured, and treat its removal as a
+    # security regression rather than a CI configuration change.
+    environment: publisher
+    permissions:
+      contents: write # Publish the draft release after the registry publish.
+      id-token: write # Authenticate to crates.io trusted publishing.
+    # Never publish unless every asset was uploaded and attested. A dry run
+    # stops before this job, so the publisher environment is never requested
+    # for one.
+    if: >-
+      needs.resolve-revision.result == 'success' &&
+      needs.attest-assets.result == 'success' &&
+      inputs.dry_run != true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: checkout release tag
+      - name: checkout release revision
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.resolve-revision.outputs.sha }}
@@ -92,6 +322,20 @@ jobs:
           chmod +x /usr/local/bin/monochange
           monochange --version
 
+      # Stop before anything reaches crates.io if the release this run must
+      # publish is missing: a retry can then recreate it and run again with
+      # nothing half-done.
+      - name: verify the release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --json tagName,isDraft --jq '"Release \(.tagName) exists (draft: \(.isDraft))."'; then
+            echo "::error::Release $RELEASE_TAG does not exist; release-pr.yml creates it before dispatching this workflow." >&2
+            exit 1
+          fi
+
       - name: get crates oidc auth token
         uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
         id: crates-oidc
@@ -101,7 +345,7 @@ jobs:
         with:
           toolchain: stable
 
-      - name: publish release packages
+      - name: publish release crates
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-oidc.outputs.token }}
           # The repo pins a nightly toolchain file; publishing must run on
@@ -111,27 +355,32 @@ jobs:
           set -euo pipefail
           monochange publish packages --all --stream-output
 
-      - name: publish the github release
+      # Runs last, after the registry publish, so a failed build, attestation,
+      # or crates.io publish never flips a release public for a version that is
+      # not installable.
+      - name: publish the draft release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
-          gh release create "$RELEASE_TAG" --verify-tag --title "$RELEASE_TAG" \
-            --notes "Published by the monochange release flow." ||
-            gh release edit "$RELEASE_TAG" --draft=false
+          gh release edit "$RELEASE_TAG" --draft=false --latest --repo "$GITHUB_REPOSITORY"
+          is_draft="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft')"
+          if [ "$is_draft" != "false" ]; then
+            echo "::error::Release $RELEASE_TAG is still a draft after publishing it." >&2
+            exit 1
+          fi
+          echo "Release $RELEASE_TAG is published."
 
   dry-run:
-    name: simulate the publish
+    name: simulate the registry publish
     needs: resolve-revision
-    if: >-
-      needs.resolve-revision.result == 'success' &&
-      github.repository_owner == 'ifiokjr' &&
-      inputs.dry_run == true
+    if: needs.resolve-revision.result == 'success' && inputs.dry_run == true
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
     steps:
-      - name: checkout release tag
+      - name: checkout release revision
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.resolve-revision.outputs.sha }}
@@ -150,6 +399,10 @@ jobs:
           monochange --version
 
       - name: simulate the publish
+        env:
+          # The repo pins a nightly toolchain file; publishing runs on
+          # stable, and RUSTUP_TOOLCHAIN outranks toolchain files.
+          RUSTUP_TOOLCHAIN: stable
         run: |
           set -euo pipefail
           monochange publish packages --all --stream-output --dry-run

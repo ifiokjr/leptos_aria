@@ -10,6 +10,20 @@ readme = "readme.md"
 repository = "https://github.com/ifiokjr/leptos_aria"
 description = "Copy Tailwind-styled leptos_aria components into your Leptos project, shadcn-style"
 
+# `cargo binstall leptos_aria_cli` downloads the archive that the publish
+# workflow attaches to each GitHub release (`leptos-aria-<target>-v<version>`,
+# with the binary at the archive root) instead of compiling.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/leptos-aria-{ target }-v{ version }{ archive-suffix }"
+bin-dir = "{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
+
+[package.metadata.binstall.overrides.aarch64-pc-windows-msvc]
+pkg-fmt = "zip"
+
 # Built on its own: the CLI has no wasm dependencies and keeps its own lockfile.
 [workspace]
 

@@ -1,8 +1,13 @@
 name: release-pr
 
 # Creates or refreshes the monochange release pull request on every push to
-# main. When a merged commit IS a release record, the publish workflow is
-# dispatched instead: that merge is the publish trigger.
+# main, then dispatches a publish dry run against the release branch so build
+# or publish problems surface while the pull request is open. When a merged
+# commit IS a release record, the tag job takes over: it gates on a fresh dry
+# run of the exact merge commit, tags it, creates the draft release with
+# monochange's rendered notes, and dispatches publish.yml against the tag.
+# publish.yml uploads the CLI archives into that draft and flips it public as
+# its last step.
 
 on:
   workflow_dispatch:
@@ -19,6 +24,7 @@ concurrency:
 
 jobs:
   release:
+    name: create or refresh the release pull request
     if: github.repository_owner == 'ifiokjr'
     timeout-minutes: 20
     runs-on: ubuntu-latest
@@ -31,6 +37,10 @@ jobs:
       # Close a stale release pull request when no changesets are pending.
       pull-requests: write
       id-token: write
+      # Dispatch the publish dry run against the release branch.
+      actions: write
+    outputs:
+      is_release_commit: ${{ steps.release_record.outputs.is_release_commit }}
     steps:
       - name: checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -77,34 +87,9 @@ jobs:
           fi
           echo "is_release_commit=false" >> "$GITHUB_OUTPUT"
 
-      # A HEAD that is a release record means the release PR merged: tag the
-      # record (publish.yml resolves and checks out this tag), then dispatch
-      # the publish workflow against the merged tree.
-      - name: tag and dispatch publish
-        if: steps.release_record.outputs.is_release_commit == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          # The checkout persists no credentials; monochange pushes the
-          # release tags over https, so route git auth through gh and the job
-          # token, whose job-level permissions include contents: write.
-          gh auth setup-git
-          monochange step tag-release --from HEAD --push
-          tag="$(monochange step release-record --from HEAD --format json \
-            | jq -r '[.record.release_targets[] | select(.tag == true)] | first | .tag_name // empty')"
-          if [ -z "$tag" ]; then
-            echo "::error::Could not determine the release tag from the merged release record." >&2
-            exit 1
-          fi
-          gh workflow run publish.yml \
-            --repo "$GITHUB_REPOSITORY" \
-            --ref main \
-            -f "tag=$tag"
-
       - name: skip refresh on merged release commit
         if: steps.release_record.outputs.is_release_commit == 'true'
-        run: echo "HEAD is a merged release commit; publish dispatched."
+        run: echo "HEAD is a merged release commit; the tag job publishes it."
 
       - name: detect pending changesets
         id: prepare
@@ -127,7 +112,40 @@ jobs:
           # the monochange bot, so the pull request's own workflows run, which
           # a push made with the job token never triggers.
           MONOCHANGE_RELEASE_BACKEND: hosted
+          # The repository pins a nightly toolchain for the wasm crates.
+          # Refreshing Cargo.lock (`lockfile_commands` in monochange.toml)
+          # needs no compiler, so use the runner's stable instead of
+          # installing the pinned nightly first.
+          RUSTUP_TOOLCHAIN: stable
         run: monochange run release
+
+      # Simulate the full publish against the release branch just written: the
+      # dry run builds the CLI for every release target and validates the
+      # crates.io publish, but creates no tag, no release, and publishes
+      # nothing. Its result is visible in the Actions tab before the pull
+      # request is merged; the tag job repeats it as a blocking gate.
+      - name: dispatch publish dry run for the release branch
+        if: steps.release_record.outputs.is_release_commit != 'true' && steps.prepare.outputs.has_changesets == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          branch="monochange/release/release"
+          # The hosted release commit lives on the remote branch only.
+          git fetch --force origin "+refs/heads/$branch:refs/remotes/origin/$branch"
+          tag="$(monochange step release-record --from "origin/$branch" --format json \
+            | jq -r '[.record.release_targets[] | select(.tag == true)] | first | .tag_name // empty')"
+          if [ -z "$tag" ]; then
+            echo "::error::Could not determine the release tag for the dry run." >&2
+            exit 1
+          fi
+          gh workflow run publish.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$branch" \
+            -f "tag=$tag" \
+            -f "checkout_ref=$branch" \
+            -f "dry_run=true"
+          echo "Dispatched a publish dry run for $tag against $branch."
 
       # No pending changes: retire a stale release branch and PR instead of
       # leaving outdated content open.
@@ -142,3 +160,152 @@ jobs:
           if [ -n "$pr_number" ]; then
             gh pr close "$pr_number" --delete-branch
           fi
+
+  tag:
+    name: tag, draft, and publish the merged release
+    needs: release
+    if: needs.release.outputs.is_release_commit == 'true'
+    timeout-minutes: 90
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write # Dispatch and watch the publish workflow.
+      contents: write # Push the tag and create the draft release.
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: install monochange
+        run: |
+          set -euo pipefail
+          curl -fsSL \
+            "https://github.com/monochange/monochange/releases/download/v0.20.1/monochange-x86_64-unknown-linux-musl-v0.20.1.tar.gz" \
+            | tar -xz -C /usr/local/bin
+          chmod +x /usr/local/bin/monochange
+          monochange --version
+
+      - name: configure release git credentials
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # The checkout keeps no credentials; route git pushes through the CLI's
+      # token so the tag push below authenticates.
+      - name: configure git authentication
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh auth setup-git
+
+      - name: refresh tags from origin
+        run: git fetch --force --tags origin
+
+      - name: resolve the release tag
+        id: release_tag
+        run: |
+          set -euo pipefail
+          tag="$(monochange step release-record --from HEAD --format json \
+            | jq -r '[.record.release_targets[] | select(.tag == true)] | first | .tag_name // empty')"
+          if [ -z "$tag" ]; then
+            echo "::error::Could not determine the release tag from the merged release record." >&2
+            exit 1
+          fi
+          if [[ "$tag" != v* ]]; then
+            echo "::error::Refusing to release unexpected tag '$tag'; release tags look like v0.2.0." >&2
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Releasing $tag from $(git rev-parse HEAD)."
+
+      # Run the publish dry run against the exact merge commit being tagged
+      # and wait for it. If it fails, the release stops here: no tag, no
+      # draft release, no registry publish.
+      - name: gate on a publish dry run of the merge commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          sha="$(git rev-parse HEAD)"
+
+          # Runs created by this dispatch are newer than this instant; the
+          # margin absorbs clock skew between the runner and the API.
+          since="$(date -u -d '2 minutes ago' +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run publish.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f "tag=$RELEASE_TAG" \
+            -f "checkout_ref=$sha" \
+            -f "dry_run=true"
+
+          # The dispatch is asynchronous; find the run it created.
+          run_id=""
+          for attempt in $(seq 1 24); do
+            run_id="$(gh run list --repo "$GITHUB_REPOSITORY" \
+              --workflow publish.yml --event workflow_dispatch --branch main \
+              --limit 20 --json databaseId,createdAt \
+              | jq -r --arg since "$since" \
+                '[.[] | select(.createdAt >= $since)] | sort_by(.createdAt) | last | .databaseId // empty')"
+            if [ -n "$run_id" ]; then
+              break
+            fi
+            echo "  attempt $attempt/24: dry run not visible yet; sleeping 5s"
+            sleep 5
+          done
+          if [ -z "$run_id" ]; then
+            echo "::error::The publish dry run for $RELEASE_TAG never appeared after dispatch." >&2
+            exit 1
+          fi
+
+          echo "Waiting for publish dry run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$run_id ..."
+          gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status --interval 30
+          echo "Publish dry run for $RELEASE_TAG succeeded."
+
+      - name: create release tag
+        env:
+          # Read by the credential helper that `gh auth setup-git` installed.
+          GH_TOKEN: ${{ github.token }}
+        run: monochange step tag-release --from HEAD --push
+
+      # The draft carries monochange's rendered release notes. publish.yml
+      # uploads the CLI archives into it and flips it public only after every
+      # artifact is attested and the crates are on crates.io.
+      - name: create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: monochange step publish-release --from-ref HEAD --draft --format json
+
+      # The dispatch below resolves the tag through the API, and a tag pushed
+      # moments ago may not have propagated yet.
+      - name: wait for the tag on the remote
+        env:
+          RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+              echo "Tag $RELEASE_TAG is visible on the remote."
+              exit 0
+            fi
+            echo "  attempt $attempt/12: tag not visible yet; sleeping 5s"
+            sleep 5
+          done
+          echo "::error::Tag $RELEASE_TAG was not visible on the remote after waiting." >&2
+          exit 1
+
+      # A tag pushed with the job token does not trigger another workflow, so
+      # dispatch publish.yml explicitly. The tag input pins the revision it
+      # builds and publishes.
+      - name: dispatch release publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh workflow run publish.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f "tag=$RELEASE_TAG"
+          echo "Dispatched publish.yml for $RELEASE_TAG."
