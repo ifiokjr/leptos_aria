@@ -86,6 +86,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          # The checkout persists no credentials; monochange pushes the
+          # release tags over https, so route git auth through gh and the job
+          # token, whose job-level permissions include contents: write.
+          gh auth setup-git
           monochange step tag-release --from HEAD --push
           tag="$(monochange step release-record --from HEAD --format json \
             | jq -r '[.record.release_targets[] | select(.tag == true)] | first | .tag_name // empty')"
