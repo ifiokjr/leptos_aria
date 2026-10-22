@@ -5,6 +5,17 @@
 use leptos::prelude::*;
 use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_id;
+use wasm_bindgen::JsCast;
+
+/// The id of the tab with this key, which its panel is labelled by.
+fn tab_id(key: &str) -> String {
+	format!("leptos-aria-tab-{key}")
+}
+
+/// The id of the panel of the tab with this key.
+fn panel_id(key: &str) -> String {
+	format!("leptos-aria-tab-panel-{key}")
+}
 
 /// A registered tab: its key and whether it is disabled.
 #[derive(Clone)]
@@ -101,6 +112,29 @@ impl TabsContext {
 		self.move_selection(-1);
 	}
 
+	/// Move keyboard focus to the tab with this key, if it is mounted.
+	///
+	/// Tabs rove: only the selected tab is in the tab order, so focus has to
+	/// travel with the selection for the next key press to reach the right
+	/// tab.
+	pub fn focus_tab(&self, key: &str) {
+		let tab = document()
+			.get_element_by_id(&tab_id(key))
+			.and_then(|element| element.dyn_into::<web_sys::HtmlElement>().ok());
+
+		if let Some(tab) = tab {
+			// Focusing an element that cannot take focus is a no-op, not an error.
+			let _ = tab.focus();
+		}
+	}
+
+	/// Move keyboard focus to the selected tab.
+	pub fn focus_selected(&self) {
+		if let Some(key) = self.selected_key.get_untracked() {
+			self.focus_tab(&key);
+		}
+	}
+
 	/// Select the first enabled tab.
 	pub fn select_first(&self) {
 		let first = self.tabs.with_untracked(|tabs| {
@@ -155,8 +189,8 @@ impl TabsContext {
 /// A tab list lets the user switch between related panels of content.
 ///
 /// Arrow keys move the selection between enabled tabs, home and end select
-/// the first and last enabled tab, and only the selected tab participates in
-/// the tab order.
+/// the first and last enabled tab, and keyboard focus moves with the
+/// selection. Only the selected tab participates in the tab order.
 #[component]
 pub fn Tabs(
 	/// The key of the initially selected tab (uncontrolled).
@@ -200,9 +234,13 @@ fn handle_key_down(context: &TabsContext, event: &web_sys::KeyboardEvent) {
 	}
 
 	event.prevent_default();
+	context.focus_selected();
 }
 
 /// An individual tab inside a tab list.
+///
+/// `data-focused` is `true` while the tab has keyboard focus, which is not
+/// the same as being selected: style selection with `aria-selected`.
 #[component]
 pub fn Tab(
 	/// The key of the tab, matching its panel.
@@ -219,8 +257,8 @@ pub fn Tab(
 	let context = expect_context::<TabsContext>();
 	context.register_tab(&key, is_disabled);
 
-	let tab_id = format!("leptos-aria-tab-{key}");
-	let panel_id = format!("leptos-aria-tab-panel-{key}");
+	let tab_id = tab_id(&key);
+	let panel_id = panel_id(&key);
 	let is_selected = Signal::derive({
 		let selected = context.selected_key;
 		let key = key.clone();
@@ -231,6 +269,7 @@ pub fn Tab(
 	let tabindex_context = context.clone();
 	let tabindex_key = tab_key.clone();
 	let tabindex = Signal::derive(move || tabindex_context.tab_index_for(&tabindex_key));
+	let is_focused = RwSignal::new(false);
 
 	view! {
 		<button
@@ -242,12 +281,22 @@ pub fn Tab(
 			aria-disabled=move || is_disabled.get().to_string()
 			aria-controls=panel_id.clone()
 			tabindex=move || tabindex.get()
-			data-focused=move || is_selected.get().to_string()
+			data-focused=move || is_focused.get().to_string()
+			on:focus=move |_| is_focused.set(true)
+			on:blur=move |_| is_focused.set(false)
 			on:click={
 				let context = context.clone();
 				let key = tab_key.clone();
 
-				move |_| context.select(&key)
+				move |_| {
+					context.select(&key);
+
+					// Safari does not focus a button on click, and a disabled tab
+					// takes neither the selection nor focus.
+					if context.is_selected_untracked(&key) {
+						context.focus_tab(&key);
+					}
+				}
 			}
 		>
 			{children()}
@@ -276,12 +325,12 @@ pub fn TabPanel(
 
 		move || selected.with(|selected| selected.as_deref() == Some(key.as_str()))
 	});
-	let labelledby = aria_labelledby.unwrap_or_else(|| format!("leptos-aria-tab-{key}"));
+	let labelledby = aria_labelledby.unwrap_or_else(|| tab_id(&key));
 
 	view! {
 		<div
 			class=merge_class("", class)
-			id=format!("leptos-aria-tab-panel-{key}")
+			id=panel_id(&key)
 			role="tabpanel"
 			aria-labelledby=labelledby
 			hidden=move || !is_selected.get()
@@ -464,6 +513,139 @@ mod tests {
 				.get_attribute("tabindex")
 				.as_deref(),
 			Some("-1")
+		);
+	}
+
+	/// The id of the element that has focus.
+	fn active_id() -> Option<String> {
+		document().active_element().map(|element| element.id())
+	}
+
+	#[wasm_bindgen_test]
+	async fn keyboard_navigation_moves_focus_with_the_selection() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<Tabs default_selected_key="roving-a">
+					<Tab key="roving-a">"A"</Tab>
+					<Tab key="roving-b" is_disabled=true>"B"</Tab>
+					<Tab key="roving-c">"C"</Tab>
+					<Tab key="roving-d">"D"</Tab>
+				</Tabs>
+			}
+		});
+
+		let id = |key: &str| format!("leptos-aria-tab-roving-{key}");
+		tab("#leptos-aria-tab-roving-a").focus().unwrap();
+
+		key_down(&tab("#leptos-aria-tab-roving-a"), "ArrowRight");
+		tick().await;
+		assert_eq!(
+			active_id(),
+			Some(id("c")),
+			"focus follows the selection and passes over the disabled tab"
+		);
+		assert_eq!(
+			tab("#leptos-aria-tab-roving-c")
+				.get_attribute("aria-selected")
+				.as_deref(),
+			Some("true")
+		);
+
+		key_down(&tab("#leptos-aria-tab-roving-c"), "End");
+		tick().await;
+		assert_eq!(active_id(), Some(id("d")), "End focuses the last tab");
+
+		key_down(&tab("#leptos-aria-tab-roving-d"), "ArrowRight");
+		tick().await;
+		assert_eq!(
+			active_id(),
+			Some(id("a")),
+			"the last tab wraps to the first"
+		);
+
+		key_down(&tab("#leptos-aria-tab-roving-a"), "ArrowLeft");
+		tick().await;
+		assert_eq!(
+			active_id(),
+			Some(id("d")),
+			"the first tab wraps to the last"
+		);
+
+		key_down(&tab("#leptos-aria-tab-roving-d"), "Home");
+		tick().await;
+		assert_eq!(active_id(), Some(id("a")), "Home focuses the first tab");
+	}
+
+	#[wasm_bindgen_test]
+	async fn clicking_a_tab_focuses_it() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<Tabs default_selected_key="click-a">
+					<Tab key="click-a">"A"</Tab>
+					<Tab key="click-b">"B"</Tab>
+					<Tab key="click-c" is_disabled=true>"C"</Tab>
+				</Tabs>
+			}
+		});
+
+		// A scripted click does not move focus by itself, and Safari does not
+		// focus a button on click either, so the tab has to.
+		tab("#leptos-aria-tab-click-b").click();
+		tick().await;
+		assert_eq!(active_id().as_deref(), Some("leptos-aria-tab-click-b"));
+
+		tab("#leptos-aria-tab-click-c").click();
+		tick().await;
+		assert_eq!(
+			active_id().as_deref(),
+			Some("leptos-aria-tab-click-b"),
+			"a disabled tab takes neither the selection nor focus"
+		);
+	}
+
+	#[wasm_bindgen_test]
+	async fn data_focused_reports_the_tab_that_has_focus() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! {
+				<Tabs default_selected_key="reported-a">
+					<Tab key="reported-a">"A"</Tab>
+					<Tab key="reported-b">"B"</Tab>
+				</Tabs>
+			}
+		});
+
+		let data_focused = |key: &str| {
+			tab(&format!("#leptos-aria-tab-reported-{key}")).get_attribute("data-focused")
+		};
+
+		assert_eq!(
+			data_focused("a").as_deref(),
+			Some("false"),
+			"a selected tab is not focused until it receives focus"
+		);
+
+		tab("#leptos-aria-tab-reported-a").focus().unwrap();
+		tick().await;
+		assert_eq!(data_focused("a").as_deref(), Some("true"));
+		assert_eq!(data_focused("b").as_deref(), Some("false"));
+
+		key_down(&tab("#leptos-aria-tab-reported-a"), "ArrowRight");
+		tick().await;
+		assert_eq!(data_focused("a").as_deref(), Some("false"));
+		assert_eq!(data_focused("b").as_deref(), Some("true"));
+
+		tab("#leptos-aria-tab-reported-b").blur().unwrap();
+		tick().await;
+		assert_eq!(
+			data_focused("b").as_deref(),
+			Some("false"),
+			"a selected tab stops reporting focus once it loses it"
 		);
 	}
 }
