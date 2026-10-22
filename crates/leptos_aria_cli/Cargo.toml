@@ -1,6 +1,6 @@
 [package]
 name = "leptos_aria_cli"
-version = "0.1.0"
+version = "0.1.1"
 categories = ["command-line-utilities", "development-tools", "web-programming"]
 edition = "2024"
 homepage = "https://ifiokjr.github.io/leptos_aria/"
