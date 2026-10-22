@@ -18,6 +18,7 @@
     pkgs.trunk
     pkgs.wasm-bindgen-cli
     pkgs.wasm-pack
+    pkgs.zizmor
   ];
 
   difftastic.enable = true;

@@ -17,9 +17,10 @@ on:
         type: boolean
         default: false
 
+# Every job runs read-only except the publisher, which carries the write
+# grants it needs at job level.
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: publish-${{ inputs.tag || github.ref_name }}
@@ -62,6 +63,9 @@ jobs:
     # for crates.io trusted publishing. Keep the environment protection rule
     # configured in repository settings.
     environment: publisher
+    permissions:
+      contents: write # `gh release create` publishes the GitHub release
+      id-token: write # crates.io trusted publishing exchanges the OIDC token
     if: >-
       needs.resolve-revision.result == 'success' &&
       github.repository_owner == 'ifiokjr' &&
