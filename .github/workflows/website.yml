@@ -30,7 +30,7 @@ jobs:
       # devenv provides trunk, wasm-bindgen, tailwindcss, and wasm-opt for the
       # live component previews, at the versions CI builds with.
       - name: setup development environment
-        uses: ./.github/actions/devenv
+        uses: ./.github/actions/devenv # zizmor: ignore[self-repository] the pinned actionlint cannot parse the $/ form yet
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
