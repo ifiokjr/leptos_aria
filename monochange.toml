@@ -1245,6 +1245,10 @@ packages = [
 tag = true
 release = true
 version_format = "primary"
+# One changelog for the whole group. It also feeds the release notes: without
+# a changelog, the release pull request and the GitHub release body list the
+# release step's name instead of what changed.
+changelog = "CHANGELOG.md"
 # [group.main.changelog]
 # path = "changelog.md"
 # include = ["package-id"]
@@ -1387,6 +1391,16 @@ use = ["cargo/baseline", "npm/baseline", "dart/baseline", "changesets/recommende
 
 [ecosystems.cargo]
 enabled = true
+# monochange's built-in lockfile rewrite only touches the crates it releases.
+# The private crates (docs, preview, registry) inherit the workspace version
+# and are bumped with it, so their Cargo.lock entries went stale and every
+# `cargo --locked` check on the release pull request failed. Let cargo
+# refresh the workspace members' versions instead (and nothing else: no
+# dependency moves). The CLI is its own workspace with its own lockfile.
+lockfile_commands = [
+	{ command = "cargo update --workspace" },
+	{ command = "cargo update --workspace", cwd = "crates/leptos_aria_cli" },
+]
 
 # [ecosystems.cargo.publish]
 # enabled = true

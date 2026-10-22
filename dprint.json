@@ -46,6 +46,7 @@
 		".direnv/**",
 		".monochange/**",
 		".zcode/**",
+		"CHANGELOG.md",
 		"**/node_modules/**",
 		"**/snapshots/**",
 		"Cargo.lock",
