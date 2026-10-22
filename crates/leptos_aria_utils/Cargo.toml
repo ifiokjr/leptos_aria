@@ -20,5 +20,10 @@ slotmap = { workspace = true }
 wasm-bindgen = { workspace = true }
 web-sys = { workspace = true, features = ["CssStyleDeclaration", "DomRect", "Document", "Element", "Event", "EventTarget", "FocusOptions", "HtmlElement", "Navigator", "Node", "SvgElement", "TransitionEvent", "Window"] }
 
+[features]
+# Forwards to `leptos`'s `nightly` feature for nightly-only signal and renderer
+# optimizations; a no-op on stable toolchains.
+nightly = ["leptos/nightly"]
+
 [lints]
 workspace = true

@@ -53,6 +53,49 @@ leptos_aria_toolbar = { workspace = true }
 leptos_aria_tree = { workspace = true }
 leptos_aria_utils = { workspace = true }
 
+[features]
+# Forwards to `leptos`'s `nightly` feature across every member crate for
+# nightly-only signal and renderer optimizations; a no-op on stable toolchains.
+nightly = [
+	"leptos/nightly",
+	"leptos_aria_accordion/nightly",
+	"leptos_aria_breadcrumbs/nightly",
+	"leptos_aria_button/nightly",
+	"leptos_aria_checkbox/nightly",
+	"leptos_aria_color/nightly",
+	"leptos_aria_combo_box/nightly",
+	"leptos_aria_date_picker/nightly",
+	"leptos_aria_disclosure/nightly",
+	"leptos_aria_drop_zone/nightly",
+	"leptos_aria_file_trigger/nightly",
+	"leptos_aria_form/nightly",
+	"leptos_aria_grid/nightly",
+	"leptos_aria_interactions/nightly",
+	"leptos_aria_link/nightly",
+	"leptos_aria_list_box/nightly",
+	"leptos_aria_menu/nightly",
+	"leptos_aria_number_field/nightly",
+	"leptos_aria_overlay/nightly",
+	"leptos_aria_pagination/nightly",
+	"leptos_aria_primitives/nightly",
+	"leptos_aria_progress/nightly",
+	"leptos_aria_radio/nightly",
+	"leptos_aria_search_field/nightly",
+	"leptos_aria_select_box/nightly",
+	"leptos_aria_selection/nightly",
+	"leptos_aria_slider/nightly",
+	"leptos_aria_table/nightly",
+	"leptos_aria_tabs/nightly",
+	"leptos_aria_tag/nightly",
+	"leptos_aria_text_field/nightly",
+	"leptos_aria_time_field/nightly",
+	"leptos_aria_toast/nightly",
+	"leptos_aria_toggle/nightly",
+	"leptos_aria_toolbar/nightly",
+	"leptos_aria_tree/nightly",
+	"leptos_aria_utils/nightly",
+]
+
 [dev-dependencies]
 wasm-bindgen-test = { workspace = true }
 

@@ -61,7 +61,7 @@ pub fn Switch(
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	let class = move || class.with(|class| cn(&[BASE, class]));
+	let class = Signal::derive(move || class.with(|class| cn(&[BASE, class])));
 
 	view! {
 		<AriaSwitch

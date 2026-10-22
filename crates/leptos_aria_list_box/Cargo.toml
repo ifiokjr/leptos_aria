@@ -28,5 +28,10 @@ wasm-bindgen-futures = { workspace = true }
 wasm-bindgen-test = { workspace = true }
 web-sys = { workspace = true, features = ["Document", "Element", "NodeList", "HtmlInputElement", "KeyboardEvent", "KeyboardEventInit"] }
 
+[features]
+# Forwards to `leptos`'s `nightly` feature for nightly-only signal and renderer
+# optimizations; a no-op on stable toolchains.
+nightly = ["leptos/nightly"]
+
 [lints]
 workspace = true

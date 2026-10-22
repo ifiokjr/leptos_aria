@@ -115,7 +115,7 @@ pub fn Toggle(
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	let class = move || {
+	let class = Signal::derive(move || {
 		class.with(|class| {
 			cn(&[
 				TOGGLE_BASE,
@@ -124,7 +124,7 @@ pub fn Toggle(
 				class,
 			])
 		})
-	};
+	});
 
 	view! {
 		<ToggleButton

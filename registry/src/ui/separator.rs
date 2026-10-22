@@ -58,7 +58,7 @@ pub fn Separator(
 	#[prop(optional, into)]
 	class: Signal<String>,
 ) -> impl IntoView {
-	let class = move || class.with(|class| cn(&[BASE, class]));
+	let class = Signal::derive(move || class.with(|class| cn(&[BASE, class])));
 	let orientation = Signal::derive(move || orientation.get().as_str());
 
 	view! {

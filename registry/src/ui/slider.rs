@@ -82,7 +82,7 @@ pub fn Slider(
 	#[prop(optional, into)]
 	class: Signal<String>,
 ) -> impl IntoView {
-	let class = move || class.with(|class| cn(&[BASE, TRACK, RANGE, THUMB, class]));
+	let class = Signal::derive(move || class.with(|class| cn(&[BASE, TRACK, RANGE, THUMB, class])));
 
 	view! {
 		<AriaSlider

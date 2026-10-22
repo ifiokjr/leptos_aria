@@ -60,6 +60,13 @@ jobs:
         run: cargo clippy --manifest-path crates/leptos_aria_cli/Cargo.toml --all-targets --locked -- -D warnings
         shell: devenv shell -- bash -e {0}
 
+      # The facade's `nightly` feature turns on `leptos/nightly` across the
+      # whole workspace build, so this one run lints every crate with the
+      # nightly-only code paths enabled.
+      - name: clippy (nightly feature)
+        run: cargo clippy --all-targets --locked --features leptos_aria/nightly -- -D warnings
+        shell: devenv shell -- bash -e {0}
+
   build:
     timeout-minutes: 60
     runs-on: ubuntu-latest

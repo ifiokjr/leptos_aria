@@ -18,6 +18,8 @@ cargo add leptos_aria
 
 The `leptos_aria` crate re-exports every component, hook, and utility. Each component family also ships as its own `leptos_aria_*` crate if you want a smaller dependency.
 
+On a nightly toolchain, enable the `nightly` feature — `cargo add leptos_aria --features nightly` — to turn on `leptos`'s nightly-only signal and renderer optimizations. The feature is additive and a no-op on stable compilers.
+
 ## Style with Tailwind v4
 
 Components are headless. Pass classes with each component's `class` prop and target state with Tailwind's built-in `data-[...]` and `aria-*` variants:

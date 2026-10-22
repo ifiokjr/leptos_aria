@@ -70,7 +70,7 @@ pub fn RadioGroup(
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	let class = move || class.with(|class| cn(&[GROUP, class]));
+	let class = Signal::derive(move || class.with(|class| cn(&[GROUP, class])));
 
 	view! {
 		<AriaRadioGroup
@@ -103,7 +103,7 @@ pub fn RadioGroupItem(
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	let class = move || class.with(|class| cn(&[ITEM, class]));
+	let class = Signal::derive(move || class.with(|class| cn(&[ITEM, class])));
 
 	view! {
 		<Radio value=value is_disabled=is_disabled class=class attr:data-slot="radio-group-item">

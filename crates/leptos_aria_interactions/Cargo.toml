@@ -27,5 +27,10 @@ console_error_panic_hook = { workspace = true }
 console_log = { workspace = true }
 wasm-bindgen-test = { workspace = true }
 
+[features]
+# Forwards to `leptos`'s `nightly` feature for nightly-only signal and renderer
+# optimizations; a no-op on stable toolchains.
+nightly = ["leptos/nightly"]
+
 [lints]
 workspace = true

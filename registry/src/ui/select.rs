@@ -84,7 +84,8 @@ pub fn Select(
 
 		on_change
 	});
-	let class = move || class.with(|class| cn(&["relative inline-flex w-fit", class]));
+	let class =
+		Signal::derive(move || class.with(|class| cn(&["relative inline-flex w-fit", class])));
 	let check = ViewFn::from(|| {
 		view! {
 			<span class="absolute right-2 flex size-3.5 items-center justify-center invisible group-aria-selected:visible">
