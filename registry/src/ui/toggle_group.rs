@@ -65,7 +65,7 @@ pub fn ToggleGroup(
 ) -> impl IntoView {
 	provide_context(ToggleGroupStyle { variant, size });
 
-	let class = move || {
+	let class = Signal::derive(move || {
 		class.with(|class| {
 			let shadow = match variant.get() {
 				ToggleVariant::Default => "",
@@ -78,7 +78,7 @@ pub fn ToggleGroup(
 				class,
 			])
 		})
-	};
+	});
 
 	view! {
 		<AriaToggleGroup
@@ -111,7 +111,7 @@ pub fn ToggleGroupItem(
 ) -> impl IntoView {
 	let style = expect_context::<ToggleGroupStyle>();
 
-	let class = move || {
+	let class = Signal::derive(move || {
 		class.with(|class| {
 			let variant = style.variant.get();
 			let border = match variant {
@@ -128,7 +128,7 @@ pub fn ToggleGroupItem(
 				class,
 			])
 		})
-	};
+	});
 
 	view! {
 		<AriaToggleGroupItem

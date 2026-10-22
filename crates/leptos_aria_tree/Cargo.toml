@@ -26,5 +26,10 @@ js-sys = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 wasm-bindgen-test = { workspace = true }
 
+[features]
+# Forwards to `leptos`'s `nightly` feature for nightly-only signal and renderer
+# optimizations; a no-op on stable toolchains.
+nightly = ["leptos/nightly"]
+
 [lints]
 workspace = true

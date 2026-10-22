@@ -36,7 +36,7 @@ pub fn Avatar(
 	#[prop(optional, into)]
 	class: Signal<String>,
 ) -> impl IntoView {
-	let class = move || class.with(|class| cn(&[BASE, class]));
+	let class = Signal::derive(move || class.with(|class| cn(&[BASE, class])));
 
 	view! { <AriaAvatar src=src fallback=fallback class=class attr:data-slot="avatar" /> }
 }

@@ -125,8 +125,9 @@ pub fn Button(
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	let class =
-		move || class.with(|class| cn(&[BASE, variant.get().class(), size.get().class(), class]));
+	let class = Signal::derive(move || {
+		class.with(|class| cn(&[BASE, variant.get().class(), size.get().class(), class]))
+	});
 
 	view! {
 		<AriaButton
