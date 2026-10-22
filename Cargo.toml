@@ -5,7 +5,7 @@ default-members = ["crates/*", "registry"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Ifiok Jr. <ifiokotung@gmail.com>"]
 categories = ["wasm", "web-programming", "gui", "accessibility"]
 edition = "2024"
@@ -36,44 +36,44 @@ wasm-bindgen-test = "=0.3.79"
 web-sys = "=0.3.106"
 
 # internal
-leptos_aria_accordion = { path = "crates/leptos_aria_accordion", version = "0.1.0" }
-leptos_aria_breadcrumbs = { path = "crates/leptos_aria_breadcrumbs", version = "0.1.0" }
-leptos_aria_button = { path = "crates/leptos_aria_button", version = "0.1.0" }
-leptos_aria_calendar = { path = "crates/leptos_aria_calendar", version = "0.1.0" }
-leptos_aria_checkbox = { path = "crates/leptos_aria_checkbox", version = "0.1.0" }
-leptos_aria_color = { path = "crates/leptos_aria_color", version = "0.1.0" }
-leptos_aria_combo_box = { path = "crates/leptos_aria_combo_box", version = "0.1.0" }
-leptos_aria_date = { path = "crates/leptos_aria_date", version = "0.1.0" }
-leptos_aria_date_picker = { path = "crates/leptos_aria_date_picker", version = "0.1.0" }
-leptos_aria_disclosure = { path = "crates/leptos_aria_disclosure", version = "0.1.0" }
-leptos_aria_drop_zone = { path = "crates/leptos_aria_drop_zone", version = "0.1.0" }
-leptos_aria_file_trigger = { path = "crates/leptos_aria_file_trigger", version = "0.1.0" }
-leptos_aria_form = { path = "crates/leptos_aria_form", version = "0.1.0" }
-leptos_aria_grid = { path = "crates/leptos_aria_grid", version = "0.1.0" }
-leptos_aria_interactions = { path = "crates/leptos_aria_interactions", version = "0.1.0" }
-leptos_aria_link = { path = "crates/leptos_aria_link", version = "0.1.0" }
-leptos_aria_list_box = { path = "crates/leptos_aria_list_box", version = "0.1.0" }
-leptos_aria_menu = { path = "crates/leptos_aria_menu", version = "0.1.0" }
-leptos_aria_number_field = { path = "crates/leptos_aria_number_field", version = "0.1.0" }
-leptos_aria_overlay = { path = "crates/leptos_aria_overlay", version = "0.1.0" }
-leptos_aria_pagination = { path = "crates/leptos_aria_pagination", version = "0.1.0" }
-leptos_aria_primitives = { path = "crates/leptos_aria_primitives", version = "0.1.0" }
-leptos_aria_progress = { path = "crates/leptos_aria_progress", version = "0.1.0" }
-leptos_aria_radio = { path = "crates/leptos_aria_radio", version = "0.1.0" }
-leptos_aria_search_field = { path = "crates/leptos_aria_search_field", version = "0.1.0" }
-leptos_aria_select_box = { path = "crates/leptos_aria_select_box", version = "0.1.0" }
-leptos_aria_selection = { path = "crates/leptos_aria_selection", version = "0.1.0" }
-leptos_aria_slider = { path = "crates/leptos_aria_slider", version = "0.1.0" }
-leptos_aria_table = { path = "crates/leptos_aria_table", version = "0.1.0" }
-leptos_aria_tabs = { path = "crates/leptos_aria_tabs", version = "0.1.0" }
-leptos_aria_tag = { path = "crates/leptos_aria_tag", version = "0.1.0" }
-leptos_aria_text_field = { path = "crates/leptos_aria_text_field", version = "0.1.0" }
-leptos_aria_time_field = { path = "crates/leptos_aria_time_field", version = "0.1.0" }
-leptos_aria_toast = { path = "crates/leptos_aria_toast", version = "0.1.0" }
-leptos_aria_toggle = { path = "crates/leptos_aria_toggle", version = "0.1.0" }
-leptos_aria_toolbar = { path = "crates/leptos_aria_toolbar", version = "0.1.0" }
-leptos_aria_tree = { path = "crates/leptos_aria_tree", version = "0.1.0" }
-leptos_aria_utils = { path = "crates/leptos_aria_utils", version = "0.1.0" }
+leptos_aria_accordion = { path = "crates/leptos_aria_accordion", version = "0.1.1" }
+leptos_aria_breadcrumbs = { path = "crates/leptos_aria_breadcrumbs", version = "0.1.1" }
+leptos_aria_button = { path = "crates/leptos_aria_button", version = "0.1.1" }
+leptos_aria_calendar = { path = "crates/leptos_aria_calendar", version = "0.1.1" }
+leptos_aria_checkbox = { path = "crates/leptos_aria_checkbox", version = "0.1.1" }
+leptos_aria_color = { path = "crates/leptos_aria_color", version = "0.1.1" }
+leptos_aria_combo_box = { path = "crates/leptos_aria_combo_box", version = "0.1.1" }
+leptos_aria_date = { path = "crates/leptos_aria_date", version = "0.1.1" }
+leptos_aria_date_picker = { path = "crates/leptos_aria_date_picker", version = "0.1.1" }
+leptos_aria_disclosure = { path = "crates/leptos_aria_disclosure", version = "0.1.1" }
+leptos_aria_drop_zone = { path = "crates/leptos_aria_drop_zone", version = "0.1.1" }
+leptos_aria_file_trigger = { path = "crates/leptos_aria_file_trigger", version = "0.1.1" }
+leptos_aria_form = { path = "crates/leptos_aria_form", version = "0.1.1" }
+leptos_aria_grid = { path = "crates/leptos_aria_grid", version = "0.1.1" }
+leptos_aria_interactions = { path = "crates/leptos_aria_interactions", version = "0.1.1" }
+leptos_aria_link = { path = "crates/leptos_aria_link", version = "0.1.1" }
+leptos_aria_list_box = { path = "crates/leptos_aria_list_box", version = "0.1.1" }
+leptos_aria_menu = { path = "crates/leptos_aria_menu", version = "0.1.1" }
+leptos_aria_number_field = { path = "crates/leptos_aria_number_field", version = "0.1.1" }
+leptos_aria_overlay = { path = "crates/leptos_aria_overlay", version = "0.1.1" }
+leptos_aria_pagination = { path = "crates/leptos_aria_pagination", version = "0.1.1" }
+leptos_aria_primitives = { path = "crates/leptos_aria_primitives", version = "0.1.1" }
+leptos_aria_progress = { path = "crates/leptos_aria_progress", version = "0.1.1" }
+leptos_aria_radio = { path = "crates/leptos_aria_radio", version = "0.1.1" }
+leptos_aria_search_field = { path = "crates/leptos_aria_search_field", version = "0.1.1" }
+leptos_aria_select_box = { path = "crates/leptos_aria_select_box", version = "0.1.1" }
+leptos_aria_selection = { path = "crates/leptos_aria_selection", version = "0.1.1" }
+leptos_aria_slider = { path = "crates/leptos_aria_slider", version = "0.1.1" }
+leptos_aria_table = { path = "crates/leptos_aria_table", version = "0.1.1" }
+leptos_aria_tabs = { path = "crates/leptos_aria_tabs", version = "0.1.1" }
+leptos_aria_tag = { path = "crates/leptos_aria_tag", version = "0.1.1" }
+leptos_aria_text_field = { path = "crates/leptos_aria_text_field", version = "0.1.1" }
+leptos_aria_time_field = { path = "crates/leptos_aria_time_field", version = "0.1.1" }
+leptos_aria_toast = { path = "crates/leptos_aria_toast", version = "0.1.1" }
+leptos_aria_toggle = { path = "crates/leptos_aria_toggle", version = "0.1.1" }
+leptos_aria_toolbar = { path = "crates/leptos_aria_toolbar", version = "0.1.1" }
+leptos_aria_tree = { path = "crates/leptos_aria_tree", version = "0.1.1" }
+leptos_aria_utils = { path = "crates/leptos_aria_utils", version = "0.1.1" }
 
 [workspace.lints.rust]
 rust_2021_compatibility = { level = "warn", priority = -1 }

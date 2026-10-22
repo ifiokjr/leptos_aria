@@ -1,0 +1,2104 @@
+{
+  "schema_version": "0.10",
+  "kind": "monochange.releaseRecord",
+  "created_at": "2026-10-22T02:55:22Z",
+  "command": "release",
+  "version": "0.1.1",
+  "versions": {
+    "main": "0.1.1"
+  },
+  "release_targets": [
+    {
+      "id": "main",
+      "kind": "group",
+      "version": "0.1.1",
+      "version_format": "primary",
+      "tag": true,
+      "release": true,
+      "tag_name": "v0.1.1",
+      "rendered_title": "v0.1.1 (2026-10-22)",
+      "rendered_changelog_title": "[0.1.1](https://github.com/ifiokjr/leptos_aria/releases/tag/v0.1.1) (2026-10-22)",
+      "members": [
+        "leptos_aria",
+        "leptos_aria_accordion",
+        "leptos_aria_breadcrumbs",
+        "leptos_aria_button",
+        "leptos_aria_calendar",
+        "leptos_aria_checkbox",
+        "leptos_aria_cli",
+        "leptos_aria_color",
+        "leptos_aria_combo_box",
+        "leptos_aria_date",
+        "leptos_aria_date_picker",
+        "leptos_aria_disclosure",
+        "leptos_aria_drop_zone",
+        "leptos_aria_file_trigger",
+        "leptos_aria_form",
+        "leptos_aria_grid",
+        "leptos_aria_interactions",
+        "leptos_aria_link",
+        "leptos_aria_list_box",
+        "leptos_aria_menu",
+        "leptos_aria_number_field",
+        "leptos_aria_overlay",
+        "leptos_aria_pagination",
+        "leptos_aria_primitives",
+        "leptos_aria_progress",
+        "leptos_aria_radio",
+        "leptos_aria_search_field",
+        "leptos_aria_select_box",
+        "leptos_aria_selection",
+        "leptos_aria_slider",
+        "leptos_aria_table",
+        "leptos_aria_tabs",
+        "leptos_aria_tag",
+        "leptos_aria_text_field",
+        "leptos_aria_time_field",
+        "leptos_aria_toast",
+        "leptos_aria_toggle",
+        "leptos_aria_toolbar",
+        "leptos_aria_tree",
+        "leptos_aria_utils"
+      ]
+    }
+  ],
+  "released_packages": [
+    "leptos_aria",
+    "leptos_aria_accordion",
+    "leptos_aria_breadcrumbs",
+    "leptos_aria_button",
+    "leptos_aria_calendar",
+    "leptos_aria_checkbox",
+    "leptos_aria_cli",
+    "leptos_aria_color",
+    "leptos_aria_combo_box",
+    "leptos_aria_date",
+    "leptos_aria_date_picker",
+    "leptos_aria_disclosure",
+    "leptos_aria_drop_zone",
+    "leptos_aria_file_trigger",
+    "leptos_aria_form",
+    "leptos_aria_grid",
+    "leptos_aria_interactions",
+    "leptos_aria_link",
+    "leptos_aria_list_box",
+    "leptos_aria_menu",
+    "leptos_aria_number_field",
+    "leptos_aria_overlay",
+    "leptos_aria_pagination",
+    "leptos_aria_primitives",
+    "leptos_aria_progress",
+    "leptos_aria_radio",
+    "leptos_aria_search_field",
+    "leptos_aria_select_box",
+    "leptos_aria_selection",
+    "leptos_aria_slider",
+    "leptos_aria_table",
+    "leptos_aria_tabs",
+    "leptos_aria_tag",
+    "leptos_aria_text_field",
+    "leptos_aria_time_field",
+    "leptos_aria_toast",
+    "leptos_aria_toggle",
+    "leptos_aria_toolbar",
+    "leptos_aria_tree",
+    "leptos_aria_utils"
+  ],
+  "changed_files": [
+    "Cargo.lock",
+    "Cargo.toml",
+    "crates/leptos_aria/Cargo.toml",
+    "crates/leptos_aria_accordion/Cargo.toml",
+    "crates/leptos_aria_breadcrumbs/Cargo.toml",
+    "crates/leptos_aria_button/Cargo.toml",
+    "crates/leptos_aria_calendar/Cargo.toml",
+    "crates/leptos_aria_checkbox/Cargo.toml",
+    "crates/leptos_aria_cli/Cargo.lock",
+    "crates/leptos_aria_cli/Cargo.toml",
+    "crates/leptos_aria_color/Cargo.toml",
+    "crates/leptos_aria_combo_box/Cargo.toml",
+    "crates/leptos_aria_date/Cargo.toml",
+    "crates/leptos_aria_date_picker/Cargo.toml",
+    "crates/leptos_aria_disclosure/Cargo.toml",
+    "crates/leptos_aria_drop_zone/Cargo.toml",
+    "crates/leptos_aria_file_trigger/Cargo.toml",
+    "crates/leptos_aria_form/Cargo.toml",
+    "crates/leptos_aria_grid/Cargo.toml",
+    "crates/leptos_aria_interactions/Cargo.toml",
+    "crates/leptos_aria_link/Cargo.toml",
+    "crates/leptos_aria_list_box/Cargo.toml",
+    "crates/leptos_aria_menu/Cargo.toml",
+    "crates/leptos_aria_number_field/Cargo.toml",
+    "crates/leptos_aria_overlay/Cargo.toml",
+    "crates/leptos_aria_pagination/Cargo.toml",
+    "crates/leptos_aria_primitives/Cargo.toml",
+    "crates/leptos_aria_progress/Cargo.toml",
+    "crates/leptos_aria_radio/Cargo.toml",
+    "crates/leptos_aria_search_field/Cargo.toml",
+    "crates/leptos_aria_select_box/Cargo.toml",
+    "crates/leptos_aria_selection/Cargo.toml",
+    "crates/leptos_aria_slider/Cargo.toml",
+    "crates/leptos_aria_table/Cargo.toml",
+    "crates/leptos_aria_tabs/Cargo.toml",
+    "crates/leptos_aria_tag/Cargo.toml",
+    "crates/leptos_aria_text_field/Cargo.toml",
+    "crates/leptos_aria_time_field/Cargo.toml",
+    "crates/leptos_aria_toast/Cargo.toml",
+    "crates/leptos_aria_toggle/Cargo.toml",
+    "crates/leptos_aria_toolbar/Cargo.toml",
+    "crates/leptos_aria_tree/Cargo.toml",
+    "crates/leptos_aria_utils/Cargo.toml"
+  ],
+  "package_publications": [
+    {
+      "package": "leptos_aria",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_accordion",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_breadcrumbs",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_button",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_calendar",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_checkbox",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_cli",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_color",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_combo_box",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_date",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_date_picker",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_disclosure",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_drop_zone",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_file_trigger",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_form",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_grid",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_interactions",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_link",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_list_box",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_menu",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_number_field",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_overlay",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_pagination",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_primitives",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_progress",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_radio",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_search_field",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_select_box",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_selection",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_slider",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_table",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_tabs",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_tag",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_text_field",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_time_field",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_toast",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_toggle",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_toolbar",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_tree",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_utils",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.1",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    }
+  ],
+  "updated_changelogs": [],
+  "deleted_changesets": [
+    ".changeset/1792474939-main.md",
+    ".changeset/component-class-props.md",
+    ".changeset/headless-behaviour-fixes.md",
+    ".changeset/list-box-disabled-options.md",
+    ".changeset/list-box-unregister-keys.md",
+    ".changeset/live-component-previews.md",
+    ".changeset/nightly-feature.md",
+    ".changeset/otp-field-label.md",
+    ".changeset/select-box-and-menu-popups.md",
+    ".changeset/selection-borrows-and-crate-docs.md",
+    ".changeset/shadcn-registry-and-cli.md",
+    ".changeset/text-field-label-order.md",
+    ".changeset/toggle-group-mode-and-value.md"
+  ],
+  "changesets": [
+    {
+      "path": ".changeset/1792474939-main.md",
+      "summary": "Combo box filters as you type and commits on enter",
+      "details": "An uncontrolled combo box now filters its options as you type: the input text has a single source of truth, controlled or uncontrolled. The arrow keys move focus through the visible options and enter (or a click) selects the focused option and moves its label into the input. `ListBox` gains an optional `focused_key` prop so an owner such as the combo box input can drive option focus. `ComboBox` also gains a `class` prop, added after the built-in `leptos-aria-combo-box` class on a new root element.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "patch",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "patch"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "77cd4aa68f965b4afc7695b1a508d8e92146c7ac",
+            "short_sha": "77cd4aa",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/77cd4aa68f965b4afc7695b1a508d8e92146c7ac",
+            "authored_at": "2026-10-20T12:24:33+01:00",
+            "committed_at": "2026-10-20T12:24:33+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#31",
+            "title": "fix(combo_box): filter uncontrolled input and commit focused option",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/31",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "77cd4aa68f965b4afc7695b1a508d8e92146c7ac",
+            "short_sha": "77cd4aa",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/77cd4aa68f965b4afc7695b1a508d8e92146c7ac",
+            "authored_at": "2026-10-20T12:24:33+01:00",
+            "committed_at": "2026-10-20T12:24:33+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#31",
+            "title": "fix(combo_box): filter uncontrolled input and commit focused option",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/31",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/component-class-props.md",
+      "summary": "Every component takes a class prop",
+      "details": "Headless components now accept `class` directly (`<AccordionTrigger class=\"data-[state=open]:font-bold\">`) instead of requiring Leptos' `attr:class`. The class is a reactive `Signal<String>`, so strings and closures both work, and it is appended after the built-in `leptos-aria-*` class. Also fixes Pagination's next button, which never fired because an unbraced `>=` in its `disabled` attribute ended the tag early.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "minor",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "minor"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "f6d4e4f856d7ec9646b0d6d000f73938bf31da7d",
+            "short_sha": "f6d4e4f",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/f6d4e4f856d7ec9646b0d6d000f73938bf31da7d",
+            "authored_at": "2026-10-20T07:38:31+01:00",
+            "committed_at": "2026-10-20T07:38:31+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#32",
+            "title": "feat: a class prop on every headless component",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/32",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "f6d4e4f856d7ec9646b0d6d000f73938bf31da7d",
+            "short_sha": "f6d4e4f",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/f6d4e4f856d7ec9646b0d6d000f73938bf31da7d",
+            "authored_at": "2026-10-20T07:38:31+01:00",
+            "committed_at": "2026-10-20T07:38:31+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#32",
+            "title": "feat: a class prop on every headless component",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/32",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/headless-behaviour-fixes.md",
+      "summary": "Reactive progress, pagination, slider, and avatar fixes",
+      "details": "Avatar now shows its image once it loads: the image stays hidden in the tree until its load event fires, and a failed load keeps the fallback. ProgressBar and Meter recompute aria-valuenow, aria-valuetext, and the fill width whenever the value or indeterminate state changes, and ProgressBar renders the label its aria-labelledby points at. Pagination moves aria-current and data-current with the page and re-renders its buttons when the count changes. A controlled Slider value now moves the native range input. TextField renders its label only when one is given, takes id and aria_label props, and keeps a controlled value in the input after typing; Radio no longer puts its input's id on the label too. Tabs skip disabled tabs with the arrow keys, Home, End, and clicks, and keep the first enabled tab focusable while nothing is selected.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "patch",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "patch"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "c9594d2500e8b20ddb46032f3f0016e9c8509284",
+            "short_sha": "c9594d2",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/c9594d2500e8b20ddb46032f3f0016e9c8509284",
+            "authored_at": "2026-10-20T10:05:22+01:00",
+            "committed_at": "2026-10-20T10:05:22+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#36",
+            "title": "fix: reactive progress, pagination, slider, and avatar state",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/36",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "c9594d2500e8b20ddb46032f3f0016e9c8509284",
+            "short_sha": "c9594d2",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/c9594d2500e8b20ddb46032f3f0016e9c8509284",
+            "authored_at": "2026-10-20T10:05:22+01:00",
+            "committed_at": "2026-10-20T10:05:22+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#36",
+            "title": "fix: reactive progress, pagination, slider, and avatar state",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/36",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/list-box-disabled-options.md",
+      "summary": "List box options honour their disabled state",
+      "details": "A ListBoxOption with is_disabled set can no longer be selected by a click or by Enter or Space, and arrow keys, Home, End, and type-ahead skip it. The flag is read when it is needed, so an option disabled after it gained focus is ignored too. ListBoxContext gains register_option, which records an option's key with its disabled flag, and is_key_disabled; register_key still registers an enabled option. Type-ahead without a focused option now checks the first option first. Menu relies on the list box for disabled items instead of guarding them itself.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "patch",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "patch"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "444b2eaff390233118beda0cf3c99075011aa9b1",
+            "short_sha": "444b2ea",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/444b2eaff390233118beda0cf3c99075011aa9b1",
+            "authored_at": "2026-10-20T12:01:55+01:00",
+            "committed_at": "2026-10-20T12:01:55+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#40",
+            "title": "fix(list_box): skip and refuse disabled options",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/40",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "c112cb935e0a5b8cf98ec3378b26760da796f619",
+            "short_sha": "c112cb9",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/c112cb935e0a5b8cf98ec3378b26760da796f619",
+            "authored_at": "2026-10-21T23:12:13+01:00",
+            "committed_at": "2026-10-21T23:12:13+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#43",
+            "title": "fix(list_box): unregister options when they unmount",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/43",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/list-box-unregister-keys.md",
+      "summary": "List box options unregister when they unmount",
+      "details": "A ListBoxOption now removes its key from the list box when it unmounts, so a list box whose options re-render, such as a filtering ComboBox, no longer piles up duplicate and stale keys. Keyboard navigation follows the options that are mounted, and aria-activedescendant clears when the focused option goes away. Each option gets a document-unique id when it registers, which stays the same while it is mounted, so ids no longer shift or collide as options come and go. ListBoxContext gains options, a map from key to ListBoxOptionEntry holding the option's id and disabled flag. A registration through register_option or register_key now lasts until the current reactive owner is cleaned up.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "patch",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "patch"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "c112cb935e0a5b8cf98ec3378b26760da796f619",
+            "short_sha": "c112cb9",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/c112cb935e0a5b8cf98ec3378b26760da796f619",
+            "authored_at": "2026-10-21T23:12:13+01:00",
+            "committed_at": "2026-10-21T23:12:13+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#43",
+            "title": "fix(list_box): unregister options when they unmount",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/43",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "c112cb935e0a5b8cf98ec3378b26760da796f619",
+            "short_sha": "c112cb9",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/c112cb935e0a5b8cf98ec3378b26760da796f619",
+            "authored_at": "2026-10-21T23:12:13+01:00",
+            "committed_at": "2026-10-21T23:12:13+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#43",
+            "title": "fix(list_box): unregister options when they unmount",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/43",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/live-component-previews.md",
+      "summary": "Live component previews",
+      "details": "Every component page on the website now runs its usage example live, with Preview and Code tabs. The examples are compiled from each registry component's own module docs, so every usage snippet `leptos-aria add` copies is now checked by CI, and the accordion, alert dialog, card, dialog, hover card, and label snippets now style their surrounding elements.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "patch",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "patch"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "b73c30b33f95fe81aaee2ad76e0477d9f5726635",
+            "short_sha": "b73c30b",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/b73c30b33f95fe81aaee2ad76e0477d9f5726635",
+            "authored_at": "2026-10-20T12:02:36+01:00",
+            "committed_at": "2026-10-20T12:02:36+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#35",
+            "title": "feat: live, interactive previews on the component pages",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/35",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "b73c30b33f95fe81aaee2ad76e0477d9f5726635",
+            "short_sha": "b73c30b",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/b73c30b33f95fe81aaee2ad76e0477d9f5726635",
+            "authored_at": "2026-10-20T12:02:36+01:00",
+            "committed_at": "2026-10-20T12:02:36+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#35",
+            "title": "feat: live, interactive previews on the component pages",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/35",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/nightly-feature.md",
+      "summary": "Opt-in `nightly` feature",
+      "details": "Every crate that depends on `leptos` now exposes a `nightly` cargo feature that forwards to `leptos`'s own `nightly` feature, unlocking nightly-only signal and renderer optimizations (signals callable as functions, faster view codegen). The facade's feature enables it across all member crates at once: `leptos_aria = { version = \"0.1\", features = [\"nightly\"] }`. The feature is additive and a no-op on stable toolchains, and CI now lints the workspace with it enabled. The registry components also wrap their derived class closures in `Signal::derive` explicitly, so the components you copy with the CLI compile unchanged on nightly toolchains.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "minor",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "minor"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "7689985d1924b82fdff4be000211df3c3fc6e910",
+            "short_sha": "7689985",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/7689985d1924b82fdff4be000211df3c3fc6e910",
+            "authored_at": "2026-10-22T03:55:10+01:00",
+            "committed_at": "2026-10-22T03:55:10+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#48",
+            "title": "feat: opt-in nightly feature for leptos optimizations",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/48",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "7689985d1924b82fdff4be000211df3c3fc6e910",
+            "short_sha": "7689985",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/7689985d1924b82fdff4be000211df3c3fc6e910",
+            "authored_at": "2026-10-22T03:55:10+01:00",
+            "committed_at": "2026-10-22T03:55:10+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#48",
+            "title": "feat: opt-in nightly feature for leptos optimizations",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/48",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/otp-field-label.md",
+      "summary": "One-time password field labels its group",
+      "details": "`OneTimePasswordField` now renders its label before the cells, as a `span` that names the `role=\"group\"` through `aria-labelledby`. Before, it rendered a `<label for>` after the group, pointing at an id no element had. Attributes spread onto the field (`attr:data-slot`, …) now reach only the group, not the label. `use_labels` also stops emitting an empty `aria-labelledby=\"\"` on unlabelled fields: text fields without a visible label, and progress bars.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "patch",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "patch"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "4711b6f2c9dd248545a0dc76a81ffe0c8ee67435",
+            "short_sha": "4711b6f",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/4711b6f2c9dd248545a0dc76a81ffe0c8ee67435",
+            "authored_at": "2026-10-21T23:09:16+01:00",
+            "committed_at": "2026-10-21T23:09:16+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#42",
+            "title": "fix(text_field): label the one-time password group and render it first",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/42",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "4711b6f2c9dd248545a0dc76a81ffe0c8ee67435",
+            "short_sha": "4711b6f",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/4711b6f2c9dd248545a0dc76a81ffe0c8ee67435",
+            "authored_at": "2026-10-21T23:09:16+01:00",
+            "committed_at": "2026-10-21T23:09:16+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#42",
+            "title": "fix(text_field): label the one-time password group and render it first",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/42",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/select-box-and-menu-popups.md",
+      "summary": "Select box and menus manage their own popups",
+      "details": "SelectBox shows its chosen option on the trigger, hides its list until opened, and closes on a choice, escape, or a press outside, moving focus into the list and back. It takes value, default_value, on_change, and placeholder, plus trigger_class, popup_class, option_class, an indicator for each option, and trigger children. Its class now sits on a new root element. Menu runs the chosen item, by click or with Enter or Space on the highlighted one, through on_action on the menu and on each MenuItem, then closes, and skips disabled items. MenuTrigger takes an is_open signal, shares it with the Menu inside, and closes on an outside press. ListBox sets aria-activedescendant to the highlighted option and drops aria-labelledby when it has no label. The overlay crate adds use_popup_focus, which moves focus into a popup on open and back to its trigger on close.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "minor",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "minor"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "4036b2331fa6f52ff8bfd124059aae3be2f427cb",
+            "short_sha": "4036b23",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/4036b2331fa6f52ff8bfd124059aae3be2f427cb",
+            "authored_at": "2026-10-20T10:05:23+01:00",
+            "committed_at": "2026-10-20T10:05:23+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#38",
+            "title": "feat: select box and menus manage their own popups",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/38",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "4036b2331fa6f52ff8bfd124059aae3be2f427cb",
+            "short_sha": "4036b23",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/4036b2331fa6f52ff8bfd124059aae3be2f427cb",
+            "authored_at": "2026-10-20T10:05:23+01:00",
+            "committed_at": "2026-10-20T10:05:23+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#38",
+            "title": "feat: select box and menus manage their own popups",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/38",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/selection-borrows-and-crate-docs.md",
+      "summary": "Selection checks no longer clone whole collections",
+      "details": "List box, tags, tree, tabs, toggle groups, checkbox groups, combo box, and selection state now borrow their reactive sets instead of cloning them per item and per keypress, removing quadratic work on selection changes. Every crate also gains a real description, a logo'd readme for crates.io, and the leptos_aria logo and favicon on docs.rs.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "patch",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "patch"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "e737aaf79691cb3c59c46fa34677762d8c5c6db0",
+            "short_sha": "e737aaf",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/e737aaf79691cb3c59c46fa34677762d8c5c6db0",
+            "authored_at": "2026-10-19T23:54:10+01:00",
+            "committed_at": "2026-10-19T23:54:10+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#30",
+            "title": "feat: logo, generated website, and selection performance pass",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/30",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "e737aaf79691cb3c59c46fa34677762d8c5c6db0",
+            "short_sha": "e737aaf",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/e737aaf79691cb3c59c46fa34677762d8c5c6db0",
+            "authored_at": "2026-10-19T23:54:10+01:00",
+            "committed_at": "2026-10-19T23:54:10+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#30",
+            "title": "feat: logo, generated website, and selection performance pass",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/30",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/shadcn-registry-and-cli.md",
+      "summary": "shadcn-style component registry and CLI",
+      "details": "`leptos-aria init` writes `leptos-aria.json`, shadcn's theme CSS variables, and a `cn` helper backed by `tw_merge`. `leptos-aria add <name>` copies Tailwind-styled components into `src/components/ui`, declares their modules, runs `cargo add`, and writes their CSS. `list`, `view`, and `diff` read the registry, and `build` turns any `registry.json` into a hostable registry in shadcn's registry-item schema, with namespaced registries supported. The website gains a component index, a page per component, and a CLI guide.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "minor",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "minor"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "239b737d97667982d08c8136122ec69f4479740a",
+            "short_sha": "239b737",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/239b737d97667982d08c8136122ec69f4479740a",
+            "authored_at": "2026-10-20T07:38:32+01:00",
+            "committed_at": "2026-10-20T07:38:32+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#33",
+            "title": "feat: shadcn-style component registry, CLI, and component pages",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/33",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "239b737d97667982d08c8136122ec69f4479740a",
+            "short_sha": "239b737",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/239b737d97667982d08c8136122ec69f4479740a",
+            "authored_at": "2026-10-20T07:38:32+01:00",
+            "committed_at": "2026-10-20T07:38:32+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#33",
+            "title": "feat: shadcn-style component registry, CLI, and component pages",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/33",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/text-field-label-order.md",
+      "summary": "Text fields render their label first",
+      "details": "`TextField` and `TextArea` now render their `<label>` before the field, and attributes spread onto them (`attr:data-slot`, `attr:autocomplete`, …) reach only the `<input>` or `<textarea>`, matching upstream `useTextField`. Previously the label came after the field and received every spread attribute too, so the registry's `Input` and `Textarea` showed their label below the field. `TextField` also no longer renders an empty `<label>` when it has no label.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "patch",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "patch"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "60720ce9276b7a670cd8855fb07132646f20763b",
+            "short_sha": "60720ce",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/60720ce9276b7a670cd8855fb07132646f20763b",
+            "authored_at": "2026-10-20T12:23:27+01:00",
+            "committed_at": "2026-10-20T12:23:27+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#41",
+            "title": "fix(text_field): render the label first and spread attributes onto the field",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/41",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "60720ce9276b7a670cd8855fb07132646f20763b",
+            "short_sha": "60720ce",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/60720ce9276b7a670cd8855fb07132646f20763b",
+            "authored_at": "2026-10-20T12:23:27+01:00",
+            "committed_at": "2026-10-20T12:23:27+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#41",
+            "title": "fix(text_field): render the label first and spread attributes onto the field",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/41",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    },
+    {
+      "path": ".changeset/toggle-group-mode-and-value.md",
+      "summary": "Toggle groups gain multiple mode and a value",
+      "details": "ToggleGroup's mode prop now takes the public ToggleGroupMode (Single or Multiple), so multiple selection is reachable. The group also takes a controlled value with an on_change callback that receives every pressed value.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "minor",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "minor"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "630864350acc25746e19553495a960caad3b4c12",
+            "short_sha": "6308643",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/630864350acc25746e19553495a960caad3b4c12",
+            "authored_at": "2026-10-20T10:05:22+01:00",
+            "committed_at": "2026-10-20T10:05:22+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#37",
+            "title": "feat: multiple mode and a value for toggle groups",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/37",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "630864350acc25746e19553495a960caad3b4c12",
+            "short_sha": "6308643",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/630864350acc25746e19553495a960caad3b4c12",
+            "authored_at": "2026-10-20T10:05:22+01:00",
+            "committed_at": "2026-10-20T10:05:22+01:00",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#37",
+            "title": "feat: multiple mode and a value for toggle groups",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/37",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    }
+  ],
+  "changelogs": [],
+  "provider": {
+    "kind": "github",
+    "owner": "ifiokjr",
+    "repo": "leptos_aria",
+    "host": null
+  }
+}
