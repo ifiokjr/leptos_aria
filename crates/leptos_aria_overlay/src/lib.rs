@@ -16,7 +16,6 @@ pub use hooks::use_prevent_scroll;
 use leptos::prelude::*;
 use leptos_aria_utils::merge_class;
 use wasm_bindgen::JsCast;
-use wasm_bindgen::closure::Closure;
 
 mod focus_manager;
 mod hooks;
@@ -66,7 +65,7 @@ pub fn Modal(
 			class=merge_class("leptos-aria-modal", class)
 			node_ref=overlay
 			role=role
-			aria-modal="true"
+			aria-modal=matches!(role, "dialog" | "alertdialog").then_some("true")
 			hidden=move || !is_open.get()
 			style="position: fixed; inset: 0; display: grid; place-items: center;"
 		>
@@ -247,15 +246,64 @@ pub fn Tooltip(
 ) -> impl IntoView {
 	let tooltip_id = leptos_aria_utils::use_id();
 	let is_open = RwSignal::new(false);
-	let trigger_ref: NodeRef<leptos::html::Span> = NodeRef::new();
-
-	apply_tooltip_triggers(trigger_ref, trigger.get_untracked(), is_open);
+	let is_focused = RwSignal::new(false);
+	let generation = RwSignal::new(0_u64);
+	let description_id = tooltip_id.clone();
 
 	view! {
 		<span
 			aria-describedby=tooltip_id.clone()
 			style="position: relative;"
-			node_ref=trigger_ref
+			on:pointerenter=move |_| {
+				if trigger.get_untracked() != TooltipTrigger::Hover {
+					return;
+				}
+
+				generation.update(|value| *value += 1);
+				let current = generation.get_untracked();
+
+				set_timeout(move || {
+					if generation.try_get_untracked() == Some(current) {
+						is_open.set(true);
+					}
+				}, TOOLTIP_DELAY);
+			}
+			on:pointerleave=move |_| {
+				generation.update(|value| *value += 1);
+
+				if !is_focused.get_untracked() {
+					is_open.set(false);
+				}
+			}
+			on:focusin=move |event| {
+				generation.update(|value| *value += 1);
+				is_focused.set(true);
+				is_open.set(true);
+
+				if let Some(target) = event.target().and_then(|target| target.dyn_into::<web_sys::Element>().ok()) {
+					let mut ids = target.get_attribute("aria-describedby").unwrap_or_default();
+
+					if !ids.split_whitespace().any(|id| id == description_id) {
+						if !ids.is_empty() {
+							ids.push(' ');
+						}
+
+						ids.push_str(&description_id);
+						target.set_attribute("aria-describedby", &ids).expect("aria-describedby is a valid attribute");
+					}
+				}
+			}
+			on:focusout=move |_| {
+				generation.update(|value| *value += 1);
+				is_focused.set(false);
+				is_open.set(false);
+			}
+			on:keydown=move |event| {
+				if event.key() == "Escape" {
+					generation.update(|value| *value += 1);
+					is_open.set(false);
+				}
+			}
 		>
 			{children()}
 		</span>
@@ -269,50 +317,6 @@ pub fn Tooltip(
 			{label.clone()}
 		</span>
 	}
-}
-
-/// Watch the trigger element and show the tooltip on the configured trigger.
-fn apply_tooltip_triggers(
-	trigger_ref: NodeRef<leptos::html::Span>,
-	trigger: TooltipTrigger,
-	is_open: RwSignal<bool>,
-) {
-	Effect::new(move |_| {
-		let Some(element) = trigger_ref.get() else {
-			return;
-		};
-
-		let (open_event, close_event) = match trigger {
-			TooltipTrigger::Focus => ("focus", "blur"),
-			TooltipTrigger::Hover => ("pointerenter", "pointerleave"),
-		};
-
-		let open = show_after_delay(is_open);
-		let close = hide_now(is_open);
-
-		let _ = element.add_event_listener_with_callback(
-			open_event,
-			open.as_ref().unchecked_ref::<js_sys::Function>(),
-		);
-		let _ = element.add_event_listener_with_callback(
-			close_event,
-			close.as_ref().unchecked_ref::<js_sys::Function>(),
-		);
-
-		let _ = open;
-		let _ = close;
-	});
-}
-
-/// Show the tooltip after a short delay, cancelled by an earlier hide.
-fn show_after_delay(is_open: RwSignal<bool>) -> Closure<dyn Fn()> {
-	Closure::new(move || {
-		set_timeout(move || is_open.set(true), TOOLTIP_DELAY);
-	})
-}
-
-fn hide_now(is_open: RwSignal<bool>) -> Closure<dyn Fn()> {
-	Closure::new(move || is_open.set(false))
 }
 
 /// The close behavior: the owner's callback, or flipping the open signal.

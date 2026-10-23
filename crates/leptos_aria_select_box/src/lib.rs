@@ -99,6 +99,7 @@ pub fn SelectBox(
 	let trigger = NodeRef::<leptos::html::Button>::new();
 	let options = Arc::new(options);
 	let placeholder = placeholder.unwrap_or_else(|| "Select…".to_string());
+	let list_id = leptos_aria_utils::use_id();
 
 	use_overlay_dismiss(root, is_open.into(), Box::new(move || is_open.set(false)));
 	use_popup_focus(root, trigger, is_open.into(), "[role=listbox]");
@@ -153,6 +154,7 @@ pub fn SelectBox(
 				type="button"
 				class=merge_class("leptos-aria-select-box__trigger", trigger_class)
 				role="combobox"
+				aria-controls=list_id.clone()
 				aria-label=label.clone()
 				aria-haspopup="listbox"
 				aria-expanded=move || is_open.get().to_string()
@@ -171,7 +173,7 @@ pub fn SelectBox(
 				hidden=move || !is_open.get()
 				on:keydown=close_on_choice
 			>
-				<ListBox nostrip:label=label selection=selection on_change=choose>
+				<ListBox id=list_id nostrip:label=label selection=selection on_change=choose>
 					{options
 						.iter()
 						.cloned()

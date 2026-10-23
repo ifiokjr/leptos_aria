@@ -1,0 +1,13 @@
+# Browser accessibility tests
+
+Run `devenv shell test:e2e` from the repository root. It builds the production site and WASM previews, installs the locked test dependencies and browsers, checks TypeScript, and runs Playwright. Linux machines also need `cd e2e && npx playwright install --with-deps chromium firefox webkit` once to install system libraries.
+
+Use `devenv shell test:e2e --project=chromium` for one browser. After building, `cd e2e && npm test -- --grep 'tabs:' --repeat-each=10` repeats a focused flow without rebuilding. Playwright starts a loopback-only static server automatically and fails if that port is already occupied.
+
+The registry manifest drives the audit inventory, so adding a registry component automatically adds coverage. Every usage example and its documentation page is audited with axe WCAG 2 A/AA, 2.1 A/AA, and 2.2 AA rules. Documentation tests also switch Preview/Code with the keyboard and audit the live iframe. The landing page, component index, CLI guide, and Tailwind guide have landmark and skip-link checks.
+
+Keyboard journeys exercise tab focus/selection and wrapping, expansion, native fields and labels, disabled buttons, checkboxes, switches, radio groups, sliders, toggles, pagination, menu/listbox selection, dialog focus containment and restoration, popovers, and tooltips. Tests run in Chromium, Firefox, WebKit, dark Chromium, and mobile Chromium with reduced motion. Keyboard tests use desktop-style key events even in the mobile viewport; they do not simulate a screen reader or mobile assistive technology.
+
+The app, components, generated examples, routing, and styles are real. External requests are blocked, so the avatar example exercises its fallback and never depends on a remote image. Uncaught browser errors fail tests. No axe rule or component is suppressed. Automated checks cannot establish full WCAG conformance: screen-reader announcements, touch exploration, and usability still need human assessment. Headless component APIs without registry examples retain their native/WASM tests; the Playwright inventory covers the public demos, not every possible composition of every exported API.
+
+CI builds the site once, runs each browser project as a separate check, and retains HTML reports, failure screenshots, and traces for 14 days. Open a local report with `cd e2e && npx playwright show-report`; open a downloaded trace with `npx playwright show-trace path/to/trace.zip`. There are no automatic retries to conceal flaky failures.

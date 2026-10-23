@@ -26,8 +26,9 @@ pub struct PageMeta<'a> {
 /// relative prefix back to the site root (`../` for `components/button.html`),
 /// so asset and nav links work at any depth.
 ///
-/// Metadata is HTML-escaped; `content` is inserted verbatim and last, so
-/// placeholder-like text inside a page is never substituted.
+/// Metadata is HTML-escaped; `content` is inserted last, so placeholder-like
+/// text inside a page is never substituted. Code blocks are keyboard focusable
+/// so their overflow can be scrolled without a pointer in every browser.
 pub fn render_layout(layout: &str, page: &PageMeta<'_>, content: &str) -> String {
 	let url = format!("{SITE_URL}{}", page.path);
 
@@ -37,7 +38,10 @@ pub fn render_layout(layout: &str, page: &PageMeta<'_>, content: &str) -> String
 		.replace("{{root}}", &"../".repeat(page.path.matches('/').count()))
 		.replace("{{title}}", &escape_html(page.title))
 		.replace("{{description}}", &escape_html(page.description))
-		.replace("{{content}}", content)
+		.replace(
+			"{{content}}",
+			&content.replace("<pre", "<pre tabindex=\"0\""),
+		)
 }
 
 /// Build `llms-full.txt`: the `llms.txt` index followed by every document in

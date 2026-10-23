@@ -16,6 +16,16 @@ use leptos_aria_utils::use_id;
 /// A callback invoked when the focused option changes.
 pub type BoxedFocusChangeCallback = Box<dyn Fn(Option<String>) + 'static>;
 
+/// The semantics of a keyboard collection and its items.
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+pub enum ListBoxRole {
+	/// Selectable options in a list box.
+	#[default]
+	ListBox,
+	/// Actions in a menu, with the same keyboard navigation.
+	Menu,
+}
+
 /// What a list box knows about one mounted option.
 #[derive(Clone)]
 pub struct ListBoxOptionEntry {
@@ -209,6 +219,12 @@ fn unregister_option(
 /// focused option.
 #[component]
 pub fn ListBox(
+	/// The collection's semantics; menu actions use menu/menuitem roles.
+	#[prop(optional)]
+	role: ListBoxRole,
+	/// An explicit id for an owning combobox's `aria-controls`.
+	#[prop(optional)]
+	id: Option<String>,
 	/// Whether the user can select more than one option.
 	#[prop(optional, into)]
 	is_multiple: Signal<bool>,
@@ -253,7 +269,7 @@ pub fn ListBox(
 		state,
 		keys: RwSignal::new(CollectionKeys::default()),
 		focused_key: focused_key.unwrap_or_else(|| RwSignal::new(None)),
-		id: use_id(),
+		id: id.unwrap_or_else(use_id),
 		options: StoredValue::new(HashMap::new()),
 	};
 
@@ -268,10 +284,10 @@ pub fn ListBox(
 		<div
 			class=merge_class("", class)
 			id=listbox_id.clone()
-			role="listbox"
+			role=if role == ListBoxRole::Menu { "menu" } else { "listbox" }
 			aria-labelledby=label_id.clone()
 			aria-activedescendant=move || active_context.active_descendant()
-			aria-multiselectable=move || is_multiple.get().to_string()
+			aria-multiselectable=move || (role == ListBoxRole::ListBox).then(|| is_multiple.get().to_string())
 			tabindex=0
 			on:keydown=move |event: web_sys::KeyboardEvent| handle_key_down(&context, &event)
 		>
@@ -298,6 +314,9 @@ fn handle_key_down(context: &ListBoxContext, event: &web_sys::KeyboardEvent) {
 /// An option of a list box.
 #[component]
 pub fn ListBoxOption(
+	/// The item's semantics, matching the enclosing collection.
+	#[prop(optional)]
+	role: ListBoxRole,
 	/// The value of the option, reported in the selection.
 	#[prop(into)]
 	value: String,
@@ -332,8 +351,8 @@ pub fn ListBoxOption(
 		<div
 			class=merge_class("", class)
 			id=option_id.clone()
-			role="option"
-			aria-selected=move || is_selected.get().to_string()
+			role=if role == ListBoxRole::Menu { "menuitem" } else { "option" }
+			aria-selected=move || (role == ListBoxRole::ListBox).then(|| is_selected.get().to_string())
 			aria-disabled=move || is_disabled.get().to_string()
 			data-focused=move || is_focused.get().to_string()
 			on:click={

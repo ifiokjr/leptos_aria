@@ -8,6 +8,7 @@ use std::sync::Arc;
 use leptos::prelude::*;
 use leptos_aria_list_box::ListBox;
 use leptos_aria_list_box::ListBoxOption;
+use leptos_aria_list_box::ListBoxRole;
 use leptos_aria_overlay::use_overlay_dismiss;
 use leptos_aria_overlay::use_popup_focus;
 use leptos_aria_selection::Selection;
@@ -105,7 +106,6 @@ pub fn Menu(
 	view! {
 		<div
 			class=merge_class("", class)
-			role="menu"
 			hidden=move || !is_open.get()
 			on:keydown=move |event: web_sys::KeyboardEvent| {
 				if event.key() == "Escape" {
@@ -114,6 +114,7 @@ pub fn Menu(
 			}
 		>
 			<ListBox
+				role=ListBoxRole::Menu
 				nostrip:label=label.filter(|label| !label.is_empty())
 				selection=Signal::from(Selection::None)
 				on_change=choose
@@ -146,8 +147,8 @@ pub fn MenuItem(
 	}
 
 	view! {
-		<ListBoxOption value=value is_disabled=is_disabled class=class>
-			<span role="menuitem">{children()}</span>
+		<ListBoxOption role=ListBoxRole::Menu value=value is_disabled=is_disabled class=class>
+			{children()}
 		</ListBoxOption>
 	}
 }
@@ -212,7 +213,7 @@ mod tests {
 			.unwrap()
 			.unwrap();
 		let option = document()
-			.query_selector("[role='option'].menu-test-item")
+			.query_selector("[role='menuitem'].menu-test-item")
 			.unwrap();
 
 		assert_eq!(
@@ -276,7 +277,7 @@ mod tests {
 			}
 		});
 
-		let listbox = find(".menu-test-enter [role='listbox']");
+		let listbox = find(".menu-test-enter [role='menu']");
 
 		key_down(&listbox, "ArrowDown");
 		key_down(&listbox, "ArrowDown");
@@ -341,7 +342,7 @@ mod tests {
 			}
 		});
 
-		find(".menu-test-disabled [role='option']").click();
+		find(".menu-test-disabled [role='menuitem']").click();
 		tick().await;
 
 		assert_eq!(chosen.get_untracked(), Vec::<String>::new());
@@ -383,7 +384,7 @@ pub fn MenuTrigger(
 
 	provide_context(MenuTriggerContext { is_open });
 	use_overlay_dismiss(root, is_open.into(), Box::new(move || is_open.set(false)));
-	use_popup_focus(root, button, is_open.into(), "[role=listbox]");
+	use_popup_focus(root, button, is_open.into(), "[role=menu]");
 
 	view! {
 		<div class=merge_class("leptos-aria-menu-trigger", class) node_ref=root>
@@ -484,7 +485,7 @@ mod trigger_tests {
 		tick().await;
 		assert!(is_open.get_untracked(), "the owner sees the menu open");
 
-		find(".trigger-test-choose [role='option']").click();
+		find(".trigger-test-choose [role='menuitem']").click();
 		tick().await;
 
 		assert!(!is_open.get_untracked(), "choosing closes the trigger");
