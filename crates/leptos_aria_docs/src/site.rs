@@ -27,7 +27,7 @@ pub struct PageMeta<'a> {
 /// so asset and nav links work at any depth.
 ///
 /// Metadata is HTML-escaped; `content` is inserted last, so placeholder-like
-/// text inside a page is never substituted. Code blocks are keyboard focusable
+/// text inside a page is never substituted. Code blocks and tables are keyboard focusable
 /// so their overflow can be scrolled without a pointer in every browser.
 pub fn render_layout(layout: &str, page: &PageMeta<'_>, content: &str) -> String {
 	let url = format!("{SITE_URL}{}", page.path);
@@ -40,7 +40,9 @@ pub fn render_layout(layout: &str, page: &PageMeta<'_>, content: &str) -> String
 		.replace("{{description}}", &escape_html(page.description))
 		.replace(
 			"{{content}}",
-			&content.replace("<pre", "<pre tabindex=\"0\""),
+			&content
+				.replace("<pre", "<pre tabindex=\"0\"")
+				.replace("<table>", "<table tabindex=\"0\">"),
 		)
 }
 

@@ -8,6 +8,7 @@
 //!     <RadioGroup label="Density" default_value="comfortable">
 //!         <RadioGroupItem value="default">"Default"</RadioGroupItem>
 //!         <RadioGroupItem value="comfortable">"Comfortable"</RadioGroupItem>
+//!         <RadioGroupItem value="spacious" is_disabled=true>"Spacious"</RadioGroupItem>
 //!         <RadioGroupItem value="compact">"Compact"</RadioGroupItem>
 //!     </RadioGroup>
 //! }

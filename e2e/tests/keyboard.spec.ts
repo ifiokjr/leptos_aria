@@ -110,6 +110,7 @@ test("radio group: arrows change selection and focus without extra Tab stops", a
 	const comfortable = page.getByRole("radio", { name: "Comfortable", exact: true });
 	const compact = page.getByRole("radio", { name: "Compact", exact: true });
 	await expect(page.getByRole("radiogroup", { name: "Density" })).toBeVisible();
+	await expect(page.getByRole("radio", { name: "Spacious", exact: true })).toBeDisabled();
 	await page.keyboard.press("Tab");
 	await expect(comfortable).toBeFocused();
 	await page.keyboard.press("ArrowDown");
@@ -118,6 +119,9 @@ test("radio group: arrows change selection and focus without extra Tab stops", a
 	await expect(comfortable).not.toBeChecked();
 	await page.keyboard.press("ArrowDown");
 	await expect(page.getByRole("radio", { name: "Default", exact: true })).toBeChecked();
+	await page.keyboard.press("ArrowUp");
+	await expect(compact).toBeFocused();
+	await expect(compact).toBeChecked();
 	await audit(page);
 });
 

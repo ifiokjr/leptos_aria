@@ -30,10 +30,11 @@ for (const component of components) {
 }
 
 for (const path of ["/", "/components.html", "/cli.html", "/tailwind.html"]) {
-	test(`${path}: site landmarks, skip link, and WCAG audit`, async ({ page }) => {
+	test(`${path}: site landmarks, skip link, and WCAG audit`, async ({ page, browserName }) => {
 		await page.goto(path);
 		await expect(page.getByRole("main")).toHaveCount(1);
-		await page.keyboard.press("Tab");
+		// Safari's default link navigation uses Option-Tab on macOS.
+		await page.keyboard.press(browserName === "webkit" && process.platform === "darwin" ? "Alt+Tab" : "Tab");
 		await expect(page.getByRole("link", { name: /skip/i })).toBeFocused();
 		await page.keyboard.press("Enter");
 		await expect(page).toHaveURL(/#main$/);

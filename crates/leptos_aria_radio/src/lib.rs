@@ -6,6 +6,7 @@ use std::sync::Arc;
 use leptos::prelude::*;
 use leptos_aria_utils::merge_class;
 use leptos_aria_utils::use_id;
+use wasm_bindgen::JsCast;
 
 /// A callback invoked when the selected value changes.
 pub type BoxedRadioChangeCallback = Box<dyn Fn(Option<String>) + Send + Sync>;
@@ -196,6 +197,7 @@ pub fn RadioGroup(
 	view! {
 		<div
 			role="radiogroup"
+			on:keydown=move |event| wrap_radio_focus(&event)
 			class=merge_class("", class)
 			aria-labelledby=label_id.clone()
 			on:focusout=move |_| {
@@ -210,6 +212,53 @@ pub fn RadioGroup(
 			{children()}
 		</div>
 	}
+}
+
+/// Native `WebKit` radio navigation stops at the edges; complete the APG wrap.
+fn wrap_radio_focus(event: &web_sys::KeyboardEvent) {
+	let forward = match event.key().as_str() {
+		"ArrowDown" | "ArrowRight" => true,
+		"ArrowUp" | "ArrowLeft" => false,
+		_ => return,
+	};
+	let Some(current) = event
+		.target()
+		.and_then(|target| target.dyn_into::<web_sys::HtmlInputElement>().ok())
+	else {
+		return;
+	};
+	let Some(group) = current
+		.closest("[role=radiogroup]")
+		.expect("a valid selector")
+	else {
+		return;
+	};
+	let nodes = group
+		.query_selector_all("input[type=radio]:not(:disabled)")
+		.expect("a valid selector");
+	let radios: Vec<web_sys::HtmlInputElement> = (0..nodes.length())
+		.filter_map(|index| {
+			nodes
+				.item(index)?
+				.dyn_into::<web_sys::HtmlInputElement>()
+				.ok()
+		})
+		.filter(|radio| radio.name() == current.name())
+		.collect();
+	let Some((first, last)) = radios.first().zip(radios.last()) else {
+		return;
+	};
+	let next = if forward && current == *last {
+		first
+	} else if !forward && current == *first {
+		last
+	} else {
+		return;
+	};
+
+	event.prevent_default();
+	next.focus().expect("a connected radio can receive focus");
+	next.click();
 }
 
 /// An individual radio button in a radio group.
