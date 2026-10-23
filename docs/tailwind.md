@@ -58,7 +58,7 @@ A short `@custom-variant` block in your CSS turns every state into a one-word va
 | `data-current`     | `true`                    | Pagination page buttons                                                                    |
 | `data-orientation` | `horizontal` / `vertical` | Separator, Toolbar                                                                         |
 | `data-action`      | `cancel` / `confirm`      | AlertDialog buttons                                                                        |
-| `data-focused`     | `true` / `false`          | ListBox options, Tabs                                                                      |
+| `data-focused`     | `true` / `false`          | ListBox options (the active option), Tabs (the tab with keyboard focus)                    |
 | `data-expanded`    | `true` / `false`          | ComboBox                                                                                   |
 
 Alongside the ARIA attributes (`aria-expanded`, `aria-pressed`, `aria-selected`, ...), Tailwind v4's built-in `aria-*` variants cover the rest: `aria-pressed:bg-blue-500` needs no extra code.
