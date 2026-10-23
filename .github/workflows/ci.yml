@@ -30,7 +30,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ifiokjr/monostyle@c320d9c0bd2d85e8c939e8ac74c2b4e40ea2da5f # v0.3.26
+      - uses: ifiokjr/monostyle@ab5d8d2f6af6ea12d5655a11ab61b92c2365ddfe # v0.3.27
         if: always()
         with:
           path: crates
