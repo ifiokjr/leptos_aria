@@ -260,7 +260,7 @@ pub fn Separator(
 		<div
 			class=merge_class("leptos-aria-separator", class)
 			role=move || role.get()
-			aria-orientation=move || orientation.get()
+			aria-orientation=move || has_label.then(|| orientation.get())
 			aria-label=move || label.clone()
 			data-orientation=move || orientation.get()
 		></div>

@@ -131,7 +131,7 @@ pub fn page_html(component: &ComponentDoc<'_>) -> String {
 	let mut html = format!(
 		"<article class=\"prose\">\n<p class=\"eyebrow\"><a href=\"../components.html\">Components</a></p>\n<h1>{title}</h1>\n<p \
 		 class=\"lede\">{description}</p>\n<h2 id=\"installation\">Installation</h2>\n<div \
-		 class=\"install\"><code><span class=\"prompt\" aria-hidden=\"true\">$</span> \
+		 class=\"install\"><code tabindex=\"0\"><span class=\"prompt\" aria-hidden=\"true\">$</span> \
 		 {command}</code><button class=\"copy\" type=\"button\" \
 		 data-copy=\"{command}\">Copy</button></div>\n",
 		title = escape_html(component.title),

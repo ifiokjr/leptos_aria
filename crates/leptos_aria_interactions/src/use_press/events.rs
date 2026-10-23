@@ -84,6 +84,21 @@ impl FocusableEvent {
 	}
 
 	pub fn current_target(&self) -> Element {
+		let explicit = match self {
+			Self::Mouse(_, element)
+			| Self::Keyboard(_, element)
+			| Self::Touch(_, element)
+			| Self::Drag(_, element)
+			| Self::Pointer(_, element)
+			| Self::Wheel(_, element) => element,
+		};
+
+		// Global release listeners run on Document. Their explicit target is
+		// the element that started the press, including when focus has moved.
+		if let Some(element) = explicit {
+			return element.as_element().clone();
+		}
+
 		on_wrapped_event!(self, event => event
 			.current_target()
 			.and_then(|target| target.dyn_into::<Element>().ok())

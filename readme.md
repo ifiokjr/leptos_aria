@@ -64,10 +64,13 @@ fix:all     # run dprint fmt and cargo clippy --fix
 lint:all    # run dprint check and cargo clippy
 test:all    # run the native and wasm32 browser test suites
 test:wasm   # run the browser test suite only
+test:e2e    # build the site and run Playwright accessibility and keyboard tests
 site:build  # render the website and its live previews into target/site
 ```
 
 Browser tests run through `wasm-bindgen-test-runner` with a local Chrome driven by `chromedriver`; both come from the devenv shell. The `wasm-bindgen` dependency is pinned to the `wasm-bindgen-cli` version in the devenv lock so the runner and the crate always match.
+
+Playwright tests run against the real production website and compiled WASM examples, with no internal mocks. See [e2e/readme.md](e2e/readme.md) for coverage, focused runs, and failure traces.
 
 ### The website
 
