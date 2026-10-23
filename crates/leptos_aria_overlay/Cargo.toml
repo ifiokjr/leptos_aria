@@ -20,7 +20,7 @@ leptos_aria_utils = { workspace = true }
 send_wrapper = { workspace = true }
 typed-builder = { workspace = true }
 wasm-bindgen = { workspace = true }
-web-sys = { workspace = true, features = ["Document", "DomRect", "Element", "HtmlElement", "HtmlInputElement", "NodeList", "Window"] }
+web-sys = { workspace = true, features = ["Document", "DomRect", "Element", "FocusEvent", "HtmlElement", "HtmlInputElement", "NodeList", "Window"] }
 
 [dev-dependencies]
 console_error_panic_hook = { workspace = true }
