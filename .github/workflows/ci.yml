@@ -113,7 +113,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
-      options: --ipc=host
+      # Firefox requires the process user to own Actions' mounted home.
+      options: --ipc=host --user 1001:1001
     strategy:
       fail-fast: false
       matrix:
