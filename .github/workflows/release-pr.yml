@@ -29,10 +29,9 @@ jobs:
     timeout-minutes: 20
     runs-on: ubuntu-latest
     permissions:
-      # Push release tags, and upload the release files as git blobs and a
-      # tree. The monochange GitHub App writes the release commit and pull
-      # request on monochange.dev, and this run proves its repository with an
-      # OIDC token.
+      # Upload the release files as git blobs and a tree. The monochange
+      # GitHub App writes the verified bot commit and manages the release
+      # pull request; this job authenticates with its OIDC token.
       contents: write
       # Close a stale release pull request when no changesets are pending.
       pull-requests: write
@@ -59,12 +58,6 @@ jobs:
             | tar -xz -C /usr/local/bin
           chmod +x /usr/local/bin/monochange
           monochange --version
-
-      - name: configure release git credentials
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: refresh tags from origin
         run: git fetch --force --tags origin
@@ -111,7 +104,6 @@ jobs:
           # `monochange/release/release` and opens the release pull request as
           # the monochange bot, so the pull request's own workflows run, which
           # a push made with the job token never triggers.
-          MONOCHANGE_RELEASE_BACKEND: hosted
           # The repository pins a nightly toolchain for the wasm crates.
           # Refreshing Cargo.lock (`lockfile_commands` in monochange.toml)
           # needs no compiler, so use the runner's stable instead of
@@ -181,12 +173,14 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsSL \
-            "https://github.com/monochange/monochange/releases/download/v0.20.1/monochange-x86_64-unknown-linux-musl-v0.20.1.tar.gz" \
+            "https://github.com/monochange/monochange/releases/download/v0.21.0/monochange-x86_64-unknown-linux-musl-v0.21.0.tar.gz" \
             | tar -xz -C /usr/local/bin
           chmod +x /usr/local/bin/monochange
           monochange --version
 
-      - name: configure release git credentials
+      # This identity is only for annotated tags. The hosted release steps
+      # create commits and pull requests under the monochange bot identity.
+      - name: configure tagger identity
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"

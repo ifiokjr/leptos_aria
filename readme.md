@@ -72,6 +72,10 @@ Browser tests run through `wasm-bindgen-test-runner` with a local Chrome driven 
 
 Playwright tests run against the real production website and compiled WASM examples, with no internal mocks. See [e2e/readme.md](e2e/readme.md) for coverage, focused runs, and failure traces.
 
+### Releases
+
+The [release workflow](.github/workflows/release-pr.yml) runs `monochange run release` to prepare versions and changelogs. The hosted `CommitRelease` and `OpenReleaseRequest` steps authenticate with GitHub Actions OIDC, so the monochange GitHub App creates the verified release commits and manages the release pull request as `monochange[bot]`. Preserve that bot authorship when merging release pull requests. Use `monochange preview` for local release planning; package publication runs separately behind the protected `publisher` environment.
+
 ### The website
 
 The site at [ifiokjr.github.io/leptos_aria](https://ifiokjr.github.io/leptos_aria/) is built by the `site` binary in [`crates/leptos_aria_docs`](crates/leptos_aria_docs). It renders [`website/layout.html`](website/layout.html) around the landing page and the repository's own markdown (this readme, [docs/tailwind.md](docs/tailwind.md), and [PORTING.md](PORTING.md)), so the site, `llms-full.txt`, and the docs never drift. Static assets, including the logo, live in [`website/public`](website/public).
