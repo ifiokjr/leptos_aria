@@ -25,7 +25,7 @@ js-sys = { workspace = true }
 wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 wasm-bindgen-test = { workspace = true }
-web-sys = { workspace = true, features = ["Document", "Element", "HtmlInputElement"] }
+web-sys = { workspace = true, features = ["Document", "Element", "HtmlInputElement", "KeyboardEvent", "KeyboardEventInit", "Node", "NodeList"] }
 
 [features]
 # Forwards to `leptos`'s `nightly` feature for nightly-only signal and renderer
