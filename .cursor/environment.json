@@ -1,0 +1,4 @@
+{
+	"name": "leptos_aria",
+	"install": "bash .cursor/install.sh"
+}
