@@ -228,35 +228,43 @@ fn week_row(
 	focused: RwSignal<DateValue>,
 	selected: RwSignal<DateValue>,
 ) -> impl IntoView {
-	let cells = week
-		.into_iter()
-		.map(|date| {
-			let is_focused = focused.get_untracked() == date;
-			let is_selected = selected.get_untracked() == date;
-
-			view! { <CalendarCell date=date is_focused=is_focused is_selected=is_selected /> }
-		})
-		.collect::<Vec<_>>();
-
 	view! {
 		<div class="leptos-aria-calendar__week" role="row">
-			{cells}
+			{week
+				.into_iter()
+				.map(|date| {
+					view! { <CalendarCell date=date focused=focused selected=selected /> }
+				})
+				.collect::<Vec<_>>()}
 		</div>
 	}
 }
 
 /// One date cell of the calendar.
+///
+/// Focus and selection are signals so a key press updates this cell without
+/// waiting for the month grid to be rebuilt. Enter and Space select the
+/// focused date without changing the month, so a snapshot taken while
+/// building the grid would leave the previous date marked selected.
 #[component]
-fn CalendarCell(date: DateValue, is_focused: bool, is_selected: bool) -> impl IntoView {
-	let current = if is_focused { "date" } else { "false" };
-	let class = if is_selected {
-		"leptos-aria-calendar__cell leptos-aria-calendar__cell--selected"
-	} else {
-		"leptos-aria-calendar__cell"
-	};
-
+fn CalendarCell(
+	date: DateValue,
+	focused: RwSignal<DateValue>,
+	selected: RwSignal<DateValue>,
+) -> impl IntoView {
 	view! {
-		<span role="gridcell" aria-selected=is_selected.to_string() aria-current=current class=class>
+		<span
+			role="gridcell"
+			aria-selected=move || if selected.get() == date { "true" } else { "false" }
+			aria-current=move || if focused.get() == date { "date" } else { "false" }
+			class=move || {
+				if selected.get() == date {
+					"leptos-aria-calendar__cell leptos-aria-calendar__cell--selected"
+				} else {
+					"leptos-aria-calendar__cell"
+				}
+			}
+		>
 			{date.day.to_string()}
 		</span>
 	}
@@ -285,6 +293,7 @@ fn month_weeks(month: CalendarMonth) -> Vec<Vec<DateValue>> {
 #[cfg(all(test, target_arch = "wasm32"))]
 mod tests {
 	use leptos::mount::mount_to_body;
+	use wasm_bindgen::JsCast;
 	use wasm_bindgen_test::*;
 
 	use super::*;
@@ -327,5 +336,89 @@ mod tests {
 			calendar.get_attribute("class").as_deref(),
 			Some("leptos-aria-calendar custom-calendar")
 		);
+	}
+
+	#[wasm_bindgen_test]
+	async fn keyboard_moves_focus_and_selection_in_the_grid() {
+		console_error_panic_hook::set_once();
+
+		mount_to_body(|| {
+			view! { <Calendar class="calendar-keys" default_value=DateValue::new(2026, 10, 18) /> }
+		});
+		tick().await;
+
+		assert_eq!(cell_attr(18, "aria-current").as_deref(), Some("date"));
+		assert_eq!(cell_attr(18, "aria-selected").as_deref(), Some("true"));
+
+		key_down("ArrowRight");
+		tick().await;
+
+		assert_eq!(
+			cell_attr(19, "aria-current").as_deref(),
+			Some("date"),
+			"arrow keys move the focused date"
+		);
+		assert_eq!(cell_attr(18, "aria-current").as_deref(), Some("false"));
+
+		key_down("Enter");
+		tick().await;
+
+		assert_eq!(
+			cell_attr(19, "aria-selected").as_deref(),
+			Some("true"),
+			"enter selects the focused date"
+		);
+		assert_eq!(cell_attr(18, "aria-selected").as_deref(), Some("false"));
+		assert!(
+			cell(19)
+				.get_attribute("class")
+				.is_some_and(|class| class.contains("leptos-aria-calendar__cell--selected")),
+			"the selected class follows the selection"
+		);
+	}
+
+	fn cell(day: u32) -> web_sys::Element {
+		let cells = document()
+			.query_selector_all(".calendar-keys [role='gridcell']")
+			.unwrap();
+		let wanted = day.to_string();
+
+		for index in 0..cells.length() {
+			let cell = cells
+				.get(index)
+				.unwrap()
+				.unchecked_into::<web_sys::Element>();
+
+			if cell.text_content().as_deref() == Some(wanted.as_str()) {
+				return cell;
+			}
+		}
+
+		panic!("no cell for day {day}");
+	}
+
+	fn cell_attr(day: u32, name: &str) -> Option<String> {
+		cell(day).get_attribute(name)
+	}
+
+	fn key_down(key: &str) {
+		let grid = document()
+			.query_selector(".calendar-keys")
+			.unwrap()
+			.expect("the calendar grid is mounted");
+		let init = web_sys::KeyboardEventInit::new();
+		init.set_key(key);
+		init.set_bubbles(true);
+		init.set_cancelable(true);
+
+		let event =
+			web_sys::KeyboardEvent::new_with_keyboard_event_init_dict("keydown", &init).unwrap();
+
+		grid.dispatch_event(&event).unwrap();
+	}
+
+	async fn tick() {
+		let promise = js_sys::Promise::resolve(&wasm_bindgen::JsValue::NULL);
+		wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
 	}
 }
