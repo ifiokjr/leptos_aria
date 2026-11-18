@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 This changelog is managed by [monochange](https://github.com/monochange/monochange).
 
+## [0.1.3](https://github.com/ifiokjr/leptos_aria/releases/tag/v0.1.3) (2026-11-18)
+
+Grouped release for `main`.
+
+### Fixes
+
+- **Selecting a calendar date updates the grid.** Enter and Space selected the focused date in state, but the grid had already snapshotted `aria-selected` and the selected class while it was built. Those keys do not change the month, so the grid never painted the new selection and assistive technology kept announcing the previous date. Each cell now follows the focus and selection signals, so the marked date moves with the keyboard.
+  _Owner:_ [@ifiokjr](https://github.com/ifiokjr) · _Review:_ [PR #60](https://github.com/ifiokjr/leptos_aria/pull/60)
+
 ## [0.1.2](https://github.com/ifiokjr/leptos_aria/releases/tag/v0.1.2) (2026-10-23)
 
 Grouped release for `main`.
