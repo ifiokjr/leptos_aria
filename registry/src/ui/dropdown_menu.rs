@@ -32,7 +32,7 @@ use super::utils::cn;
 const CONTENT: &str = "absolute top-full left-0 z-50 mt-1 max-h-96 min-w-[8rem] \
                        overflow-y-auto rounded-md border bg-popover p-1 \
                        text-popover-foreground shadow-md transition-opacity starting:opacity-0 \
-                       [&>span]:sr-only [&_[role=listbox]]:outline-none";
+                       [&>span]:sr-only [&_[role=menu]]:outline-none";
 
 const ITEM: &str = "relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 \
                     text-sm outline-hidden select-none hover:bg-accent \
@@ -75,7 +75,7 @@ pub fn DropdownMenu(
 		state.is_open.into(),
 		Box::new(move || state.is_open.set(false)),
 	);
-	use_popup_focus(root, state.trigger, state.is_open.into(), "[role=listbox]");
+	use_popup_focus(root, state.trigger, state.is_open.into(), "[role=menu]");
 
 	view! {
 		<div data-slot="dropdown-menu" class=class node_ref=root>

@@ -8,6 +8,7 @@
 //!     <Tabs default_selected_key="account">
 //!         <TabsList attr:aria-label="Settings">
 //!             <TabsTrigger key="account">"Account"</TabsTrigger>
+//!             <TabsTrigger key="billing" is_disabled=true>"Billing"</TabsTrigger>
 //!             <TabsTrigger key="password">"Password"</TabsTrigger>
 //!         </TabsList>
 //!         <TabsContent key="account">"Change your account details."</TabsContent>

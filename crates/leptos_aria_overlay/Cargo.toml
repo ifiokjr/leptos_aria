@@ -1,6 +1,6 @@
 [package]
 name = "leptos_aria_overlay"
-version = "0.1.1"
+version = "0.1.2"
 authors.workspace = true
 categories.workspace = true
 documentation = "https://docs.rs/leptos_aria_overlay"
@@ -20,7 +20,7 @@ leptos_aria_utils = { workspace = true }
 send_wrapper = { workspace = true }
 typed-builder = { workspace = true }
 wasm-bindgen = { workspace = true }
-web-sys = { workspace = true, features = ["Document", "DomRect", "Element", "HtmlElement", "HtmlInputElement", "NodeList", "Window"] }
+web-sys = { workspace = true, features = ["Document", "DomRect", "Element", "FocusEvent", "HtmlElement", "HtmlInputElement", "NodeList", "Window"] }
 
 [dev-dependencies]
 console_error_panic_hook = { workspace = true }

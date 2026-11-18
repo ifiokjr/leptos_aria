@@ -98,6 +98,70 @@ jobs:
         run: cargo run --locked --manifest-path crates/leptos_aria_cli/Cargo.toml -- build registry/registry.json --output target/site/r --strict
         shell: devenv shell -- bash -e {0}
 
+      - name: upload browser test site
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-test-site
+          path: target/site
+          retention-days: 1
+          if-no-files-found: error
+
+  browser:
+    name: browser (${{ matrix.project }})
+    needs: build
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
+      # Firefox requires the process user to own Actions' mounted home.
+      options: --ipc=host --user 1001:1001
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit, dark, mobile]
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: setup node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: download browser test site
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: browser-test-site
+          path: target/site
+
+      - name: install browser tests
+        run: npm ci --ignore-scripts
+        working-directory: e2e
+
+      - name: check test types
+        run: npm run check
+        working-directory: e2e
+
+      - name: test accessibility and keyboard interaction
+        run: npm test -- --project="$PROJECT"
+        working-directory: e2e
+        env:
+          PROJECT: ${{ matrix.project }}
+
+      - name: retain browser report and failure traces
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-${{ matrix.project }}
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 14
+
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest

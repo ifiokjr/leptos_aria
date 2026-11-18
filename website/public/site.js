@@ -56,7 +56,7 @@ if (demo) {
 // follow the ARIA tabs pattern, with arrow keys, Home, and End moving between
 // them and selecting as they go.
 for (const preview of document.querySelectorAll("[data-preview]")) {
-	const tabs = [...preview.querySelectorAll('[role="tab"]')];
+	const tabs = [...preview.querySelectorAll("[role=\"tab\"]")];
 
 	const select = (selected) => {
 		for (const tab of tabs) {

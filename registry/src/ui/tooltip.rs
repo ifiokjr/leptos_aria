@@ -11,7 +11,6 @@
 //! ```
 
 use leptos::prelude::*;
-use leptos::web_sys;
 use leptos_aria::Tooltip as AriaTooltip;
 use leptos_aria::TooltipTrigger;
 
@@ -39,39 +38,12 @@ pub fn Tooltip(
 	class: Signal<String>,
 	children: Children,
 ) -> impl IntoView {
-	let wrapper: NodeRef<leptos::html::Span> = NodeRef::new();
 	let class = Signal::derive(move || class.with(|class| cn(&[CONTENT, class])));
-
-	// The headless tooltip listens on its own trigger element, which focus
-	// events from a focused child never reach. Relay focus changes to it as
-	// the events its trigger mode listens for.
-	let relay = move |opening: bool| {
-		let name = match (trigger.get_untracked(), opening) {
-			(TooltipTrigger::Hover, true) => "pointerenter",
-			(TooltipTrigger::Hover, false) => "pointerleave",
-			(TooltipTrigger::Focus, true) => "focus",
-			(TooltipTrigger::Focus, false) => "blur",
-		};
-		let Some(target) = wrapper
-			.get_untracked()
-			.and_then(|wrapper| wrapper.first_element_child())
-		else {
-			return;
-		};
-		let event = web_sys::Event::new(name).expect("a plain event with a known name constructs");
-
-		target
-			.dispatch_event(&event)
-			.expect("a fresh event dispatches");
-	};
 
 	view! {
 		<span
 			data-slot="tooltip"
 			class="relative inline-flex w-fit"
-			node_ref=wrapper
-			on:focusin=move |_| relay(true)
-			on:focusout=move |_| relay(false)
 		>
 			<AriaTooltip label=label trigger=trigger class=class>
 				{children()}

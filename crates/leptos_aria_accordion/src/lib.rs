@@ -52,6 +52,8 @@ struct AccordionItemState {
 	context: AccordionContext,
 	key: String,
 	is_disabled: Signal<bool>,
+	trigger_id: String,
+	panel_id: String,
 }
 
 impl AccordionItemState {
@@ -119,6 +121,8 @@ pub fn AccordionItem(
 		context,
 		key,
 		is_disabled,
+		trigger_id: leptos_aria_utils::use_id(),
+		panel_id: leptos_aria_utils::use_id(),
 	});
 	let item_state = Arc::clone(&item);
 	let disabled_state = Arc::clone(&item);
@@ -152,6 +156,8 @@ pub fn AccordionTrigger(
 	view! {
 		<button
 			type="button"
+			id=item.trigger_id.clone()
+			aria-controls=item.panel_id.clone()
 			class=merge_class("leptos-aria-accordion__trigger", class)
 			aria-expanded=move || {
 				if label_item
@@ -186,6 +192,8 @@ pub fn AccordionPanel(
 	view! {
 		<div
 			class=merge_class("leptos-aria-accordion__panel", class)
+			id=item.panel_id.clone()
+			aria-labelledby=item.trigger_id.clone()
 			role="region"
 			data-state=move || panel_state.open_state_label()
 			hidden=move || !panel.context.is_open(&panel.key)

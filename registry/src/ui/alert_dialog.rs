@@ -10,7 +10,7 @@
 //!
 //! view! {
 //!     <button
-//!         class="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-white"
+//!         class="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-white dark:bg-destructive/60"
 //!         on:click=move |_| is_open.set(true)
 //!     >
 //!         "Delete account"

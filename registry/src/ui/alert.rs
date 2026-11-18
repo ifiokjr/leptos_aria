@@ -36,7 +36,7 @@ impl AlertVariant {
 		match self {
 			Self::Default => "bg-card text-card-foreground",
 			Self::Destructive => {
-				"bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 \
+				"bg-card text-destructive \
 				 [&>svg]:text-current"
 			}
 		}

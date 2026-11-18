@@ -64,10 +64,17 @@ fix:all     # run dprint fmt and cargo clippy --fix
 lint:all    # run dprint check and cargo clippy
 test:all    # run the native and wasm32 browser test suites
 test:wasm   # run the browser test suite only
+test:e2e    # build the site and run Playwright accessibility and keyboard tests
 site:build  # render the website and its live previews into target/site
 ```
 
 Browser tests run through `wasm-bindgen-test-runner` with a local Chrome driven by `chromedriver`; both come from the devenv shell. The `wasm-bindgen` dependency is pinned to the `wasm-bindgen-cli` version in the devenv lock so the runner and the crate always match.
+
+Playwright tests run against the real production website and compiled WASM examples, with no internal mocks. See [e2e/readme.md](e2e/readme.md) for coverage, focused runs, and failure traces.
+
+### Releases
+
+The [release workflow](.github/workflows/release-pr.yml) runs `monochange run release` to prepare versions and changelogs. The hosted `CommitRelease` and `OpenReleaseRequest` steps authenticate with GitHub Actions OIDC, so the monochange GitHub App creates the verified release commits and manages the release pull request as `monochange[bot]`. Preserve that bot authorship when merging release pull requests. Use `monochange preview` for local release planning; package publication runs separately behind the protected `publisher` environment.
 
 ### The website
 
