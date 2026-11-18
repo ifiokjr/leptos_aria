@@ -1,0 +1,860 @@
+{
+  "schema_version": "0.10",
+  "kind": "monochange.releaseRecord",
+  "created_at": "2026-11-18T10:31:24Z",
+  "command": "release",
+  "version": "0.1.3",
+  "versions": {
+    "main": "0.1.3"
+  },
+  "release_targets": [
+    {
+      "id": "main",
+      "kind": "group",
+      "version": "0.1.3",
+      "version_format": "primary",
+      "tag": true,
+      "release": true,
+      "tag_name": "v0.1.3",
+      "rendered_title": "v0.1.3 (2026-11-18)",
+      "rendered_changelog_title": "[0.1.3](https://github.com/ifiokjr/leptos_aria/releases/tag/v0.1.3) (2026-11-18)",
+      "members": [
+        "leptos_aria",
+        "leptos_aria_accordion",
+        "leptos_aria_breadcrumbs",
+        "leptos_aria_button",
+        "leptos_aria_calendar",
+        "leptos_aria_checkbox",
+        "leptos_aria_cli",
+        "leptos_aria_color",
+        "leptos_aria_combo_box",
+        "leptos_aria_date",
+        "leptos_aria_date_picker",
+        "leptos_aria_disclosure",
+        "leptos_aria_drop_zone",
+        "leptos_aria_file_trigger",
+        "leptos_aria_form",
+        "leptos_aria_grid",
+        "leptos_aria_interactions",
+        "leptos_aria_link",
+        "leptos_aria_list_box",
+        "leptos_aria_menu",
+        "leptos_aria_number_field",
+        "leptos_aria_overlay",
+        "leptos_aria_pagination",
+        "leptos_aria_primitives",
+        "leptos_aria_progress",
+        "leptos_aria_radio",
+        "leptos_aria_search_field",
+        "leptos_aria_select_box",
+        "leptos_aria_selection",
+        "leptos_aria_slider",
+        "leptos_aria_table",
+        "leptos_aria_tabs",
+        "leptos_aria_tag",
+        "leptos_aria_text_field",
+        "leptos_aria_time_field",
+        "leptos_aria_toast",
+        "leptos_aria_toggle",
+        "leptos_aria_toolbar",
+        "leptos_aria_tree",
+        "leptos_aria_utils"
+      ]
+    }
+  ],
+  "released_packages": [
+    "leptos_aria",
+    "leptos_aria_accordion",
+    "leptos_aria_breadcrumbs",
+    "leptos_aria_button",
+    "leptos_aria_calendar",
+    "leptos_aria_checkbox",
+    "leptos_aria_cli",
+    "leptos_aria_color",
+    "leptos_aria_combo_box",
+    "leptos_aria_date",
+    "leptos_aria_date_picker",
+    "leptos_aria_disclosure",
+    "leptos_aria_drop_zone",
+    "leptos_aria_file_trigger",
+    "leptos_aria_form",
+    "leptos_aria_grid",
+    "leptos_aria_interactions",
+    "leptos_aria_link",
+    "leptos_aria_list_box",
+    "leptos_aria_menu",
+    "leptos_aria_number_field",
+    "leptos_aria_overlay",
+    "leptos_aria_pagination",
+    "leptos_aria_primitives",
+    "leptos_aria_progress",
+    "leptos_aria_radio",
+    "leptos_aria_search_field",
+    "leptos_aria_select_box",
+    "leptos_aria_selection",
+    "leptos_aria_slider",
+    "leptos_aria_table",
+    "leptos_aria_tabs",
+    "leptos_aria_tag",
+    "leptos_aria_text_field",
+    "leptos_aria_time_field",
+    "leptos_aria_toast",
+    "leptos_aria_toggle",
+    "leptos_aria_toolbar",
+    "leptos_aria_tree",
+    "leptos_aria_utils"
+  ],
+  "changed_files": [
+    "CHANGELOG.md",
+    "Cargo.lock",
+    "Cargo.toml",
+    "crates/leptos_aria/Cargo.toml",
+    "crates/leptos_aria_accordion/Cargo.toml",
+    "crates/leptos_aria_breadcrumbs/Cargo.toml",
+    "crates/leptos_aria_button/Cargo.toml",
+    "crates/leptos_aria_calendar/Cargo.toml",
+    "crates/leptos_aria_checkbox/Cargo.toml",
+    "crates/leptos_aria_cli/Cargo.lock",
+    "crates/leptos_aria_cli/Cargo.toml",
+    "crates/leptos_aria_color/Cargo.toml",
+    "crates/leptos_aria_combo_box/Cargo.toml",
+    "crates/leptos_aria_date/Cargo.toml",
+    "crates/leptos_aria_date_picker/Cargo.toml",
+    "crates/leptos_aria_disclosure/Cargo.toml",
+    "crates/leptos_aria_drop_zone/Cargo.toml",
+    "crates/leptos_aria_file_trigger/Cargo.toml",
+    "crates/leptos_aria_form/Cargo.toml",
+    "crates/leptos_aria_grid/Cargo.toml",
+    "crates/leptos_aria_interactions/Cargo.toml",
+    "crates/leptos_aria_link/Cargo.toml",
+    "crates/leptos_aria_list_box/Cargo.toml",
+    "crates/leptos_aria_menu/Cargo.toml",
+    "crates/leptos_aria_number_field/Cargo.toml",
+    "crates/leptos_aria_overlay/Cargo.toml",
+    "crates/leptos_aria_pagination/Cargo.toml",
+    "crates/leptos_aria_primitives/Cargo.toml",
+    "crates/leptos_aria_progress/Cargo.toml",
+    "crates/leptos_aria_radio/Cargo.toml",
+    "crates/leptos_aria_search_field/Cargo.toml",
+    "crates/leptos_aria_select_box/Cargo.toml",
+    "crates/leptos_aria_selection/Cargo.toml",
+    "crates/leptos_aria_slider/Cargo.toml",
+    "crates/leptos_aria_table/Cargo.toml",
+    "crates/leptos_aria_tabs/Cargo.toml",
+    "crates/leptos_aria_tag/Cargo.toml",
+    "crates/leptos_aria_text_field/Cargo.toml",
+    "crates/leptos_aria_time_field/Cargo.toml",
+    "crates/leptos_aria_toast/Cargo.toml",
+    "crates/leptos_aria_toggle/Cargo.toml",
+    "crates/leptos_aria_toolbar/Cargo.toml",
+    "crates/leptos_aria_tree/Cargo.toml",
+    "crates/leptos_aria_utils/Cargo.toml"
+  ],
+  "package_publications": [
+    {
+      "package": "leptos_aria",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_accordion",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_breadcrumbs",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_button",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_calendar",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_checkbox",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_cli",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_color",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_combo_box",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_date",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_date_picker",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_disclosure",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_drop_zone",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_file_trigger",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_form",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_grid",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_interactions",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_link",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_list_box",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_menu",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_number_field",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_overlay",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_pagination",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_primitives",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_progress",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_radio",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_search_field",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_select_box",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_selection",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_slider",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_table",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_tabs",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_tag",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_text_field",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_time_field",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_toast",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_toggle",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_toolbar",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_tree",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    },
+    {
+      "package": "leptos_aria_utils",
+      "ecosystem": "cargo",
+      "registry": "crates_io",
+      "version": "0.1.3",
+      "mode": "builtin",
+      "trusted_publishing": {
+        "enabled": true,
+        "mode": "required",
+        "repository": null,
+        "workflow": null,
+        "environment": null
+      }
+    }
+  ],
+  "updated_changelogs": [
+    "CHANGELOG.md"
+  ],
+  "deleted_changesets": [
+    ".changeset/calendar-grid-selection.md"
+  ],
+  "changesets": [
+    {
+      "path": ".changeset/calendar-grid-selection.md",
+      "summary": "Selecting a calendar date updates the grid",
+      "details": "Enter and Space selected the focused date in state, but the grid had already snapshotted `aria-selected` and the selected class while it was built. Those keys do not change the month, so the grid never painted the new selection and assistive technology kept announcing the previous date. Each cell now follows the focus and selection signals, so the marked date moves with the keyboard.",
+      "targets": [
+        {
+          "id": "main",
+          "kind": "group",
+          "bump": "patch",
+          "origin": "direct-change",
+          "evidence_refs": [],
+          "change_type": "patch"
+        }
+      ],
+      "context": {
+        "provider": "github",
+        "host": "github.com",
+        "capabilities": {
+          "commit_web_urls": true,
+          "actor_profiles": true,
+          "review_request_lookup": true,
+          "related_issues": true,
+          "issue_comments": true
+        },
+        "introduced": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "d94b9fbdb0d753e1a85490eb4f2d9ad9316f4252",
+            "short_sha": "d94b9fb",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/d94b9fbdb0d753e1a85490eb4f2d9ad9316f4252",
+            "authored_at": "2026-11-18T10:15:31Z",
+            "committed_at": "2026-11-18T10:15:31Z",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#60",
+            "title": "fix(calendar): paint the date selected from the keyboard",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/60",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "last_updated": {
+          "actor": {
+            "provider": "github",
+            "host": "github.com",
+            "id": null,
+            "login": "ifiokjr",
+            "display_name": "ifiokjr",
+            "url": "https://github.com/ifiokjr",
+            "source": "review_request_author"
+          },
+          "commit": {
+            "provider": "github",
+            "host": "github.com",
+            "sha": "d94b9fbdb0d753e1a85490eb4f2d9ad9316f4252",
+            "short_sha": "d94b9fb",
+            "url": "https://github.com/ifiokjr/leptos_aria/commit/d94b9fbdb0d753e1a85490eb4f2d9ad9316f4252",
+            "authored_at": "2026-11-18T10:15:31Z",
+            "committed_at": "2026-11-18T10:15:31Z",
+            "author_name": "Ifiok Jr.",
+            "author_email": "1160934+ifiokjr@users.noreply.github.com"
+          },
+          "review_request": {
+            "provider": "github",
+            "host": "github.com",
+            "kind": "pull_request",
+            "id": "#60",
+            "title": "fix(calendar): paint the date selected from the keyboard",
+            "url": "https://github.com/ifiokjr/leptos_aria/pull/60",
+            "author": {
+              "provider": "github",
+              "host": "github.com",
+              "id": null,
+              "login": "ifiokjr",
+              "display_name": "ifiokjr",
+              "url": "https://github.com/ifiokjr",
+              "source": "review_request_author"
+            }
+          }
+        },
+        "related_issues": []
+      }
+    }
+  ],
+  "changelogs": [
+    {
+      "owner_id": "main",
+      "owner_kind": "group",
+      "output": "default",
+      "stream": "default",
+      "path": "CHANGELOG.md",
+      "format": "monochange",
+      "notes": {
+        "title": "[0.1.3](https://github.com/ifiokjr/leptos_aria/releases/tag/v0.1.3) (2026-11-18)",
+        "summary": [
+          "Grouped release for `main`."
+        ],
+        "sections": [
+          {
+            "title": "Fixes",
+            "collapsed": false,
+            "entries": [
+              "- **Selecting a calendar date updates the grid.** Enter and Space selected the focused date in state, but the grid had already snapshotted `aria-selected` and the selected class while it was built. Those keys do not change the month, so the grid never painted the new selection and assistive technology kept announcing the previous date. Each cell now follows the focus and selection signals, so the marked date moves with the keyboard.\n  _Owner:_ [@ifiokjr](https://github.com/ifiokjr) · _Review:_ [PR #60](https://github.com/ifiokjr/leptos_aria/pull/60)"
+            ]
+          }
+        ]
+      },
+      "rendered": "## [0.1.3](https://github.com/ifiokjr/leptos_aria/releases/tag/v0.1.3) (2026-11-18)\n\nGrouped release for `main`.\n\n### Fixes\n\n- **Selecting a calendar date updates the grid.** Enter and Space selected the focused date in state, but the grid had already snapshotted `aria-selected` and the selected class while it was built. Those keys do not change the month, so the grid never painted the new selection and assistive technology kept announcing the previous date. Each cell now follows the focus and selection signals, so the marked date moves with the keyboard.\n  _Owner:_ [@ifiokjr](https://github.com/ifiokjr) · _Review:_ [PR #60](https://github.com/ifiokjr/leptos_aria/pull/60)"
+    }
+  ],
+  "provider": {
+    "kind": "github",
+    "owner": "ifiokjr",
+    "repo": "leptos_aria",
+    "host": null
+  }
+}
